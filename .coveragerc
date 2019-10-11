@@ -1,0 +1,11 @@
+[run]
+source =
+    django_declarative_apis
+omit = 
+    */tests/*
+    */migrations/*
+
+[report]
+fail_under = 88
+exclude_lines = 
+    raise NotImplementedError

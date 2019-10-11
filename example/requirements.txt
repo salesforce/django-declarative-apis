@@ -1,0 +1,3 @@
+Django>=1.10.6,<=1.11.20
+django-sslserver==0.20
+../../django-declarative-apis

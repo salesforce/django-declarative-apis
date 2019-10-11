@@ -1,0 +1,10 @@
+coverage==4.3.4
+ipython==4.2.1
+mock==2.0.0
+oauth2==1.9.0.post1
+tox==2.6.0
+pyyaml==3.13
+sphinx_rtd_theme==0.4.2
+bumpversion~=0.5
+flake8~=3.7.0
+bandit~=1.6

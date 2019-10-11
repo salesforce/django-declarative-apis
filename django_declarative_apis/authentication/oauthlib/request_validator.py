@@ -1,0 +1,74 @@
+import logging
+
+from django.conf import settings
+from django.core.cache import cache
+from oauthlib.oauth1 import RequestValidator
+
+from django_declarative_apis import models as oauth_models
+
+
+class DjangoRequestValidator(RequestValidator):
+
+    TIMESTAMP_THRESHOLD = 300
+
+    def __init__(self, request, *args, **kwargs):
+        super(DjangoRequestValidator, self).__init__(*args, **kwargs)
+        self.request = request
+        self.consumer = None
+        self.validation_error_message = ''
+
+    @property
+    def enforce_ssl(self):
+        return getattr(settings, 'REQUIRE_HTTPS_FOR_OAUTH', True)
+
+    def check_client_key(self, client_key):
+        return bool(client_key)
+
+    def check_nonce(self, nonce):
+        return bool(nonce)  # we didn't enforce any minimum length on nonces previously...
+
+    def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
+                                     request, request_token=None, access_token=None):
+        request_token = request_token or ''
+        access_token = access_token or ''
+        cache_key = '{0}:{1}:{2}:{3}'.format(client_key, request_token, access_token, nonce)
+        cache_created = cache.add(cache_key, True, self.TIMESTAMP_THRESHOLD * 2)
+        if not cache_created:
+            self.validation_error_message = 'nonce_used'
+        return cache_created
+
+    def validate_client_key(self, client_key, request):
+        self.consumer = oauth_models.get_consumer(client_key)
+        if self.consumer is None:
+            self.validation_error_message = 'consumer_key_unknown'
+            logging.error('invalid consumer')
+            return False
+        return True
+
+    def get_client_secret(self, client_key, request):
+        try:
+            if self.consumer.rsa_public_key_pem:
+                return None
+            else:
+                return self.consumer.secret
+        except Exception as e:
+            logging.error("This should never happen, since consumer is already validated")
+            return ''
+
+    def get_rsa_key(self, client_key, request):
+        try:
+            return self.consumer.rsa_public_key_pem
+        except Exception as e:
+            logging.error("This should never happen, since consumer is already validated")
+            return ''
+
+    @property
+    def dummy_client(self):
+        class DummyClient(object):
+            def __init__(self, *args, **kwargs):
+                self.secret = ''
+                self.key = ''
+                self.rsa_public_key_base64 = ''
+        return DummyClient()
+
+
