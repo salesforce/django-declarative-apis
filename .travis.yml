@@ -1,0 +1,12 @@
+language: python
+python:
+  - '3.6'
+  - '3.7'
+install:
+  - make install
+script:
+  - make test
+deploy:
+  provider: pypi
+  user: salesforce
+
