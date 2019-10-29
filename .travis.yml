@@ -8,5 +8,8 @@ script:
   - make test
 deploy:
   provider: pypi
-  user: salesforce
-
+  user: __token__
+  password:
+    secure: BCCKuBFkf9udKHESl/JLk5P04QSZNjIJcZwFhYTwwsFRcUpNIkOhmGM/RvYyHclijqz7IAQfupnWt+k9FCQcht0HuaUC19hCJM0g0kBZct5MU+ji/ypEQS35dd1dzuAaCyGq9M55hNbuTLwcnrk3Ve9tPX3lKx2fHGwgyi9LgmsZIt0pOFnFx160IkmXJFyaxjqVIcrte7LlhnEpZW0Zp++mdYaEGopIqauCqi5cXv8tuap3CtzkRIJJEcpyeR0yvRapbp08BieB2hGfbXZ/S/VixV3FPpf4me6r9MAPCYo+7X2dQV7p5nZkebC3FrAvrdxDK+tS6tDc4JdyjmGPaSsybnt+Ddr5oxrpjeCPdK8BfBLlbpmxtYVEKnI7/JfcIikqj8xSAQseVyPFIMKnzBkNotI0+UT5gAkTeFFNIX9Jaivc91J+g2XAbYW5eIb3itxACx+js70Ffagr93nXQlp8HUXOEqJfniBEpqrJV6DH7YZo3GfVMdFwe9zIX6iJcIfPZ7jlMabTMPxDjVc/4WieZJCpaH8Atx6lEIFS/D3q7Nr1wvpYlFqgz2hUSuUeYH39r75fNGFKihCZY8B82xfFt7KH76LJIlG83wDGFbGHAFfTyaIW9VOO1yN6/busQ1cTk4EF4dDGGldQoGUhFbBYcscZhfNGe5edJkeK6bI=
+  on:
+    tags: true
