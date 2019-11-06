@@ -20,7 +20,7 @@ except ImportError:  # pragma: nocover
 from django.db import models
 from django.utils.xmlutils import SimplerXMLGenerator
 from django.utils.encoding import smart_str
-from django.core.urlresolvers import reverse, NoReverseMatch
+from django.urls import reverse, NoReverseMatch
 try:
     from django.core.serializers.json import DateTimeAwareJSONEncoder as DjangoJSONEncoder
 except ImportError:
