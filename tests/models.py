@@ -33,17 +33,17 @@ class TestModel(models.Model):
 class ChildModel(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100)
-    test = models.ForeignKey(TestModel)
-    parent = models.ForeignKey('ParentModel', related_name='children')
+    test = models.ForeignKey(TestModel, on_delete=models.CASCADE)
+    parent = models.ForeignKey('ParentModel', related_name='children', on_delete=models.CASCADE)
 
 
 class ParentModel(models.Model):
     nonstandard_id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100)
-    favorite = models.ForeignKey(ChildModel, null=True)
-    root = models.ForeignKey('RootNode', related_name='parents', null=True)
+    favorite = models.ForeignKey(ChildModel, null=True, on_delete=models.CASCADE)
+    root = models.ForeignKey('RootNode', related_name='parents', null=True, on_delete=models.CASCADE)
 
 
 class RootNode(models.Model):
     id = models.IntegerField(primary_key=True)
-    parent_field = models.ForeignKey(ParentModel)
+    parent_field = models.ForeignKey(ParentModel, on_delete=models.CASCADE)
