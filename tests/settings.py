@@ -30,7 +30,7 @@ ROOT_URLCONF = 'tests.urls'
 
 TEST_RUNNER = 'tests.testutils.NoLoggingTestRunner'
 
-MIDDLEWARE_CLASSES = []
+MIDDLEWARE = []
 
 REQUIRE_HTTPS_FOR_OAUTH = False
 
