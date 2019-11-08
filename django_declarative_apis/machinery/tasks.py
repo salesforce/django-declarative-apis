@@ -128,8 +128,12 @@ def future_task_runner(endpoint_class_name, endpoint_method_name, resource_class
         if retry_params is None:
             raise
 
+        retry_params = RetryParams(*retry_params)
         if retry_params.retry_exception_filter\
-                and not any([isinstance(e, ex_type) for ex_type in retry_params.retry_exception_filter]):
+                and not any([
+                    f'{e.__class__.__module__}.{e.__class__.__name__}' == ex_type
+                    for ex_type in retry_params.retry_exception_filter
+                ]):
             # this exception is not retryable
             raise
 
@@ -162,11 +166,15 @@ def schedule_future_task_runner(task_runner_args, task_runner_kwargs,
                                 countdown=0,
                                 delay=0):
     task_runner_kwargs['task_job_count'] = _get_task_job_count()
-    task_runner_kwargs['retry_params'] = RetryParams(retries_remaining=retries,
-                                                     retry_exception_filter=retry_exception_filter,
-                                                     queue=queue,
-                                                     routing_key=routing_key,
-                                                     countdown=countdown)
+    task_runner_kwargs['retry_params'] = RetryParams(
+        retries_remaining=retries,
+        retry_exception_filter=tuple(
+            f'{exc.__module__}.{exc.__name__}' for exc in retry_exception_filter
+        ),
+        queue=queue,
+        routing_key=routing_key,
+        countdown=countdown
+    )
     future_task_runner.apply_async(task_runner_args, task_runner_kwargs, queue=queue, routing_key=routing_key, countdown=countdown+delay)
 
 
