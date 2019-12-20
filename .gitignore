@@ -153,6 +153,7 @@ Session.vim
 *~
 # auto-generated tag files
 tags
+.ctags
 
 
 ### https://raw.github.com/github/gitignore/3cb9446b178379ee9911cfa268cbf72767a745bc/Global/VirtualEnv.gitignore
