@@ -21,10 +21,17 @@ try:
 except ImportError:
     newrelic_agent = None
 
+try:
+    import cid.locals
+    _get_correlation_id = cid.locals.get_cid
+except ImportError:
+    _get_correlation_id = lambda: None
+
 JOB_COUNT_CACHE_KEY = 'future_task_runner:job_id'
 QUEUE_LENGTH_CACHE_KEY = 'future_task_runner:current_queue_length'
 
 process_task_count = 0
+logger = logging.getLogger(__name__)
 
 
 def get_current_queue_length():
@@ -40,7 +47,7 @@ def _get_task_job_count():
 
 
 def _log_task_stats(method_name, resource_instance_id, scheduled_execution_delay, task_creation_time,
-                    task_job_count):
+                    task_job_count, correlation_id=None):
     global process_task_count
     process_task_count += 1
     if task_creation_time:
@@ -63,29 +70,34 @@ def _log_task_stats(method_name, resource_instance_id, scheduled_execution_delay
                                                 'routing_key': routing_key,
                                                 'wait_time_seconds': wait_time,
                                                 'queue_delay_seconds': queue_delay,
-                                                'process_task_count': process_task_count})
+                                                'process_task_count': process_task_count,
+                                                'correlation_id': correlation_id,})
 
-        logging.info(
+        logger.info(
             'method=%s, resource_id=%s, queue_length=%s, queue=%s, routing_key=%s, task_wait_time=%s, '
-            'task_queue_delay=%s, process_task_count=%s',
+            'task_queue_delay=%s, process_task_count=%s, correlation_id=%s',
             method_name, resource_instance_id,
             queue_length,
             queue,
             routing_key,
             wait_time,
             queue_delay,
-            process_task_count
+            process_task_count,
+            correlation_id
         )
     else:
-        logging.info('method=%s, resource_id=%s', method_name, resource_instance_id)
+        logger.info('method=%s, resource_id=%s, correlation_id=%s', method_name, resource_instance_id, correlation_id)
 
 
-def _log_retry_stats(method_name, resource_instance_id):
+def _log_retry_stats(method_name, resource_instance_id, correlation_id):
     if newrelic_agent:
         newrelic_agent.record_custom_event('task_runner:retry',
                                            {'method_name': method_name,
                                             'resource_instance_id': resource_instance_id})
-        logging.warn('will retry task: method=%s, resource_id=%s', method_name, resource_instance_id)
+        logger.warn(
+            'will retry task: method=%s, resource_id=%s, correlation_id=%s', method_name, resource_instance_id,
+            correlation_id
+        )
 
 
 class RetryParams(NamedTuple):
@@ -101,21 +113,16 @@ class RetryParams(NamedTuple):
              soft_time_limit=getattr(settings, 'DDA_DEFERRED_TASK_SOFT_TIME_LIMIT', 999999))
 def future_task_runner(endpoint_class_name, endpoint_method_name, resource_class_name, resource_instance_id,
                        task_job_count=0, task_creation_time=None, scheduled_execution_delay=0, task_args=None,
-                       retry_params=None):
+                       retry_params=None, correlation_id=None):
     endpoint_class = locate(endpoint_class_name)
     resource_class = locate(resource_class_name)
     resource_instance = resource_class.objects.get(pk=resource_instance_id)
     endpoint_task = getattr(endpoint_class, endpoint_method_name)
 
-    logged_stats = 'method={0}, resource_id={1}'.format(
-        endpoint_method_name,
-        resource_instance_id,
-    )
-
     _log_task_stats(endpoint_method_name, resource_instance_id, scheduled_execution_delay, task_creation_time,
-                    task_job_count)
+                    task_job_count, correlation_id)
 
-    logging.info('future_task_runner: ' + logged_stats)
+    logger.info('future_task_runner: method=%s, resource_id=%s', endpoint_method_name, resource_instance_id)
 
     if task_args:
         args, kwargs = task_args
@@ -141,7 +148,7 @@ def future_task_runner(endpoint_class_name, endpoint_method_name, resource_class
             # out of chances
             raise
 
-        _log_retry_stats(endpoint_method_name, resource_instance_id)
+        _log_retry_stats(endpoint_method_name, resource_instance_id, correlation_id)
         task_runner_args = (endpoint_class_name, endpoint_method_name, resource_class_name, resource_instance_id)
         task_runner_kwargs = {
             'task_creation_time': time.time(),
@@ -175,6 +182,7 @@ def schedule_future_task_runner(task_runner_args, task_runner_kwargs,
         routing_key=routing_key,
         countdown=countdown
     )
+    task_runner_kwargs['correlation_id'] = _get_correlation_id()
     future_task_runner.apply_async(task_runner_args, task_runner_kwargs, queue=queue, routing_key=routing_key, countdown=countdown+delay)
 
 
@@ -182,7 +190,8 @@ def schedule_future_task_runner(task_runner_args, task_runner_kwargs,
              time_limit=getattr(settings, 'DDA_DEFERRED_TASK_TIME_LIMIT', 999999),
              soft_time_limit=getattr(settings, 'DDA_DEFERRED_TASK_SOFT_TIME_LIMIT', 999999))
 def resource_task_runner(resource_class_name, resource_method_name, resource_instance_id,
-                         task_job_count=0, task_creation_time=None, scheduled_execution_delay=0, task_args=None):
+                         task_job_count=0, task_creation_time=None, scheduled_execution_delay=0, task_args=None,
+                         correlation_id=None):
     resource_class = locate(resource_class_name)
     resource_instance = resource_class.objects.get(pk=resource_instance_id)
     resource_method = getattr(resource_instance, resource_method_name)
@@ -219,6 +228,7 @@ def schedule_resource_task_runner(resource_bound_method,
         'scheduled_execution_delay': delay,
         'task_args': (task_args or (), task_kwargs or {}),
         'task_job_count': _get_task_job_count(),
+        'correlation_id': _get_correlation_id(),
     }
 
     resource_task_runner.apply_async(task_runner_args,
