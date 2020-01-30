@@ -198,6 +198,7 @@ def schedule_future_task_runner(task_runner_args, task_runner_kwargs,
             _run()
             return
         except kombu.exceptions.OperationalError as err:
+            logger.warn('kombu.exceptions.OperationalError')
             pass
 
 
