@@ -11,6 +11,7 @@ from celery.task import task as celery_task
 import celery
 import time
 from typing import NamedTuple
+import kombu.exceptions
 
 from django.conf import settings
 from django.core.cache import cache
@@ -183,7 +184,21 @@ def schedule_future_task_runner(task_runner_args, task_runner_kwargs,
         countdown=countdown
     )
     task_runner_kwargs['correlation_id'] = _get_correlation_id()
-    future_task_runner.apply_async(task_runner_args, task_runner_kwargs, queue=queue, routing_key=routing_key, countdown=countdown+delay)
+
+    def _run():
+        future_task_runner.apply_async(task_runner_args, task_runner_kwargs, queue=queue, routing_key=routing_key, countdown=countdown+delay)
+
+    for _ in range(3):
+        # XXX: This is an attempt to skirt around an unsolved, low repro issue somewhere in the celery/kombu/redis-py stack.
+        # Once in a while, a connection in the pool will timeout prior to a health check being called in redis-py and
+        # will result in an error being raised here. This should be removed once the issue has been sorted out.
+        # Note: This is around the use of redis-py in celery where celery's event loop is not running
+        # https://github.com/celery/kombu/issues/1019
+        try:
+            _run()
+            return
+        except kombu.exceptions.OperationalError as err:
+            pass
 
 
 @celery_task(ignore_results=True,

@@ -11,12 +11,14 @@ import mock
 import http
 import urllib.parse
 
+import kombu.exceptions
 import django.core.exceptions
 from django.db import models
 from django.core.cache import cache
 
 from django_declarative_apis import machinery, models as dda_models
 from django_declarative_apis.machinery import errors, filtering, tasks
+from django_declarative_apis.machinery.tasks import future_task_runner
 from django_declarative_apis.resources.utils import HttpStatusCode, rc
 
 import tests.models
@@ -748,6 +750,39 @@ class DeferrableTaskTestCase(unittest.TestCase):
             'filtered_retry_count_1': 0,
             'filtered_retry_count_2': 0
             }
+
+    def test_get_response_kombu_error_retried(self):
+        expected_response = {'foo': 'bar'}
+        endpoint = _TestEndpoint(expected_response)
+        manager = machinery.EndpointBinder.BoundEndpointManager(
+            machinery._EndpointRequestLifecycleManager(endpoint),
+            endpoint
+        )
+
+        conf = tasks.future_task_runner.app.conf
+        old_val = conf['task_always_eager']
+        conf['task_always_eager'] = True
+
+        cache.set(tasks.JOB_COUNT_CACHE_KEY, 0)
+
+        with mock.patch('django_declarative_apis.machinery.tasks.future_task_runner.apply_async') as mock_apply:
+            exceptions = iter([kombu.exceptions.OperationalError])
+            def _side_effect(*args, **kwargs):
+                try:
+                    raise next(exceptions)
+                except StopIteration:
+                    return future_task_runner.apply(*args, **kwargs)
+            mock_apply.side_effect = _side_effect
+
+            try:
+                resp = manager.get_response()
+            finally:
+                conf['task_always_eager'] = old_val
+
+        self.assertEqual(resp, (http.HTTPStatus.OK, expected_response))
+        self.assertTrue(cache.get(tasks.JOB_COUNT_CACHE_KEY) != 0)
+
+        self.assertEqual('deferred task executed', _TestEndpoint.semaphore['status'])
 
     def test_get_response_success(self):
         expected_response = {'foo': 'bar'}
