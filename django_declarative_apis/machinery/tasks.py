@@ -185,7 +185,8 @@ def schedule_future_task_runner(task_runner_args, task_runner_kwargs,
     )
     task_runner_kwargs['correlation_id'] = _get_correlation_id()
 
-    for _ in range(3):
+    MAX_ATTEMPTS = 3
+    for attempt in range(MAX_ATTEMPTS):
         # XXX: This is an attempt to skirt around an unsolved, low repro issue somewhere in the celery/kombu/redis-py stack.
         # Once in a while, a connection in the pool will timeout prior to a health check being called in redis-py and
         # will result in an error being raised here. This should be removed once the issue has been sorted out.
@@ -195,8 +196,9 @@ def schedule_future_task_runner(task_runner_args, task_runner_kwargs,
             future_task_runner.apply_async(task_runner_args, task_runner_kwargs, queue=queue, routing_key=routing_key, countdown=countdown+delay)
             return
         except kombu.exceptions.OperationalError as err:
-            logger.warn('kombu.exceptions.OperationalError')
-            pass
+            logger.warn('kombu.exceptions.OperationalError (attempt: %s)', attempt)
+            if attempt >= MAX_ATTEMPTS - 1:
+                raise err
 
 
 @celery_task(ignore_results=True,

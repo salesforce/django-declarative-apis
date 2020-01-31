@@ -766,7 +766,7 @@ class DeferrableTaskTestCase(unittest.TestCase):
         cache.set(tasks.JOB_COUNT_CACHE_KEY, 0)
 
         with mock.patch('django_declarative_apis.machinery.tasks.future_task_runner.apply_async') as mock_apply:
-            exceptions = iter([kombu.exceptions.OperationalError])
+            exceptions = iter([kombu.exceptions.OperationalError, kombu.exceptions.OperationalError])
             def _side_effect(*args, **kwargs):
                 try:
                     raise next(exceptions)
@@ -783,6 +783,43 @@ class DeferrableTaskTestCase(unittest.TestCase):
         self.assertTrue(cache.get(tasks.JOB_COUNT_CACHE_KEY) != 0)
 
         self.assertEqual('deferred task executed', _TestEndpoint.semaphore['status'])
+
+    def test_get_response_kombu_error_attempts_exceeded(self):
+        expected_response = {'foo': 'bar'}
+        endpoint = _TestEndpoint(expected_response)
+        manager = machinery.EndpointBinder.BoundEndpointManager(
+            machinery._EndpointRequestLifecycleManager(endpoint),
+            endpoint
+        )
+
+        conf = tasks.future_task_runner.app.conf
+        old_val = conf['task_always_eager']
+        conf['task_always_eager'] = True
+
+        cache.set(tasks.JOB_COUNT_CACHE_KEY, 0)
+
+        with mock.patch('django_declarative_apis.machinery.tasks.future_task_runner.apply_async') as mock_apply:
+            exceptions = iter([
+                kombu.exceptions.OperationalError,
+                kombu.exceptions.OperationalError,
+                kombu.exceptions.OperationalError,
+            ])
+            def _side_effect(*args, **kwargs):
+                try:
+                    raise next(exceptions)
+                except StopIteration:
+                    return future_task_runner.apply(*args, **kwargs)
+            mock_apply.side_effect = _side_effect
+
+            try:
+                resp = manager.get_response()
+                self.fail('should have triggered a kombu.exceptions.OperationalError')
+            except kombu.exceptions.OperationalError:
+                pass
+            finally:
+                conf['task_always_eager'] = old_val
+
+        self.assertIsNone(_TestEndpoint.semaphore['status'])
 
     def test_get_response_success(self):
         expected_response = {'foo': 'bar'}
