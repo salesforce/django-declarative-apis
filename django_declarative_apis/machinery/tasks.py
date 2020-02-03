@@ -186,6 +186,7 @@ def schedule_future_task_runner(task_runner_args, task_runner_kwargs,
     task_runner_kwargs['correlation_id'] = _get_correlation_id()
 
     if settings.DECLARATIVE_ENDPOINT_FORCE_SYNCHRONOUS_TASKS:
+        logger.info('Processing tasks synchronously')
         future_task_runner.apply(task_runner_args, task_runner_kwargs)
     else:
         MAX_ATTEMPTS = 3
