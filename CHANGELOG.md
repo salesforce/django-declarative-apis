@@ -8,6 +8,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 # [0.19.1] -
 ### Fixed
 - [PR 14](https://github.com/salesforce/django-declarative-apis/pull/14) Retry async tasks if kombu.exceptions.OperationalError is encounterer
+- [PR 14](https://github.com/salesforce/django-declarative-apis/pull/14) Added DECLARATIVE_ENDPOINT_FORCE_SYNCHRONOUS_TASKS. This allows users to entirely skip asynchronous task processing if needed.
 
 # [0.19.0] - 2020-01-07
 ### Added

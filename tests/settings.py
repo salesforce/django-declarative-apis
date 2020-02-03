@@ -42,3 +42,4 @@ DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS = (
         'django_declarative_apis.authentication.oauthlib.oauth1.TwoLeggedOauth1',
     ),
 )
+DECLARATIVE_ENDPOINT_FORCE_SYNCHRONOUS_TASKS = False

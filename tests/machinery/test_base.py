@@ -15,6 +15,7 @@ import kombu.exceptions
 import django.core.exceptions
 from django.db import models
 from django.core.cache import cache
+import django.test
 
 from django_declarative_apis import machinery, models as dda_models
 from django_declarative_apis.machinery import errors, filtering, tasks
@@ -742,7 +743,7 @@ class _TestEndpoint(machinery.EndpointDefinition):
             raise Exception("failing so task will retry")
 
 
-class DeferrableTaskTestCase(unittest.TestCase):
+class DeferrableTaskTestCase(django.test.TestCase):
     def setUp(self):
         _TestEndpoint.semaphore = {
             'status': None,
@@ -781,6 +782,44 @@ class DeferrableTaskTestCase(unittest.TestCase):
 
         self.assertEqual(resp, (http.HTTPStatus.OK, expected_response))
         self.assertTrue(cache.get(tasks.JOB_COUNT_CACHE_KEY) != 0)
+
+        self.assertEqual('deferred task executed', _TestEndpoint.semaphore['status'])
+
+    def test_force_synchronous_tasks(self):
+        expected_response = {'foo': 'bar'}
+        endpoint = _TestEndpoint(expected_response)
+        manager = machinery.EndpointBinder.BoundEndpointManager(
+            machinery._EndpointRequestLifecycleManager(endpoint),
+            endpoint
+        )
+
+        conf = tasks.future_task_runner.app.conf
+        old_val = conf['task_always_eager']
+        conf['task_always_eager'] = True
+
+        cache.set(tasks.JOB_COUNT_CACHE_KEY, 0)
+
+        with mock.patch('django_declarative_apis.machinery.tasks.future_task_runner.apply_async') as mock_apply:
+            # these should never be triggered, but will cause an error if tasks aren't executed synchronously
+            exceptions = iter([
+                kombu.exceptions.OperationalError,
+                kombu.exceptions.OperationalError,
+                kombu.exceptions.OperationalError,
+            ])
+            def _side_effect(*args, **kwargs):
+                try:
+                    raise next(exceptions)
+                except StopIteration:
+                    return future_task_runner.apply(*args, **kwargs)
+            mock_apply.side_effect = _side_effect
+
+            with self.settings(DECLARATIVE_ENDPOINT_FORCE_SYNCHRONOUS_TASKS=True):
+                try:
+                    resp = manager.get_response()
+                except kombu.exceptions.OperationalError:
+                    self.fail('OperationalError should not have been triggered')
+                finally:
+                    conf['task_always_eager'] = old_val
 
         self.assertEqual('deferred task executed', _TestEndpoint.semaphore['status'])
 
