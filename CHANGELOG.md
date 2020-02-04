@@ -6,7 +6,7 @@ and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [0.19.2] - 2020-02-04
-- Make newly added settings optional
+- [PR 15](https://github.com/salesforce/django-declarative-apis/pull/15) Make newly added settings optional
 
 # [0.19.1] - 2020-02-04
 ### Fixed
