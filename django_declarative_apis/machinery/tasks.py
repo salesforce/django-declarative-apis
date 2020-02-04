@@ -185,7 +185,7 @@ def schedule_future_task_runner(task_runner_args, task_runner_kwargs,
     )
     task_runner_kwargs['correlation_id'] = _get_correlation_id()
 
-    if settings.DECLARATIVE_ENDPOINT_TASKS_FORCE_SYNCHRONOUS:
+    if getattr(settings, 'DECLARATIVE_ENDPOINT_TASKS_FORCE_SYNCHRONOUS', False):
         logger.info('Processing tasks synchronously')
         future_task_runner.apply(task_runner_args, task_runner_kwargs)
     else:
@@ -202,7 +202,7 @@ def schedule_future_task_runner(task_runner_args, task_runner_kwargs,
             except kombu.exceptions.OperationalError as err:
                 logger.warn('kombu.exceptions.OperationalError (attempt: %s)', attempt)
                 if attempt >= MAX_ATTEMPTS - 1:
-                    if settings.DECLARATIVE_ENDPOINT_TASKS_SYNCHRONOUS_FALLBACK:
+                    if getattr(settings, 'DECLARATIVE_ENDPOINT_TASKS_SYNCHRONOUS_FALLBACK'):
                         logger.warn('Falling back to executing task synchronously')
                         future_task_runner.apply(task_runner_args, task_runner_kwargs)
                         return
