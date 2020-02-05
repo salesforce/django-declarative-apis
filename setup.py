@@ -14,7 +14,7 @@ with open(path.join(path.dirname(__file__), 'requirements.txt')) as requirements
 
 setuptools.setup(
     name='django-declarative-apis',
-    version='0.19.1',
+    version='0.19.2',
     author='Drew Shafer',
     url='https://salesforce.com',
     description='Simple, readable, declarative APIs for Django',
