@@ -57,7 +57,7 @@ class TwoLeggedOauth1(Authenticator):
             missing = list(
                 param for param in params if param not in collected_request_parameters
             )
-        except:  # pragma: nocover
+        except Exception:  # pragma: nocover
             missing = params
 
         if missing:
