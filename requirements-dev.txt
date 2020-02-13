@@ -8,3 +8,4 @@ sphinx_rtd_theme==0.4.2
 bumpversion~=0.5
 flake8~=3.7.0
 bandit~=1.6
+black==19.3b0
