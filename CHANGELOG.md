@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
+# []
+### Fixed
+- [PR 19](https://github.com/salesforce/django-declarative-apis/pull/19) Bump required Django patch version
+
 # [0.19.3] - 2020-02-04
 - Increase celery version range
 
