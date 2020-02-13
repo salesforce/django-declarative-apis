@@ -74,7 +74,7 @@ class PingDefinition(machinery.BaseEndpointDefinition):
     def resource(self):
         """The endpoint resource
 
-        Endpoint resources can be implemented as either properties or machinery.endpoint_resources. 
+        Endpoint resources can be implemented as either properties or machinery.endpoint_resources.
         The latter will require filters to be defined.
         """
         return {"ping": "pong"}
