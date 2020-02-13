@@ -239,7 +239,7 @@ class Resource(object):
                 else:
                     request.data = request.PUT
 
-        if not rm in handler.allowed_methods:
+        if rm not in handler.allowed_methods:
             return HttpResponseNotAllowed(handler.allowed_methods)
 
         meth = handler.method_handlers.get(rm, None)
