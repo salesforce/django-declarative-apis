@@ -5,7 +5,9 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-import decimal, re, inspect
+import decimal
+import re
+import inspect
 import copy
 
 from django.conf import settings
