@@ -10,12 +10,17 @@ import logging
 from oauthlib.oauth1.rfc5849 import SIGNATURE_RSA
 from oauthlib.oauth1.rfc5849 import errors, signature
 from oauthlib.oauth1 import SignatureOnlyEndpoint
-from cryptography.hazmat.primitives.serialization import load_der_public_key, PublicFormat, Encoding
+from cryptography.hazmat.primitives.serialization import (
+    load_der_public_key,
+    PublicFormat,
+    Encoding,
+)
 from cryptography.hazmat.backends import default_backend
 
 from django_declarative_apis.resources.utils import preprocess_rsa_key
 
 log = logging.getLogger(__name__)
+
 
 class TweakedSignatureOnlyEndpoint(SignatureOnlyEndpoint):
     """An endpoint only responsible for verifying an oauthlib signature.
@@ -26,13 +31,11 @@ class TweakedSignatureOnlyEndpoint(SignatureOnlyEndpoint):
     Altered lines are marked with # TOOPHER
     """
 
-
     def __init__(self, *args, **kwargs):
         super(TweakedSignatureOnlyEndpoint, self).__init__(*args, **kwargs)
-        self.validation_error_message = ''
+        self.validation_error_message = ""
 
-    def validate_request(self, uri, http_method='GET',
-                         body=None, headers=None):
+    def validate_request(self, uri, http_method="GET", body=None, headers=None):
         """Validate a signed OAuth request.
 
         :param uri: The full URI of the token request.
@@ -56,7 +59,8 @@ class TweakedSignatureOnlyEndpoint(SignatureOnlyEndpoint):
             return False, request
 
         if not self.request_validator.validate_timestamp_and_nonce(
-                request.client_key, request.timestamp, request.nonce, request):
+            request.client_key, request.timestamp, request.nonce, request
+        ):
             return False, request
 
         # The server SHOULD return a 401 (Unauthorized) status code when
@@ -67,7 +71,8 @@ class TweakedSignatureOnlyEndpoint(SignatureOnlyEndpoint):
         #
         # Note that early exit would enable client enumeration
         valid_client = self.request_validator.validate_client_key(
-            request.client_key, request)
+            request.client_key, request
+        )
         if not valid_client:
             request.client_key = self.request_validator.dummy_client
 
@@ -84,12 +89,15 @@ class TweakedSignatureOnlyEndpoint(SignatureOnlyEndpoint):
             log.info("Valid client: %s", valid_client)
             log.info("Valid signature: %s", valid_signature)
 
-        if valid_client and not valid_signature:                                                          # TOOPHER
-            norm_params = signature.normalize_parameters(request.params)                                  # TOOPHER
-            uri = signature.normalize_base_string_uri(request.uri)                                        # TOOPHER
-            base_signing_string = signature.construct_base_string(request.http_method, uri, norm_params)  # TOOPHER
-            self.validation_error_message = \
-                'Invalid signature. Expected signature base string: {0}'.format(base_signing_string)      # TOOPHER
+        if valid_client and not valid_signature:  # TOOPHER
+            norm_params = signature.normalize_parameters(request.params)  # TOOPHER
+            uri = signature.normalize_base_string_uri(request.uri)  # TOOPHER
+            base_signing_string = signature.construct_base_string(
+                request.http_method, uri, norm_params
+            )  # TOOPHER
+            self.validation_error_message = "Invalid signature. Expected signature base string: {0}".format(
+                base_signing_string
+            )  # TOOPHER
         return v, request
 
     def _check_signature(self, request):

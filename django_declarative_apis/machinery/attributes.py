@@ -27,7 +27,9 @@ class EndpointAttribute(metaclass=abc.ABCMeta):
         cls._next_attribute_number += 1
         return next_serial_number
 
-    def __init__(self, name=None, required=False, description=None, hidden=False, advanced=False):
+    def __init__(
+        self, name=None, required=False, description=None, hidden=False, advanced=False
+    ):
         super(EndpointAttribute, self).__init__()
 
         self.hidden = hidden
@@ -43,8 +45,10 @@ class EndpointAttribute(metaclass=abc.ABCMeta):
             return self
 
         if not self.name:
-            raise ValueError("All EndpointAttribute objects must have a name before they can be accessed "
-                             "from an instance")
+            raise ValueError(
+                "All EndpointAttribute objects must have a name before they can be accessed "
+                "from an instance"
+            )
 
         # The instance dictionary is used as a cache
         if self.name in owner_instance.__dict__:
@@ -61,7 +65,9 @@ class EndpointAttribute(metaclass=abc.ABCMeta):
 
 
 class RequestProperty(EndpointAttribute):
-    __hidden_request_attribute_name = '_' + ''.join(random.choice(string.printable) for _ in range(10))
+    __hidden_request_attribute_name = "_" + "".join(
+        random.choice(string.printable) for _ in range(10)
+    )
 
     @classmethod
     def bind_request_to_instance(cls, instance, request):
@@ -78,7 +84,9 @@ class RequestProperty(EndpointAttribute):
         self.property_getter = property_getter
 
         # Capture the hidden attribute name within each RequestProperty instance, so lookups work through being pickled
-        self.__hidden_request_attribute_name = RequestProperty.__hidden_request_attribute_name
+        self.__hidden_request_attribute_name = (
+            RequestProperty.__hidden_request_attribute_name
+        )
 
     def __extract_request_from_instance(self, instance):
         return getattr(instance, self.__hidden_request_attribute_name, None)
@@ -86,45 +94,54 @@ class RequestProperty(EndpointAttribute):
     def get_instance_value(self, owner_instance, owner_class):
         request = self.__extract_request_from_instance(owner_instance)
         if not request:
-            raise ValueError("A request must be bound with the instance before accessing this property")
+            raise ValueError(
+                "A request must be bound with the instance before accessing this property"
+            )
 
         return self.property_getter(owner_instance, request)
 
     @property
     def documentation(self):
-        result = {
-            'name': self.name,
-        }
+        result = {"name": self.name}
         if self.description is not None:
-            result['description'] = self.description
+            result["description"] = self.description
         return result
 
 
 class TypedEndpointAttributeMixin(object):
     def __init__(self, *args, **kwargs):
-        self.field_type = kwargs.pop('type', str)
+        self.field_type = kwargs.pop("type", str)
         if self.field_type not in RequestField.VALID_FIELD_TYPES:
-            raise NotImplementedError('Request fields of type {0} not supported'.format(self.field_type.__name__))
+            raise NotImplementedError(
+                "Request fields of type {0} not supported".format(
+                    self.field_type.__name__
+                )
+            )
         super(TypedEndpointAttributeMixin, self).__init__(*args, **kwargs)
 
     def coerce_value_to_type(self, raw_value):
         try:
             if self.field_type == bool and not isinstance(raw_value, self.field_type):
-                return 'rue' in raw_value
+                return "rue" in raw_value
             else:
-                if isinstance(raw_value, collections.abc.Iterable) and not isinstance(raw_value, (str, dict)):
+                if isinstance(raw_value, collections.abc.Iterable) and not isinstance(
+                    raw_value, (str, dict)
+                ):
                     return list(self.field_type(r) for r in raw_value)
                 else:
                     return self.field_type(raw_value)
         except Exception as e:
             raise errors.ClientErrorInvalidFieldValues(
                 [self.name],
-                'Could not parse {val} as type {type}'.format(val=raw_value, type=self.field_type.__name__))
+                "Could not parse {val} as type {type}".format(
+                    val=raw_value, type=self.field_type.__name__
+                ),
+            )
 
 
 class RequestUrlField(TypedEndpointAttributeMixin, EndpointAttribute):
     def __init__(self, *args, **kwargs):
-        self.api_name = kwargs.pop('name', None)
+        self.api_name = kwargs.pop("name", None)
         self.value = None
         super(RequestUrlField, self).__init__(*args, **kwargs)
 
@@ -145,9 +162,9 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
     VALID_FIELD_TYPES = (bool, int, float, complex, str, dict)
 
     def __init__(self, *args, **kwargs):
-        self.default_value = kwargs.pop('default', None)
-        self.api_name = kwargs.pop('name', None)
-        self.multivalued = kwargs.pop('multivalued', False)
+        self.default_value = kwargs.pop("default", None)
+        self.api_name = kwargs.pop("name", None)
+        self.multivalued = kwargs.pop("multivalued", False)
         super(RequestField, self).__init__(property_getter=self.get_field, **kwargs)
         self.post_processor = None
 
@@ -158,16 +175,16 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
     @property
     def documentation(self):
         result = super(RequestField, self).documentation
-        result['type'] = self.field_type
-        result['multivalued'] = self.multivalued
+        result["type"] = self.field_type
+        result["multivalued"] = self.multivalued
         if self.api_name:
-            result['name'] = self.api_name
+            result["name"] = self.api_name
         if self.default_value is not None:
-            result['default_value'] = self.default_value
+            result["default_value"] = self.default_value
         return result
 
     def get_without_default(self, owner_instance, request):
-        if request.method == 'POST':
+        if request.method == "POST":
             query_dict = request.POST
         else:
             query_dict = request.GET
@@ -200,8 +217,9 @@ class ResourceField(RequestField):
 
 class RequestAttribute(RequestProperty):
     def __init__(self, attribute_getter=None, required=True, default=None, **kwargs):
-        super(RequestAttribute, self).__init__(property_getter=self.get_request_attribute,
-                                               required=required, **kwargs)
+        super(RequestAttribute, self).__init__(
+            property_getter=self.get_request_attribute, required=required, **kwargs
+        )
 
         self.attribute_getter = attribute_getter
         self.default = default
@@ -241,8 +259,10 @@ class ConsumerAttribute(RequestAttribute):
 
 class RawRequestObjectProperty(RequestAttribute):
     class SafeRequestWrapper(object):
-        __hidden_request_attribute_name = '_' + ''.join(random.choice(string.printable) for _ in range(10))
-        __permitted_request_properties = ('build_absolute_uri', 'method', 'META')
+        __hidden_request_attribute_name = "_" + "".join(
+            random.choice(string.printable) for _ in range(10)
+        )
+        __permitted_request_properties = ("build_absolute_uri", "method", "META")
 
         def __init__(self, request, additional_safe_fields=()):
             setattr(self, self.__hidden_request_attribute_name, request)
@@ -253,8 +273,11 @@ class RawRequestObjectProperty(RequestAttribute):
             return set(getattr(self, self.__hidden_request_attribute_name).POST.keys())
 
         def __getattr__(self, name):
-            if (name in RawRequestObjectProperty.SafeRequestWrapper.__permitted_request_properties
-                    or name in self.additional_safe_fields):
+            if (
+                name
+                in RawRequestObjectProperty.SafeRequestWrapper.__permitted_request_properties
+                or name in self.additional_safe_fields
+            ):
                 hidden_request = getattr(self, self.__hidden_request_attribute_name)
                 return getattr(hidden_request, name)
             else:
@@ -265,7 +288,9 @@ class RawRequestObjectProperty(RequestAttribute):
         self.additional_safe_fields = additional_safe_fields
 
     def get_without_default(self, owner_instance, request):
-        return RawRequestObjectProperty.SafeRequestWrapper(request, additional_safe_fields=self.additional_safe_fields)
+        return RawRequestObjectProperty.SafeRequestWrapper(
+            request, additional_safe_fields=self.additional_safe_fields
+        )
 
 
 class EndpointTask(EndpointAttribute):
@@ -273,11 +298,13 @@ class EndpointTask(EndpointAttribute):
     STATE_RUNNING = 1
     STATE_COMPLETED = 2
 
-    def __init__(self,
-                 task_runner=None,
-                 depends_on=None,  # Reference to another task that should be run before this one.  Overrides priority
-                 priority=0,       # lower priority gets executed first
-                 **kwargs):
+    def __init__(
+        self,
+        task_runner=None,
+        depends_on=None,  # Reference to another task that should be run before this one.  Overrides priority
+        priority=0,  # lower priority gets executed first
+        **kwargs
+    ):
         super(EndpointTask, self).__init__(**kwargs)
         self.task_runner = task_runner
         self.depends_on = depends_on
@@ -292,7 +319,9 @@ class EndpointTask(EndpointAttribute):
         self.task_runner(owner_instance)
 
     def run(self, owner_instance):
-        assert self.task_state != EndpointTask.STATE_RUNNING, "Circular task reference detected!"
+        assert (
+            self.task_state != EndpointTask.STATE_RUNNING
+        ), "Circular task reference detected!"
         try:
             self.task_state = EndpointTask.STATE_RUNNING
 
@@ -301,8 +330,9 @@ class EndpointTask(EndpointAttribute):
                 depends_on = getattr(owner_instance, depends_on)
 
             if depends_on and (depends_on.task_state != EndpointTask.STATE_COMPLETED):
-                assert not isinstance(depends_on, DeferrableEndpointTask),\
-                    "DeferredEndpointTask cannot be used as depends_on arg"
+                assert not isinstance(
+                    depends_on, DeferrableEndpointTask
+                ), "DeferredEndpointTask cannot be used as depends_on arg"
                 depends_on.run(owner_instance)
 
             self._run_task(owner_instance)
@@ -317,22 +347,25 @@ class EndpointTask(EndpointAttribute):
 class DeferrableEndpointTask(EndpointTask):
     @staticmethod
     def unwrap_staticmethod(method):
-        assert isinstance(method,
-                          staticmethod), "Deferrable task methods MUST be staticmethods.  Hint: the staticmethod " \
-                                         "decorator should come after the deferrable task decorator "
+        assert isinstance(method, staticmethod), (
+            "Deferrable task methods MUST be staticmethods.  Hint: the staticmethod "
+            "decorator should come after the deferrable task decorator "
+        )
         # we're effectively unwrapping the staticmethod here...
         return method.__func__
 
-    def __init__(self,
-                 task_runner=None,
-                 delay=None,            # delay in seconds before running the task.  Requires deferred=True
-                 always_defer=True,     # True: run task in deferred queue even when delay=0
-                 task_args_factory=None,
-                 queue=None,
-                 routing_key=None,
-                 retries=0,
-                 retry_exception_filter=(),
-                 **kwargs):
+    def __init__(
+        self,
+        task_runner=None,
+        delay=None,  # delay in seconds before running the task.  Requires deferred=True
+        always_defer=True,  # True: run task in deferred queue even when delay=0
+        task_args_factory=None,
+        queue=None,
+        routing_key=None,
+        retries=0,
+        retry_exception_filter=(),
+        **kwargs
+    ):
         super(DeferrableEndpointTask, self).__init__(**kwargs)
         if task_runner:
             self.task_runner = DeferrableEndpointTask.unwrap_staticmethod(task_runner)
@@ -362,8 +395,9 @@ class DeferrableEndpointTask(EndpointTask):
     def _run_task(self, owner_instance):
         resource = owner_instance.resource
 
-        assert isinstance(resource, django_models.Model),\
-            "resource must be an instance of django.db.models.Model to run as deferred task"
+        assert isinstance(
+            resource, django_models.Model
+        ), "resource must be an instance of django.db.models.Model to run as deferred task"
 
         delay = self._resolve_maybe_callable(owner_instance, self.delay) or 0
         always_defer = self._resolve_maybe_callable(owner_instance, self.always_defer)
@@ -379,13 +413,22 @@ class DeferrableEndpointTask(EndpointTask):
             if resource.pk is None:
                 resource.save()
             resource_id = resource.pk
-            resource_class_name = '{0}.{1}'.format(resource.__module__, resource.__class__.__name__)
-            endpoint_class_name = '{0}.{1}'.format(owner_instance.__module__, owner_instance.__class__.__name__)
-            task_runner_args = (endpoint_class_name, self.task_runner.__name__, resource_class_name, str(resource_id))
+            resource_class_name = "{0}.{1}".format(
+                resource.__module__, resource.__class__.__name__
+            )
+            endpoint_class_name = "{0}.{1}".format(
+                owner_instance.__module__, owner_instance.__class__.__name__
+            )
+            task_runner_args = (
+                endpoint_class_name,
+                self.task_runner.__name__,
+                resource_class_name,
+                str(resource_id),
+            )
             task_runner_kwargs = {
-                'task_creation_time': time.time(),
-                'scheduled_execution_delay': delay,
-                'task_args': (task_args, task_kwargs),
+                "task_creation_time": time.time(),
+                "scheduled_execution_delay": delay,
+                "task_args": (task_args, task_kwargs),
             }
             tasks.schedule_future_task_runner(
                 task_runner_args,
@@ -400,8 +443,9 @@ class DeferrableEndpointTask(EndpointTask):
 
 class RequestFieldGroup(RequestProperty):
     def __init__(self, *component_field_getters, **kwargs):
-        super(RequestFieldGroup, self).__init__(property_getter=self.get_value,
-                                                **kwargs)
+        super(RequestFieldGroup, self).__init__(
+            property_getter=self.get_value, **kwargs
+        )
         self.component_field_getters = component_field_getters
         self.component_field_names = []
         for component_field_getter in self.component_field_getters:
@@ -412,9 +456,9 @@ class RequestFieldGroup(RequestProperty):
         return self
 
     def _get_request_dict(self, request):
-        if request.method == 'GET':
+        if request.method == "GET":
             return request.GET
-        elif request.method == 'POST':
+        elif request.method == "POST":
             return request.POST
         else:
             return {}
@@ -438,8 +482,10 @@ class RequireOneAttribute(RequestFieldGroup):
         if len(self.component_field_getters) - len(missing_fields) == 1:
             return True
         else:
-            raise errors.ClientErrorMissingFields(self.component_field_names,
-                                                     extra_message="Exactly one field must be populated")
+            raise errors.ClientErrorMissingFields(
+                self.component_field_names,
+                extra_message="Exactly one field must be populated",
+            )
 
 
 class RequireAllAttribute(RequestFieldGroup):
@@ -450,8 +496,9 @@ class RequireAllAttribute(RequestFieldGroup):
         if len(missing_fields) == 0:
             return True
         else:
-            raise errors.ClientErrorMissingFields(self.component_field_names,
-                                                     extra_message="All fields must be populated")
+            raise errors.ClientErrorMissingFields(
+                self.component_field_names, extra_message="All fields must be populated"
+            )
 
 
 class RequireAllIfAnyAttribute(RequestFieldGroup):
@@ -459,17 +506,20 @@ class RequireAllIfAnyAttribute(RequestFieldGroup):
         missing_fields = self._get_missing_component_fields(owner_instance, request)
 
         # either all present or all missing
-        if (len(missing_fields) == 0) or (len(missing_fields) == len(self.component_field_getters)):
+        if (len(missing_fields) == 0) or (
+            len(missing_fields) == len(self.component_field_getters)
+        ):
             return True
         else:
-            raise errors.ClientErrorMissingFields(self.component_field_names,
-                                                     extra_message="All fields must be populated")
+            raise errors.ClientErrorMissingFields(
+                self.component_field_names, extra_message="All fields must be populated"
+            )
 
 
 class Aggregate(EndpointAttribute):
     def __init__(self, aggregation_function=None, **kwargs):
         self.aggregation_function = aggregation_function
-        self.depends_on = kwargs.pop('depends_on', None)
+        self.depends_on = kwargs.pop("depends_on", None)
         super(Aggregate, self).__init__(**kwargs)
 
     def __call__(self, aggregation_function):
@@ -478,6 +528,8 @@ class Aggregate(EndpointAttribute):
 
     def get_instance_value(self, owner_instance, owner_class):
         if not RequestProperty.request_has_been_bound(owner_instance):
-            raise Exception('Request must be bound to endpoint before accessing aggregate values')
+            raise Exception(
+                "Request must be bound to endpoint before accessing aggregate values"
+            )
 
         return self.aggregation_function(owner_instance)

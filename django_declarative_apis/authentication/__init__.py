@@ -14,6 +14,7 @@ class AuthenticatorHint(typing.NamedTuple):
 
     header_hint: A string used to match the `Authentication: ` header. 
     """
+
     header: str
 
 
@@ -90,12 +91,12 @@ def validate_authentication_config(config):
     for hint, authenticators in config.items():
         if not isinstance(hint, (AuthenticatorHint, type(None))):
             raise TypeError(
-                'Authenticator hint must be an instance of authentication.AuthenticatorHint or None'
+                "Authenticator hint must be an instance of authentication.AuthenticatorHint or None"
             )
 
         assert isinstance(authenticators, (list, tuple))
         for authenticator in authenticators:
             if not isinstance(authenticator, Authenticator):
                 raise TypeError(
-                    'Authenticator must be an instance of authentication.Authenticator'
+                    "Authenticator must be an instance of authentication.Authenticator"
                 )

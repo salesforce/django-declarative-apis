@@ -21,8 +21,11 @@ from django.db import models
 from django.utils.xmlutils import SimplerXMLGenerator
 from django.utils.encoding import smart_str
 from django.urls import reverse, NoReverseMatch
+
 try:
-    from django.core.serializers.json import DateTimeAwareJSONEncoder as DjangoJSONEncoder
+    from django.core.serializers.json import (
+        DateTimeAwareJSONEncoder as DjangoJSONEncoder,
+    )
 except ImportError:
     from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
@@ -41,8 +44,6 @@ import pickle
 reverser = models.permalink
 
 
-
-
 class Emitter(object):
     """
     Super emitter. All other emitters should subclass
@@ -55,9 +56,19 @@ class Emitter(object):
     method detection came, and we accidentially caught these
     as the methods on the handler. Issue58 says that's no good.
     """
+
     EMITTERS = {}
-    RESERVED_FIELDS = {'read', 'update', 'create', 'delete', 'model', 'anonymous', 'allowed_methods', 'fields',
-                       'exclude'}
+    RESERVED_FIELDS = {
+        "read",
+        "update",
+        "create",
+        "delete",
+        "model",
+        "anonymous",
+        "allowed_methods",
+        "fields",
+        "exclude",
+    }
 
     def __init__(self, payload, handler, anonymous=True):
         self.data = payload
@@ -114,7 +125,7 @@ class Emitter(object):
         raise ValueError("No emitters found for type %s" % format)
 
     @classmethod
-    def register(cls, name, klass, content_type='text/plain'):
+    def register(cls, name, klass, content_type="text/plain"):
         """
         Register an emitter.
 
@@ -164,8 +175,8 @@ class XMLEmitter(Emitter):
         return stream.getvalue()
 
 
-Emitter.register('xml', XMLEmitter, 'text/xml; charset=utf-8')
-Mimer.register(lambda *a: None, ('text/xml',))
+Emitter.register("xml", XMLEmitter, "text/xml; charset=utf-8")
+Mimer.register(lambda *a: None, ("text/xml",))
 
 
 class JSONEmitter(Emitter):
@@ -177,16 +188,19 @@ class JSONEmitter(Emitter):
         if isinstance(data, list):
             for num, val in enumerate(data):
                 try:
-                    data[num] = val.decode('utf8')
+                    data[num] = val.decode("utf8")
                 except AttributeError:
                     pass
         return data
 
     def render(self, request):
-        cb = request.GET.get('callback', None)
-        assert cb is None, 'JSONP Callbacks not suppoted'
+        cb = request.GET.get("callback", None)
+        assert cb is None, "JSONP Callbacks not suppoted"
         seria = json.dumps(
-            self.decode(self.construct()), cls=DjangoJSONEncoder, ensure_ascii=False, indent=4
+            self.decode(self.construct()),
+            cls=DjangoJSONEncoder,
+            ensure_ascii=False,
+            indent=4,
         )
 
         # Callback
@@ -197,8 +211,8 @@ class JSONEmitter(Emitter):
         return seria
 
 
-Emitter.register('json', JSONEmitter, 'application/json; charset=utf-8')
-Mimer.register(json.loads, ('application/json',))
+Emitter.register("json", JSONEmitter, "application/json; charset=utf-8")
+Mimer.register(json.loads, ("application/json",))
 
 
 class YAMLEmitter(Emitter):
@@ -212,8 +226,8 @@ class YAMLEmitter(Emitter):
 
 
 if yaml:  # Only register yaml if it was import successfully.
-    Emitter.register('yaml', YAMLEmitter, 'application/x-yaml; charset=utf-8')
-    Mimer.register(lambda s: dict(yaml.safe_load(s)), ('application/x-yaml',))
+    Emitter.register("yaml", YAMLEmitter, "application/x-yaml; charset=utf-8")
+    Mimer.register(lambda s: dict(yaml.safe_load(s)), ("application/x-yaml",))
 
 
 class PickleEmitter(Emitter):
@@ -225,7 +239,7 @@ class PickleEmitter(Emitter):
         return pickle.dumps(self.construct())
 
 
-Emitter.register('pickle', PickleEmitter, 'application/python-pickle')
+Emitter.register("pickle", PickleEmitter, "application/python-pickle")
 
 """
 WARNING: Accepting arbitrary pickled data is a huge security concern.
@@ -240,12 +254,13 @@ Uncomment the line below to enable it. You're doing so at your own risk.
 
 # Mimer.register(pickle.loads, ('application/python-pickle',))
 
+
 class DjangoEmitter(Emitter):
     """
     Emitter for the Django serialized format.
     """
 
-    def render(self, request, format='xml'):
+    def render(self, request, format="xml"):
         if isinstance(self.data, HttpResponse):
             return self.data
         elif isinstance(self.data, (int, str)):
@@ -256,4 +271,4 @@ class DjangoEmitter(Emitter):
         return response
 
 
-Emitter.register('django', DjangoEmitter, 'text/xml; charset=utf-8')
+Emitter.register("django", DjangoEmitter, "text/xml; charset=utf-8")

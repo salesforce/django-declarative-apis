@@ -46,12 +46,14 @@ class EndpointResourceAttribute(EndpointAttribute):
         try:
             value = self.func(owner_instance)
         except django.core.exceptions.ObjectDoesNotExist:
-            raise errors.ClientErrorNotFound("{0} instance not found".format(self.type.__name__))
+            raise errors.ClientErrorNotFound(
+                "{0} instance not found".format(self.type.__name__)
+            )
 
         if value.__class__ == dict:
             return value
 
-        if not getattr(value, '_api_filter', False):
+        if not getattr(value, "_api_filter", False):
             value._api_filter = self.filter
 
         return value
@@ -72,7 +74,7 @@ class EndpointResponseAttribute(EndpointAttribute):
         if not owner_instance:
             return self
         value = self.func(owner_instance)
-        if not getattr(value, '_api_filter', False):
+        if not getattr(value, "_api_filter", False):
             if self.filter:
                 value._api_filter = self.filter
         return value
@@ -108,19 +110,25 @@ class EndpointBinder(object):
                 if isinstance(exc_value, errors.ClientError):
                     logging.warning(exc_value.error_message)
                 else:
-                    logging.error(str(exc_value.args) + '\n' + str(exc_traceback))
+                    logging.error(str(exc_value.args) + "\n" + str(exc_traceback))
 
                 raise exc_value.with_traceback(exc_traceback)
 
             resource = self.bound_endpoint.resource
 
-            if hasattr(resource, 'is_dirty'):
+            if hasattr(resource, "is_dirty"):
                 if resource and resource.is_dirty(check_relationship=True):
                     resource.save()
 
-            endpoint_tasks = sorted(self.manager.endpoint_tasks, key=lambda t: t.priority)
-            immediate_tasks = filter(lambda t: not isinstance(t, DeferrableEndpointTask), endpoint_tasks)
-            deferred_tasks = filter(lambda t: isinstance(t, DeferrableEndpointTask), endpoint_tasks)
+            endpoint_tasks = sorted(
+                self.manager.endpoint_tasks, key=lambda t: t.priority
+            )
+            immediate_tasks = filter(
+                lambda t: not isinstance(t, DeferrableEndpointTask), endpoint_tasks
+            )
+            deferred_tasks = filter(
+                lambda t: isinstance(t, DeferrableEndpointTask), endpoint_tasks
+            )
             try:
                 for immediate_task in immediate_tasks:
                     immediate_task.run(self.bound_endpoint)
@@ -130,14 +138,14 @@ class EndpointBinder(object):
                     resource.save()
                 raise
 
-            if hasattr(resource, 'is_dirty'):
+            if hasattr(resource, "is_dirty"):
                 if resource and resource.is_dirty(check_relationship=True):
                     resource.save()
 
             for deferred_task in deferred_tasks:
                 deferred_task.run(self.bound_endpoint)
 
-            if getattr(resource, '_api_filter', False):
+            if getattr(resource, "_api_filter", False):
                 filter_def = resource._api_filter
             else:
                 filter_def = self.bound_endpoint.response_filter
@@ -156,22 +164,31 @@ class EndpointBinder(object):
                     if isinstance(value, (list, tuple, models.query.QuerySet)):
                         result[key] = []
                         for item in value:
-                            result[key].append(apply_filters_to_object(item, filter_def))
+                            result[key].append(
+                                apply_filters_to_object(item, filter_def)
+                            )
                     else:
                         result[key] = value
 
                 return status_code, result
             else:
-                return status_code, apply_filters_to_object(data,
-                                                            filter_def,
-                                                            self.bound_endpoint.request.META.get('HTTP_X_EXPAND'))
+                return (
+                    status_code,
+                    apply_filters_to_object(
+                        data,
+                        filter_def,
+                        self.bound_endpoint.request.META.get("HTTP_X_EXPAND"),
+                    ),
+                )
 
     def __init__(self, endpoint_definition):
         super(EndpointBinder, self).__init__()
         self.endpoint_definition = endpoint_definition
         self.endpoint_attributes = endpoint_definition.get_endpoint_attributes()
         self.request_properties = endpoint_definition.get_request_properties()
-        self.required_request_properties = endpoint_definition.get_required_request_properties()
+        self.required_request_properties = (
+            endpoint_definition.get_required_request_properties()
+        )
         try:
             self.consumer_attributes = endpoint_definition.get_consumer_attributes()
         except AttributeError:
@@ -190,10 +207,13 @@ class EndpointBinder(object):
                 url_field.set_value(kwargs.get(url_field.api_name or url_field.name))
 
         for adhoc_query_field in self.adhoc_queries:
-            adhoc_query_field.set_value({
-                key: val for (key, val) in request.GET.items()
-                if key.startswith(adhoc_query_field.name)
-            })
+            adhoc_query_field.set_value(
+                {
+                    key: val
+                    for (key, val) in request.GET.items()
+                    if key.startswith(adhoc_query_field.name)
+                }
+            )
 
         # Bind the request object within the instance (this allows RequestProperties to access the request
         # without the endpoint definition having direct access to it)
@@ -216,7 +236,7 @@ class EndpointBinder(object):
 
     def _bind_endpoint(self, endpoint):
         # Access all request properties (this validates a request using the definition and caches the values)
-        extra_error_message = ''
+        extra_error_message = ""
         missing_required_properties = []
         invalid_value_properties = []
         for request_property in self.request_properties:
@@ -236,25 +256,36 @@ class EndpointBinder(object):
                 invalid_value_properties.append(request_property)  # pragma: nocover
 
         if missing_required_properties or extra_error_message:
-            raise errors.ClientErrorMissingFields([property.name for property in missing_required_properties],
-                                                  extra_message=extra_error_message)
+            raise errors.ClientErrorMissingFields(
+                [property.name for property in missing_required_properties],
+                extra_message=extra_error_message,
+            )
 
         if invalid_value_properties:
             raise errors.ClientErrorInvalidFieldValues(
-                    [request_property.name for request_property in invalid_value_properties])
+                [request_property.name for request_property in invalid_value_properties]
+            )
 
     def _validate_endpoint(self, endpoint):
         # Run standard validators
         try:
-            if not (endpoint.is_authorized() and endpoint.is_permitted() and endpoint.is_valid()):
-                raise errors.ClientErrorForbidden(additional_info=getattr(endpoint, '_validation_error_message', None))
+            if not (
+                endpoint.is_authorized()
+                and endpoint.is_permitted()
+                and endpoint.is_valid()
+            ):
+                raise errors.ClientErrorForbidden(
+                    additional_info=getattr(endpoint, "_validation_error_message", None)
+                )
 
         except django.core.exceptions.ObjectDoesNotExist:
             raise errors.ClientErrorNotFound()
 
         # check ratelimit
         rate_limit_key = endpoint.rate_limit_key()
-        if (rate_limit_key is not None) and rate_limit_exceeded(rate_limit_key, endpoint.rate_limit_period()):
+        if (rate_limit_key is not None) and rate_limit_exceeded(
+            rate_limit_key, endpoint.rate_limit_period()
+        ):
             raise errors.ClientErrorRequestThrottled()
 
 
@@ -281,14 +312,19 @@ class BehavioralEndpointDefinitionRouter(object):
         super(BehavioralEndpointDefinitionRouter, self).__init__()
         self.endpoint_definitions = endpoint_definitions
         self.endpoint_managers = [
-            _EndpointRequestLifecycleManager(endpoint) for endpoint in endpoint_definitions
-            ]
-        self.endpoint_manager_names = '({0})'.format(','.join(map(lambda e: e.__name__, endpoint_definitions)))
+            _EndpointRequestLifecycleManager(endpoint)
+            for endpoint in endpoint_definitions
+        ]
+        self.endpoint_manager_names = "({0})".format(
+            ",".join(map(lambda e: e.__name__, endpoint_definitions))
+        )
 
     def bind_endpoint_to_request(self, request, *args, **kwargs):
         bound_endpoint = None
         for candidate_endpoint_manager in self.endpoint_managers:
-            bound_endpoint = candidate_endpoint_manager.bind_endpoint_to_request(request, *args, **kwargs)
+            bound_endpoint = candidate_endpoint_manager.bind_endpoint_to_request(
+                request, *args, **kwargs
+            )
             if bound_endpoint.binding_exc_info is None:
                 break
         return bound_endpoint
@@ -296,7 +332,10 @@ class BehavioralEndpointDefinitionRouter(object):
     def process_request_and_get_response(self, request, *args, **kwargs):
         try:
             bound_endpoint = self.bind_endpoint_to_request(request, *args, **kwargs)
-            logging.info("Processing request with handler %s", bound_endpoint.bound_endpoint.__class__.__name__)
+            logging.info(
+                "Processing request with handler %s",
+                bound_endpoint.bound_endpoint.__class__.__name__,
+            )
             return bound_endpoint.get_response()
 
         except errors.ApiError:
@@ -350,7 +389,9 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
     @property
     def response_filter(self):
-        filter_def_name = getattr(settings, 'DECLARATIVE_ENDPOINT_DEFAULT_FILTERS', None)
+        filter_def_name = getattr(
+            settings, "DECLARATIVE_ENDPOINT_DEFAULT_FILTERS", None
+        )
         if filter_def_name:
             filter_def = locate_object(filter_def_name)
         else:
@@ -368,7 +409,7 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
         This property *must* be implemented by all endpoint definitions.
         """
-        raise NotImplementedError('Endpoints must implement self.resource property')
+        raise NotImplementedError("Endpoints must implement self.resource property")
 
     @property
     def response(self):
@@ -376,58 +417,87 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
     @classmethod
     def get_endpoint_attributes(cls):
-        endpoint_attributes = filter(lambda attribute: isinstance(attribute, EndpointAttribute),
-                                     [getattr(cls, name) for name in dir(cls)])
-        return sorted(endpoint_attributes, key=lambda attribute: attribute.attribute_number)
+        endpoint_attributes = filter(
+            lambda attribute: isinstance(attribute, EndpointAttribute),
+            [getattr(cls, name) for name in dir(cls)],
+        )
+        return sorted(
+            endpoint_attributes, key=lambda attribute: attribute.attribute_number
+        )
 
     @classmethod
     def get_request_properties(cls):
-        return list(filter(lambda attribute: isinstance(attribute, RequestProperty),
-                           cls.get_endpoint_attributes()))
+        return list(
+            filter(
+                lambda attribute: isinstance(attribute, RequestProperty),
+                cls.get_endpoint_attributes(),
+            )
+        )
 
     @classmethod
     def get_required_request_properties(cls):
-        return list(filter(lambda property: property.required,
-                           cls.get_request_properties()))
+        return list(
+            filter(lambda property: property.required, cls.get_request_properties())
+        )
 
     @classmethod
     def get_request_fields(cls):
-        return list(filter(lambda property: isinstance(property, RequestField),
-                           cls.get_request_properties()))
+        return list(
+            filter(
+                lambda property: isinstance(property, RequestField),
+                cls.get_request_properties(),
+            )
+        )
 
     @classmethod
     def get_resource_fields(cls):
-        return list(filter(lambda property: isinstance(property, ResourceField),
-                           cls.get_request_properties()))
+        return list(
+            filter(
+                lambda property: isinstance(property, ResourceField),
+                cls.get_request_properties(),
+            )
+        )
 
     @classmethod
     def get_required_request_fields(cls):
-        return list(filter(lambda property: isinstance(property, RequestField),
-                           cls.get_required_request_properties()))
+        return list(
+            filter(
+                lambda property: isinstance(property, RequestField),
+                cls.get_required_request_properties(),
+            )
+        )
 
     @classmethod
     def get_tasks(cls):
-        endpoint_tasks = filter(lambda property: isinstance(property, EndpointTask),
-                                cls.get_endpoint_attributes())
+        endpoint_tasks = filter(
+            lambda property: isinstance(property, EndpointTask),
+            cls.get_endpoint_attributes(),
+        )
 
         return sorted(endpoint_tasks, key=lambda task: task.priority)
 
     @classmethod
     def get_url_fields(cls):
-        return list(filter(lambda property: isinstance(property, RequestUrlField),
-                           cls.get_endpoint_attributes()))
+        return list(
+            filter(
+                lambda property: isinstance(property, RequestUrlField),
+                cls.get_endpoint_attributes(),
+            )
+        )
 
     @classmethod
     def documentation(cls):
         return {
-            'class_name': cls.__name__,
-            'fields': [p.documentation for p in cls.get_request_properties()],
+            "class_name": cls.__name__,
+            "fields": [p.documentation for p in cls.get_request_properties()],
         }
 
     @classmethod
     def get_adhoc_queries(cls):
         return [
-            prop for prop in cls.get_endpoint_attributes() if isinstance(prop, RequestAdhocQuerySet)
+            prop
+            for prop in cls.get_endpoint_attributes()
+            if isinstance(prop, RequestAdhocQuerySet)
         ]
 
 
@@ -437,8 +507,9 @@ class EndpointDefinition(BaseEndpointDefinition):
     Base class to be used implementing endpoints that aren't necessarily tied to a model. Also implements
     basic consumer-based authentication.
     """
+
     request = RawRequestObjectProperty()
-    _consumer_type = ConsumerAttribute(field_name='type', default='RW')
+    _consumer_type = ConsumerAttribute(field_name="type", default="RW")
     is_read_only = False
     """ Used to determine accessibility for the current consumer.
     """
@@ -449,22 +520,31 @@ class EndpointDefinition(BaseEndpointDefinition):
         Returns:
             ``bool``: Whether or not the user has permission to the resource.
         """
-        if self._consumer_type == None or self._consumer_type == BaseConsumer.TYPE_READ_WRITE:
+        if (
+            self._consumer_type == None
+            or self._consumer_type == BaseConsumer.TYPE_READ_WRITE
+        ):
             return True
         if self._consumer_type == BaseConsumer.TYPE_READ_ONLY:
             if self.is_read_only:
                 return True
-            if self.request.method == 'GET':
+            if self.request.method == "GET":
                 return True
             else:
-                self._validation_error_message = 'Action not allowed for read-only consumer'
+                self._validation_error_message = (
+                    "Action not allowed for read-only consumer"
+                )
                 return False
         return False
 
     @classmethod
     def get_consumer_attributes(cls):
-        return list(filter(lambda property: isinstance(property, ConsumerAttribute),
-                           cls.get_request_properties()))
+        return list(
+            filter(
+                lambda property: isinstance(property, ConsumerAttribute),
+                cls.get_request_properties(),
+            )
+        )
 
     @classmethod
     def get_consumer_type(cls):
@@ -473,12 +553,12 @@ class EndpointDefinition(BaseEndpointDefinition):
             consumer_attribute = consumer_attribute[0]
             return consumer_attribute.name
         else:
-            return 'unknown'
+            return "unknown"
 
     @classmethod
     def documentation(cls):
         docs = super().documentation()
-        docs['consumer_type'] = cls.get_consumer_type()
+        docs["consumer_type"] = cls.get_consumer_type()
         return docs
 
 
@@ -491,9 +571,12 @@ class ResourceCreationMixin(object):
 class ResourceEndpointDefinition(EndpointDefinition):
     """ A base class to be used when defining endpoints bound to models.
     """
+
     consumer = RequestAttribute()
 
-    resource_id = RequestUrlField(name='id', description="UUID of the resource to retrieve")
+    resource_id = RequestUrlField(
+        name="id", description="UUID of the resource to retrieve"
+    )
     """ The ID of the resource being fetched or updated.
     """
     resource_model = None
@@ -529,11 +612,15 @@ class ResourceUpdateEndpointDefinition(ResourceEndpointDefinition):
     @EndpointTask(priority=-101)
     def validate_input(self):
         resource = self.resource
-        expected_fields = set(list(field.name for field in self.get_resource_fields()) + list(
-            field.name for field in self.get_request_fields()))
+        expected_fields = set(
+            list(field.name for field in self.get_resource_fields())
+            + list(field.name for field in self.get_request_fields())
+        )
         unexpected = self.request.body_field_names - expected_fields
         if unexpected:
-            raise errors.ClientErrorUnprocessableEntity('Unexpected fields: {}'.format(', '.join(unexpected)))
+            raise errors.ClientErrorUnprocessableEntity(
+                "Unexpected fields: {}".format(", ".join(unexpected))
+            )
 
 
 task = EndpointTask

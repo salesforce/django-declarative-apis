@@ -12,15 +12,22 @@ from django.http import HttpResponse
 from oauthlib.oauth1.rfc5849 import signature
 
 from django_declarative_apis.authentication import (
-    Authenticator, AuthenticatorHint, AuthenticationSuccess, AuthenticationFailure
+    Authenticator,
+    AuthenticatorHint,
+    AuthenticationSuccess,
+    AuthenticationFailure,
 )
-from django_declarative_apis.authentication.oauthlib.endpoint import TweakedSignatureOnlyEndpoint
+from django_declarative_apis.authentication.oauthlib.endpoint import (
+    TweakedSignatureOnlyEndpoint,
+)
 from django_declarative_apis.authentication.oauthlib.oauth_errors import OAuthError
-from django_declarative_apis.authentication.oauthlib.request_validator import DjangoRequestValidator
+from django_declarative_apis.authentication.oauthlib.request_validator import (
+    DjangoRequestValidator,
+)
 
 from . import oauth_errors
 
-TwoLeggedOauth1Hint = AuthenticatorHint('OAuth ')
+TwoLeggedOauth1Hint = AuthenticatorHint("OAuth ")
 
 
 class TwoLeggedOauth1(Authenticator):
@@ -29,29 +36,35 @@ class TwoLeggedOauth1(Authenticator):
 
         """ Ensures that the request contains all required parameters. """
         params = [
-            'oauth_consumer_key',
-            'oauth_nonce',
-            'oauth_signature',
-            'oauth_signature_method',
-            'oauth_timestamp'
+            "oauth_consumer_key",
+            "oauth_nonce",
+            "oauth_signature",
+            "oauth_signature_method",
+            "oauth_timestamp",
         ]
 
         params.extend(parameters)
 
-        collected_request_parameters = dict(signature.collect_parameters(uri_query=request.GET.urlencode(),
-                                                                         body=request.POST.dict(),
-                                                                         headers=request.META,
-                                                                         exclude_oauth_signature=False))
+        collected_request_parameters = dict(
+            signature.collect_parameters(
+                uri_query=request.GET.urlencode(),
+                body=request.POST.dict(),
+                headers=request.META,
+                exclude_oauth_signature=False,
+            )
+        )
         try:
-            missing = list(param for param in params if param not in collected_request_parameters)
+            missing = list(
+                param for param in params if param not in collected_request_parameters
+            )
         except:  # pragma: nocover
             missing = params
 
         if missing:
-            error_message = "parameter_absent:{}".format(','.join(missing))
+            error_message = "parameter_absent:{}".format(",".join(missing))
             logging.error(error_message)
             missing_param_info = oauth_errors.build_error(error_message)
-            request.auth_header = getattr(missing_param_info, 'auth_header', None)
+            request.auth_header = getattr(missing_param_info, "auth_header", None)
             return missing_param_info
         else:
             return True
@@ -64,42 +77,43 @@ class TwoLeggedOauth1(Authenticator):
         uri = request.build_absolute_uri(request.path)
         url_querystring = request.GET.urlencode()
         if url_querystring:
-            uri += '?' + url_querystring
+            uri += "?" + url_querystring
 
         body_form_data = request.POST.urlencode()
 
         headers = {k: v for (k, v) in request.META.items() if isinstance(v, str)}
 
-        if body_form_data and not 'Content-Type' in headers:  # pragma: nocover
+        if body_form_data and not "Content-Type" in headers:  # pragma: nocover
             # TODO: is this only necessary because our test client sucks?
             # TODO (DB): is this still needed?
-            headers['Content-Type'] = 'application/x-www-form-urlencoded'
+            headers["Content-Type"] = "application/x-www-form-urlencoded"
 
         # Verify request
         try:
             validator = DjangoRequestValidator(request)
             endpoint = TweakedSignatureOnlyEndpoint(validator)
-            result, _ = endpoint.validate_request(uri,
-                                                  http_method=request.method,
-                                                  body=body_form_data,
-                                                  headers=headers)
+            result, _ = endpoint.validate_request(
+                uri, http_method=request.method, body=body_form_data, headers=headers
+            )
 
             if result:
                 request.consumer = validator.consumer
 
-            error_message = endpoint.validation_error_message or validator.validation_error_message
+            error_message = (
+                endpoint.validation_error_message or validator.validation_error_message
+            )
 
             if result:
                 return AuthenticationSuccess()
             else:
                 return oauth_errors.build_error(error_message)
         except Exception as e:
-            if hasattr(e, 'message'):
-                logging.error('Invalid oauthlib request: ' + e.message)
+            if hasattr(e, "message"):
+                logging.error("Invalid oauthlib request: " + e.message)
             return AuthenticationFailure()
 
     def authenticate_header(self, request):
-        return getattr(request, 'auth_header', 'Unknown OAuth Error')
+        return getattr(request, "auth_header", "Unknown OAuth Error")
 
     def challenge(self, oauth_error=None):
         """
@@ -119,14 +133,10 @@ class TwoLeggedOauth1(Authenticator):
         response = HttpResponse()
         response.status_code = 401
 
-        response['WWW-Authenticate'] = oauth_error.auth_header
+        response["WWW-Authenticate"] = oauth_error.auth_header
 
-        content = {
-            "error_code": 401,
-            "error_message": oauth_error.detail
-        }
+        content = {"error_code": 401, "error_message": oauth_error.detail}
         response.content = json.dumps(content)
-        response['content-type'] = "application/json"
+        response["content-type"] = "application/json"
 
         return response
-

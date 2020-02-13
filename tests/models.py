@@ -11,8 +11,8 @@ from django.db import models
 class TestModel(models.Model):
     int_field = models.IntegerField()
 
-    EXPANDABLE_DICT_RETURN = {'key': 'value'}
-    EXPANDABLE_STRING_RETURN = 'string'
+    EXPANDABLE_DICT_RETURN = {"key": "value"}
+    EXPANDABLE_STRING_RETURN = "string"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -34,14 +34,18 @@ class ChildModel(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100)
     test = models.ForeignKey(TestModel, on_delete=models.CASCADE)
-    parent = models.ForeignKey('ParentModel', related_name='children', on_delete=models.CASCADE)
+    parent = models.ForeignKey(
+        "ParentModel", related_name="children", on_delete=models.CASCADE
+    )
 
 
 class ParentModel(models.Model):
     nonstandard_id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100)
     favorite = models.ForeignKey(ChildModel, null=True, on_delete=models.CASCADE)
-    root = models.ForeignKey('RootNode', related_name='parents', null=True, on_delete=models.CASCADE)
+    root = models.ForeignKey(
+        "RootNode", related_name="parents", null=True, on_delete=models.CASCADE
+    )
 
 
 class RootNode(models.Model):

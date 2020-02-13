@@ -12,14 +12,12 @@ from django_declarative_apis.machinery import filtering
 class MeResourceMixin:
     """Resource mixin for create and get endpoints
     """
+
     @machinery.endpoint_resource(
         type=models.OauthConsumer,
         filter={
-            models.OauthConsumer:{
-                'key': filtering.ALWAYS,
-                'name': filtering.ALWAYS,
-            }
-        }
+            models.OauthConsumer: {"key": filtering.ALWAYS, "name": filtering.ALWAYS}
+        },
     )
     def resource(self):
         return models.OauthConsumer.objects.get(id=self.resource_id)
@@ -66,6 +64,7 @@ class MeUpdateDefinition(MeResourceMixin, machinery.ResourceUpdateEndpointDefini
 class PingDefinition(machinery.BaseEndpointDefinition):
     """A basic "ping" endpoint
     """
+
     def is_authorized(self):
         """User should always be authorized
         """
@@ -78,4 +77,4 @@ class PingDefinition(machinery.BaseEndpointDefinition):
         Endpoint resources can be implemented as either properties or machinery.endpoint_resources. 
         The latter will require filters to be defined.
         """
-        return {'ping': 'pong'}
+        return {"ping": "pong"}
