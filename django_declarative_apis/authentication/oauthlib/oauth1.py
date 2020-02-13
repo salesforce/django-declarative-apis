@@ -83,7 +83,7 @@ class TwoLeggedOauth1(Authenticator):
 
         headers = {k: v for (k, v) in request.META.items() if isinstance(v, str)}
 
-        if body_form_data and not "Content-Type" in headers:  # pragma: nocover
+        if body_form_data and "Content-Type" not in headers:  # pragma: nocover
             # TODO: is this only necessary because our test client sucks?
             # TODO (DB): is this still needed?
             headers["Content-Type"] = "application/x-www-form-urlencoded"
