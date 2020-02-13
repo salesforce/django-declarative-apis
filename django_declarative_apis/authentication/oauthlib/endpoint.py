@@ -48,7 +48,7 @@ class TweakedSignatureOnlyEndpoint(SignatureOnlyEndpoint):
         """
         try:
             request = self._create_request(uri, http_method, body, headers)
-        except errors.OAuth1Error as e:
+        except errors.OAuth1Error:
             return False, None
 
         try:

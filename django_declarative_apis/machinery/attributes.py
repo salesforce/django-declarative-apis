@@ -130,7 +130,7 @@ class TypedEndpointAttributeMixin(object):
                     return list(self.field_type(r) for r in raw_value)
                 else:
                     return self.field_type(raw_value)
-        except Exception as e:
+        except Exception:
             raise errors.ClientErrorInvalidFieldValues(
                 [self.name],
                 "Could not parse {val} as type {type}".format(

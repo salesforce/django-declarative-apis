@@ -22,7 +22,7 @@ class DeclarativeApisTestCase(TestCase):
         self.consumer = auth_models.OauthConsumer.objects.create()
 
     def test_simplest_endpoint(self):
-        response = self.client.get(
+        self.client.get(
             "/simple", consumer=self.consumer, expected_status_code=HTTPStatus.OK
         )
 
