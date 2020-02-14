@@ -2,6 +2,7 @@
 PYTHON=python
 PACKAGE_DIR = django_declarative_apis
 TEST_CMD = ${PYTHON} ./manage.py test --parallel
+TEST_WARNINGS_CMD = ${PYTHON} -Wa manage.py test
 # see .coveragerc for settings
 COVERAGE_CMD = coverage run manage.py test --noinput && coverage xml && coverage report
 STATIC_CMD = flake8 ${PACKAGE_DIR}
@@ -19,6 +20,10 @@ test-all: coverage static vuln-static
 test:
 	${TEST_CMD}
 .PHONY: test
+
+test-warnings:
+	${TEST_WARNINGS_CMD}
+.PHONY: test-warnings
 
 coverage:
 	${COVERAGE_CMD}

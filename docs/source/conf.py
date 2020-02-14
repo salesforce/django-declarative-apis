@@ -73,7 +73,7 @@ author = 'Salesforce'
 # built documents.
 
 # The full version, including alpha/beta/rc tags.
-release = '0.18.5'
+release = '0.19.3'
 
 # The short X.Y version.
 version = release.rsplit('.', 1)[0]
