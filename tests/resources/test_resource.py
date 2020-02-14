@@ -7,16 +7,14 @@
 
 import http
 import json
-import unittest
 
-import django.test
 import django.conf
 import django.core.exceptions
+import django.test
 import mock
 
-from django_declarative_apis import models
-from django_declarative_apis.resources import resource
 from django_declarative_apis.authentication.oauthlib import oauth_errors
+from django_declarative_apis.resources import resource
 from tests import testutils
 
 

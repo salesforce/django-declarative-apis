@@ -5,7 +5,7 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-from django_declarative_apis.machinery.filtering import ALWAYS, NEVER, expandable
+from django_declarative_apis.machinery.filtering import ALWAYS, expandable
 
 from . import models
 

@@ -7,7 +7,7 @@
 
 import abc
 import collections.abc
-import logging
+import logging  # removing this causes problems
 import random
 import string
 import time

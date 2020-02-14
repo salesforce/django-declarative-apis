@@ -5,13 +5,11 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-import unittest
-
 import django.test
-from django_declarative_apis.authentication.oauthlib import endpoint, request_validator
 from django.core.cache import cache
+
 from django_declarative_apis import models
-from oauthlib.oauth1 import rfc5849
+from django_declarative_apis.authentication.oauthlib import endpoint, request_validator
 from tests import testutils
 
 
