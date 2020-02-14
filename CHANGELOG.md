@@ -6,6 +6,9 @@ and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 # []
+### Added
+- [PR 21](https://github.com/salesforce/django-declarative-apis/pull/21) Add Makefile targets for Black formatter
+
 ### Fixed
 - [PR 18](https://github.com/salesforce/django-declarative-apis/pull/18) Bump PyYaml dev requirement version
 - [PR 19](https://github.com/salesforce/django-declarative-apis/pull/19) Bump required Django patch version
