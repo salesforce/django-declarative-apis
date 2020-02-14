@@ -71,7 +71,8 @@ class ResourceTestCase(testutils.RequestCreatorMixin, django.test.TestCase):
 
     def test_anonymous(self):
         class HandlerA:
-            anonymous = lambda: True
+            def anonymous(self):
+                return True
 
         handler = HandlerA()
         res = resource.Resource(lambda: handler)
