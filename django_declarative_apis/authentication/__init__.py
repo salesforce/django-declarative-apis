@@ -12,7 +12,7 @@ import typing
 class AuthenticatorHint(typing.NamedTuple):
     """ Tuple to provide hints for authentication implementations
 
-    header_hint: A string used to match the `Authentication: ` header. 
+    header_hint: A string used to match the `Authentication: ` header.
     """
 
     header: str

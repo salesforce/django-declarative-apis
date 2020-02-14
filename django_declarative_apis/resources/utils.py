@@ -107,7 +107,7 @@ class rc_factory(object):
 
             try:
                 content = property(HttpResponse._get_content, _set_content)
-            except:
+            except Exception:
 
                 @HttpResponse.content.setter
                 def content(self, content):
