@@ -16,6 +16,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - [PR 20](https://github.com/salesforce/django-declarative-apis/pull/20) Fix deprecation warnings
 - [PR 20](https://github.com/salesforce/django-declarative-apis/pull/20) Fix incorrect version number in docs and .bumpversion
 - [PR 23](https://github.com/salesforce/django-declarative-apis/pull/23) Fix some flake8 warnings
+- [PR 26](https://github.com/salesforce/django-declarative-apis/pull/26) Use yaml.safe_load in test
 - [PR 27](https://github.com/salesforce/django-declarative-apis/pull/27) Fix more flake8 warnings
 
 # [0.19.3] - 2020-02-04

@@ -153,7 +153,7 @@ class YAMLEmitterTestCase(unittest.TestCase):
     def test_render(self):
         data = {"foo": "bar"}
         em = emitters.YAMLEmitter(data, lambda: None)
-        self.assertEqual(yaml.load(em.render(None)), data)
+        self.assertEqual(yaml.safe_load(em.render(None)), data)
 
 
 class PickleEmitterTestCase(unittest.TestCase):
