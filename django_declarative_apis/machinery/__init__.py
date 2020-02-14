@@ -521,7 +521,7 @@ class EndpointDefinition(BaseEndpointDefinition):
             ``bool``: Whether or not the user has permission to the resource.
         """
         if (
-            self._consumer_type == None
+            self._consumer_type is None
             or self._consumer_type == BaseConsumer.TYPE_READ_WRITE
         ):
             return True
