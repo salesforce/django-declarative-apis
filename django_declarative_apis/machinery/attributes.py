@@ -6,7 +6,7 @@
 #
 
 import abc
-import collections
+import collections.abc
 import logging
 import random
 import string
@@ -112,7 +112,7 @@ class TypedEndpointAttributeMixin(object):
             if self.field_type == bool and not isinstance(raw_value, self.field_type):
                 return 'rue' in raw_value
             else:
-                if isinstance(raw_value, collections.Iterable) and not isinstance(raw_value, (str, dict)):
+                if isinstance(raw_value, collections.abc.Iterable) and not isinstance(raw_value, (str, dict)):
                     return list(self.field_type(r) for r in raw_value)
                 else:
                     return self.field_type(raw_value)
