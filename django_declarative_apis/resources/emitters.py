@@ -42,9 +42,6 @@ from io import StringIO
 
 import pickle
 
-# Allow people to change the reverser (default `permalink`).
-reverser = models.permalink
-
 
 class Emitter(object):
     """
