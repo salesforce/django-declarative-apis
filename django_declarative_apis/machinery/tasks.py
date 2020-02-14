@@ -95,7 +95,7 @@ def _log_retry_stats(method_name, resource_instance_id, correlation_id):
         newrelic_agent.record_custom_event('task_runner:retry',
                                            {'method_name': method_name,
                                             'resource_instance_id': resource_instance_id})
-        logger.warn(
+        logger.warning(
             'will retry task: method=%s, resource_id=%s, correlation_id=%s', method_name, resource_instance_id,
             correlation_id
         )
@@ -200,10 +200,10 @@ def schedule_future_task_runner(task_runner_args, task_runner_kwargs,
                 future_task_runner.apply_async(task_runner_args, task_runner_kwargs, queue=queue, routing_key=routing_key, countdown=countdown+delay)
                 return
             except kombu.exceptions.OperationalError as err:
-                logger.warn('kombu.exceptions.OperationalError (attempt: %s)', attempt)
+                logger.warning('kombu.exceptions.OperationalError (attempt: %s)', attempt)
                 if attempt >= MAX_ATTEMPTS - 1:
                     if getattr(settings, 'DECLARATIVE_ENDPOINT_TASKS_SYNCHRONOUS_FALLBACK'):
-                        logger.warn('Falling back to executing task synchronously')
+                        logger.warning('Falling back to executing task synchronously')
                         future_task_runner.apply(task_runner_args, task_runner_kwargs)
                         return
                     raise err
