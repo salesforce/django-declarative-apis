@@ -21,7 +21,8 @@ class OAuthTimestampError(OAuthError):
             "There was a problem with your timestamp. Please check your current system time."
             "Server time is {0}.".format(time.time())
         )
-        self.auth_header = 'OAuth realm="API",oauth_problem=timestamp_refused&oauth_acceptable_timestamps={0}-{1}'.format(
+        header_fmt = 'OAuth realm="API",oauth_problem=timestamp_refused&oauth_acceptable_timestamps={0}-{1}'
+        self.auth_header = header_fmt.format(
             int(time.time()) - 300, int(time.time())
         )
 
