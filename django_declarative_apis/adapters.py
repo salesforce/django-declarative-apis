@@ -19,12 +19,13 @@ try:
     from django_declarative_apis.resources.resource import Resource
 except ImportError as e:  # pragma: nocover
     import traceback
+
     traceback.print_exc()
     Resource = object
 
 
 class BaseHandler(object):
-    defined_methods = {'get', 'put', 'patch', 'post', 'delete'}
+    defined_methods = {"get", "put", "patch", "post", "delete"}
 
 
 class EndpointHandler(object):
@@ -39,13 +40,20 @@ class EndpointHandler(object):
         self.method_handlers = {}
         for method, handler in kwargs.items():
             if method not in BaseHandler.defined_methods:
-                raise TypeError('Unexpected keyword argument {0}: valid arguments are {1}'
-                                .format(method, BaseHandler.defined_methods))
+                raise TypeError(
+                    "Unexpected keyword argument {0}: valid arguments are {1}".format(
+                        method, BaseHandler.defined_methods
+                    )
+                )
 
             if isinstance(handler, (list, tuple)):
-                self.method_handlers[method.upper()] = BehavioralEndpointDefinitionRouter(*handler)
+                self.method_handlers[
+                    method.upper()
+                ] = BehavioralEndpointDefinitionRouter(*handler)
             else:
-                self.method_handlers[method.upper()] = BehavioralEndpointDefinitionRouter(handler)
+                self.method_handlers[
+                    method.upper()
+                ] = BehavioralEndpointDefinitionRouter(handler)
 
         self.allowed_methods = self.method_handlers.keys()
 
@@ -57,7 +65,10 @@ class EndpointHandler(object):
 
     @property
     def documentation(self):
-        return {method: handler.documentation for method, handler in self.method_handlers.items()}
+        return {
+            method: handler.documentation
+            for method, handler in self.method_handlers.items()
+        }
 
 
 class EndpointResource(Resource):
@@ -65,18 +76,20 @@ class EndpointResource(Resource):
         super(EndpointResource, self).__init__(EndpointHandler(**kwargs))
 
         if authentication is not None:
-            django_declarative_apis.authentication.validate_authentication_config(authentication)
+            django_declarative_apis.authentication.validate_authentication_config(
+                authentication
+            )
             self.authentication = authentication
 
 
 def resource_adapter(*args, **kwargs):
-    setting_name = 'DECLARATIVE_ENDPOINT_RESOURCE_ADAPTER'
+    setting_name = "DECLARATIVE_ENDPOINT_RESOURCE_ADAPTER"
     adapter_name = getattr(settings, setting_name, None)
     if not adapter_name:
         raise ImproperlyConfigured(setting_name)
 
-    name_components = adapter_name.split('.')
-    module_name = '.'.join(name_components[:-1])
+    name_components = adapter_name.split(".")
+    module_name = ".".join(name_components[:-1])
     module = import_module(module_name)
     class_name = name_components[-1]
     adapter_class = getattr(module, class_name)

@@ -17,7 +17,10 @@ import sys
 
 HTTPS_REQUIRED = (600, "This request must use HTTPS")
 FORBIDDEN = (601, "Not allowed")
-EXTERNAL_REQUEST_FAILURE = (604, "Encountered exception while contacting an external service")
+EXTERNAL_REQUEST_FAILURE = (
+    604,
+    "Encountered exception while contacting an external service",
+)
 REQUEST_THROTTLED = (605, "Too many requests.  Please try again later.")
 TIMED_OUT = (606, "Request timed out")
 AUTHORIZATION_FAILURE = (607, "Authorization failure")
@@ -34,13 +37,22 @@ DEPRECATED_ERROR_CODES = {}
 
 
 class ApiError(Exception):
-    def __init__(self, code=None, message=None, error_tuple=None, http_status_code=http.client.BAD_REQUEST, **kwargs):
+    def __init__(
+        self,
+        code=None,
+        message=None,
+        error_tuple=None,
+        http_status_code=http.client.BAD_REQUEST,
+        **kwargs,
+    ):
         if error_tuple:
             self.error_code = error_tuple[0]
             self.error_message = error_tuple[1]
         else:
             if not (code and message):
-                raise Exception('Must specify either clienterror tuple or BOTH code and message')
+                raise Exception(
+                    "Must specify either clienterror tuple or BOTH code and message"
+                )
             self.error_code = code
             self.error_message = message
 
@@ -48,10 +60,7 @@ class ApiError(Exception):
         self.extra_fields = kwargs
 
     def as_dict(self):
-        result = {
-            'error_code': self.error_code,
-            'error_message': self.error_message
-        }
+        result = {"error_code": self.error_code, "error_message": self.error_message}
 
         if self.extra_fields:
             result.update(self.extra_fields)
@@ -61,21 +70,25 @@ class ApiError(Exception):
     @property
     def error_code(self):
         try:
-            return self.__dict__['error_code']
+            return self.__dict__["error_code"]
         except KeyError:
-            raise AttributeError("'{}' object has no attribute '{}'".format(ApiError.__name__, 'error_code'))
+            raise AttributeError(
+                "'{}' object has no attribute '{}'".format(
+                    ApiError.__name__, "error_code"
+                )
+            )
 
     @error_code.setter
     def error_code(self, value):
         if value in DEPRECATED_ERROR_CODES:
             warnings.warn("deprecated error code", DeprecationWarning)
             raise ValueError("ApiError cannot use a deprecated error code")
-        self.__dict__['error_code'] = value
+        self.__dict__["error_code"] = value
 
 
 class ClientError(ApiError):
     def __init__(self, *args, **kwargs):
-        self.save_changes = kwargs.pop('save_changes', False)
+        self.save_changes = kwargs.pop("save_changes", False)
         super().__init__(*args, **kwargs)
 
 
@@ -83,20 +96,25 @@ class ClientErrorUnprocessableEntity(ClientError):
     def __init__(self, additional_info=None):
         error_code, error_message = (
             http.HTTPStatus.UNPROCESSABLE_ENTITY,
-            http.HTTPStatus.UNPROCESSABLE_ENTITY.phrase
+            http.HTTPStatus.UNPROCESSABLE_ENTITY.phrase,
         )
         if additional_info:
-            error_message = f'{error_message} : {additional_info}'
+            error_message = f"{error_message} : {additional_info}"
 
         super().__init__(error_code, error_message, http_status_code=error_code)
 
 
 class ClientErrorNotFound(ClientError):
     def __init__(self, additional_info=None):
-        error_code, error_message = http.client.NOT_FOUND, http.client.responses.get(http.client.NOT_FOUND)
+        error_code, error_message = (
+            http.client.NOT_FOUND,
+            http.client.responses.get(http.client.NOT_FOUND),
+        )
         if additional_info:
-            error_message += ' : ' + additional_info
-        super().__init__(error_code, error_message, http_status_code=http.client.NOT_FOUND)
+            error_message += " : " + additional_info
+        super().__init__(
+            error_code, error_message, http_status_code=http.client.NOT_FOUND
+        )
 
 
 class ClientErrorForbidden(ClientError):
@@ -113,10 +131,13 @@ class ClientErrorUnauthorized(ClientError):
     def __init__(self, additional_info=None, **kwargs):
         error_code, error_message = AUTHORIZATION_FAILURE
         if additional_info:
-            error_message = f'{error_message} : {additional_info}'
+            error_message = f"{error_message} : {additional_info}"
 
         super().__init__(
-            error_code, error_message, http_status_code=http.HTTPStatus.UNAUTHORIZED, **kwargs
+            error_code,
+            error_message,
+            http_status_code=http.HTTPStatus.UNAUTHORIZED,
+            **kwargs,
         )
 
 
@@ -139,7 +160,9 @@ class ClientErrorTimedOut(ClientError):
         error_code, error_message = TIMED_OUT
         if additional_info:
             error_message += ": %s" % additional_info
-        super().__init__(error_code, error_message, http_status_code=http.client.REQUEST_TIMEOUT)
+        super().__init__(
+            error_code, error_message, http_status_code=http.client.REQUEST_TIMEOUT
+        )
 
 
 class ClientErrorResponseWrapper(ClientError):
@@ -154,7 +177,7 @@ class ClientErrorExtraFields(ClientError):
     def __init__(self, extra_fields=None):
         error_code, error_message = EXTRA_FIELDS
         if extra_fields:
-            error_message += ": %s" % ', '.join(extra_fields)
+            error_message += ": %s" % ", ".join(extra_fields)
         super().__init__(error_code, error_message)
 
 
@@ -162,7 +185,7 @@ class ClientErrorReadOnlyFields(ClientError):
     def __init__(self, read_only_fields=None):
         error_code, error_message = READ_ONLY_FIELDS
         if read_only_fields:
-            error_message += ": %s" % ', '.join(read_only_fields)
+            error_message += ": %s" % ", ".join(read_only_fields)
         super().__init__(error_code, error_message)
 
 
@@ -170,7 +193,7 @@ class ClientErrorMissingFields(ClientError):
     def __init__(self, missing_fields=None, extra_message=None):
         error_code, error_message = MISSING_FIELDS
         if missing_fields:
-            error_message += ": %s" % ', '.join(missing_fields)
+            error_message += ": %s" % ", ".join(missing_fields)
         if extra_message:
             error_message += ": {0}".format(extra_message)
         super().__init__(error_code, error_message)
@@ -180,7 +203,7 @@ class ClientErrorInvalidFieldValues(ClientError):
     def __init__(self, invalid_fields=None, extra_message=None):
         error_code, error_message = INVALID_FIELD_VALUES
         if invalid_fields:
-            error_message += ": %s" % ', '.join(invalid_fields)
+            error_message += ": %s" % ", ".join(invalid_fields)
         if extra_message:
             error_message += ": {0}".format(extra_message)
         super().__init__(error_code, error_message)
@@ -194,7 +217,11 @@ class ServerError(ApiError):
 
         self._cause = None
 
-        super().__init__(error_code, error_message, http_status_code=http.client.INTERNAL_SERVER_ERROR)
+        super().__init__(
+            error_code,
+            error_message,
+            http_status_code=http.client.INTERNAL_SERVER_ERROR,
+        )
 
     @property
     def __cause__(self):
@@ -205,5 +232,5 @@ class ServerError(ApiError):
         """Augment __cause__ setter to capture the relevant __traceback__ for the cause (inspired by Python 3)"""
         self._cause = value
         _, cause, traceback = sys.exc_info()
-        if value is cause and not hasattr(cause, '__traceback__'):
+        if value is cause and not hasattr(cause, "__traceback__"):
             value.__traceback__ = traceback

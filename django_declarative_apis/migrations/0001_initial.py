@@ -17,23 +17,34 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-        ('contenttypes', '0002_remove_content_type_name'),
-    ]
+    dependencies = [("contenttypes", "0002_remove_content_type_name")]
 
     operations = [
         migrations.CreateModel(
-            name='OauthConsumer',
+            name="OauthConsumer",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('object_id', models.CharField(max_length=100, null=True)),
-                ('key', models.CharField(db_index=True, max_length=18)),
-                ('secret', models.CharField(max_length=32)),
-                ('rsa_public_key_pem', models.TextField(blank=True, null=True)),
-                ('content_type', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='contenttypes.ContentType')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("object_id", models.CharField(max_length=100, null=True)),
+                ("key", models.CharField(db_index=True, max_length=18)),
+                ("secret", models.CharField(max_length=32)),
+                ("rsa_public_key_pem", models.TextField(blank=True, null=True)),
+                (
+                    "content_type",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="contenttypes.ContentType",
+                    ),
+                ),
             ],
-            options={
-                'abstract': False,
-            },
-        ),
+            options={"abstract": False},
+        )
     ]

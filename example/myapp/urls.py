@@ -17,6 +17,7 @@ class NoAuth:
 
     By default, django-declarative-apis requires authentication. This allows us to get around that.
     """
+
     @staticmethod
     def is_authenticated(request):
         return True
@@ -24,15 +25,10 @@ class NoAuth:
 
 urlpatterns = [
     url(
-        r'^me$', resource_adapter(
-            get=resources.MeDefinition,
-            post=resources.MeUpdateDefinition,
-        )
+        r"^me$",
+        resource_adapter(get=resources.MeDefinition, post=resources.MeUpdateDefinition),
     ),
     url(
-        r'^ping$', resource_adapter(
-            get=resources.PingDefinition,
-            authentication=NoAuth
-        )
+        r"^ping$", resource_adapter(get=resources.PingDefinition, authentication=NoAuth)
     ),
 ]

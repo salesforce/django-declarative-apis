@@ -14,7 +14,12 @@ import logging
 import http.client
 
 import django
-from django.http import (HttpResponse, Http404, HttpResponseNotAllowed, HttpResponseForbidden)
+from django.http import (
+    HttpResponse,
+    Http404,
+    HttpResponseNotAllowed,
+    HttpResponseForbidden,
+)
 from django.views.debug import ExceptionReporter
 from django.views.decorators.vary import vary_on_headers
 from django.conf import settings
@@ -26,7 +31,13 @@ from .emitters import Emitter
 
 from django_declarative_apis.machinery import errors
 from django_declarative_apis import authentication
-from .utils import coerce_put_post, FormValidationError, HttpStatusCode, instantiate_class, locate_object
+from .utils import (
+    coerce_put_post,
+    FormValidationError,
+    HttpStatusCode,
+    instantiate_class,
+    locate_object,
+)
 from .utils import rc, format_error, translate_mime, MimerDataException
 
 
@@ -34,18 +45,19 @@ CHALLENGE = object()
 
 
 def _deserialize_json(req):
-    if req.method == 'POST':
+    if req.method == "POST":
         req.POST = json.loads(req.body)
     return req
 
-_DESERIALIZERS = collections.defaultdict(lambda: lambda r: r, {
-    'application/json': _deserialize_json,
-})
+
+_DESERIALIZERS = collections.defaultdict(
+    lambda: lambda r: r, {"application/json": _deserialize_json}
+)
 
 
 class HttpResponseServerError(HttpResponse):
     def __init__(self, *args, **kwargs):
-        self.error = kwargs.pop('error', None)
+        self.error = kwargs.pop("error", None)
         super(HttpResponseServerError, self).__init__(*args, **kwargs)
 
 
@@ -57,15 +69,15 @@ class Resource(object):
     is an authentication handler. If not specified,
     `NoAuthentication` will be used by default.
     """
-    callmap = {'GET': 'read', 'POST': 'create',
-               'PUT': 'update', 'DELETE': 'delete'}
+
+    callmap = {"GET": "read", "POST": "create", "PUT": "update", "DELETE": "delete"}
 
     def __init__(self, handler):
         if not callable(handler):
             raise AttributeError("Handler not callable.")
 
         self.handler = handler()
-        self.csrf_exempt = getattr(self.handler, 'csrf_exempt', True)
+        self.csrf_exempt = getattr(self.handler, "csrf_exempt", True)
 
         try:
             # DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS should be defined as:
@@ -82,16 +94,23 @@ class Resource(object):
             #       'django_declarative_apis.authentication.oauthlib.oauth1.TwoLeggedOauth'
             #   ),
             # ]
-            # The above effectively states 'try using the oauth handler any time we see a header that looks like 
+            # The above effectively states 'try using the oauth handler any time we see a header that looks like
             # "Authorization: OAuth ..." as well as a fallback mechanism should no other header matching authenticators
             # pass. This can be useful for more complex authenticators such as OAuth 1.0, where auth information can
             # be passed through headers, query params or even request bodies.
-            authentication_class_list = settings.DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS
+            authentication_class_list = (
+                settings.DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS
+            )
         except (KeyError, AttributeError):
-            raise ImproperlyConfigured('must specify settings.DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS')
+            raise ImproperlyConfigured(
+                "must specify settings.DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS"
+            )
 
         self.authentication = collections.defaultdict(list)
-        for authentication_hints, authentication_class_name in authentication_class_list:
+        for (
+            authentication_hints,
+            authentication_class_name,
+        ) in authentication_class_list:
             authenticator_instance = instantiate_class(authentication_class_name)
 
             for hint_path in authentication_hints:
@@ -105,9 +124,9 @@ class Resource(object):
         authentication.validate_authentication_config(self.authentication)
 
         # Erroring
-        self.email_errors = getattr(settings, 'DECLARATIVE_EMAIL_ERRORS', True)
-        self.display_errors = getattr(settings, 'DECLARATIVE_DISPLAY_ERRORS', True)
-        self.stream = getattr(settings, 'DECLARATIVE_STREAM_OUTPUT', False)
+        self.email_errors = getattr(settings, "DECLARATIVE_EMAIL_ERRORS", True)
+        self.display_errors = getattr(settings, "DECLARATIVE_DISPLAY_ERRORS", True)
+        self.stream = getattr(settings, "DECLARATIVE_STREAM_OUTPUT", False)
 
     def determine_emitter(self, request, *args, **kwargs):
         """
@@ -119,10 +138,10 @@ class Resource(object):
         since that pretty much makes sense. Refer to `Mimer` for
         that as well.
         """
-        em = kwargs.pop('emitter_format', None)
+        em = kwargs.pop("emitter_format", None)
 
         if not em:
-            em = request.GET.get('format', 'json')
+            em = request.GET.get("format", "json")
 
         return em
 
@@ -134,7 +153,7 @@ class Resource(object):
         anonymous handlers that aren't defined yet (like, when
         you're subclassing your basehandler into an anonymous one.)
         """
-        if hasattr(self.handler, 'anonymous'):
+        if hasattr(self.handler, "anonymous"):
             anon = self.handler.anonymous
 
             if callable(anon):
@@ -143,16 +162,16 @@ class Resource(object):
         return None
 
     def authenticate(self, request, rm):
-        actor, anonymous, error = False, True, ''
+        actor, anonymous, error = False, True, ""
         # workaround for django header sillyness
-        if 'HTTP_AUTHORIZATION' in request.META:
-            request.META['AUTHORIZATION'] = request.META['HTTP_AUTHORIZATION']
+        if "HTTP_AUTHORIZATION" in request.META:
+            request.META["AUTHORIZATION"] = request.META["HTTP_AUTHORIZATION"]
 
         # first we're going to try any authenticators that might match header hints. then, we'll try
         # any catch-all registered under None as a hint
         potential_authenticators = []
         try:
-            auth_header = request.META['AUTHORIZATION']
+            auth_header = request.META["AUTHORIZATION"]
             for hint, authenticators in self.authentication.items():
                 if hint is None:
                     # pass by these for now. we want the catch-alls to execute last
@@ -188,7 +207,7 @@ class Resource(object):
         # XXX: this might be a little weird as it'll contain information about the last executed authenticator
         return actor, anonymous, error
 
-    @vary_on_headers('Authorization')
+    @vary_on_headers("Authorization")
     def __call__(self, request, *args, **kwargs):
         """
         NB: Sends a `Vary` header so we don't cache requests
@@ -209,13 +228,13 @@ class Resource(object):
             handler = actor
 
         # Translate nested datastructs into `request.data` here.
-        if rm in ('POST', 'PUT'):
+        if rm in ("POST", "PUT"):
             try:
                 translate_mime(request)
             except MimerDataException:
                 return rc.BAD_REQUEST
-            if not hasattr(request, 'data'):
-                if rm == 'POST':
+            if not hasattr(request, "data"):
+                if rm == "POST":
                     request.data = request.POST
                 else:
                     request.data = request.PUT
@@ -235,12 +254,12 @@ class Resource(object):
             # The only way to reach this block is to append ?format= in your URL. If the code reaches this block,
             # it will fail because neither self.strict_accept or self.default_emitter exist. It would be fixed by
             # implementing a child resource class, but that shouldn't be required.
-            request_has_accept = 'HTTP_ACCEPT' in request.META
+            request_has_accept = "HTTP_ACCEPT" in request.META
             if request_has_accept and self.strict_accept:
                 return rc.NOT_ACCEPTABLE
             em_format = self.default_emitter
 
-        kwargs.pop('emitter_format', None)
+        kwargs.pop("emitter_format", None)
 
         # Clean up the request object a bit, since we might
         # very well have `oauth_`-headers in there, and we
@@ -272,7 +291,6 @@ class Resource(object):
             # _is_string/_base_content_is_iter is False _container is
             # the raw data
             result = result._container
-
 
         srl = emitter(result, handler, anonymous)
 
@@ -311,9 +329,9 @@ class Resource(object):
             return False  # pragma: nocover
         elif not isinstance(result.content, bytes):
             return False  # pragma: nocover
-        elif 'image' in result.get('content-type'):
+        elif "image" in result.get("content-type"):
             return False
-        elif 'application/json' in result.get('content-type'):
+        elif "application/json" in result.get("content-type"):
             return False
         return True
 
@@ -323,7 +341,7 @@ class Resource(object):
         Removes `oauth_` keys from various dicts on the
         request object, and returns the sanitized version.
         """
-        for method_type in ('GET', 'PUT', 'POST', 'DELETE'):
+        for method_type in ("GET", "PUT", "POST", "DELETE"):
             block = getattr(request, method_type, {})
 
             if True in [k.startswith("oauth_") for k in block.keys()]:
@@ -343,11 +361,14 @@ class Resource(object):
         subject = "Django Declarative APIs crash report"
         html = reporter.get_traceback_html()
 
-        message = EmailMessage(settings.EMAIL_SUBJECT_PREFIX + subject,
-                               html, settings.SERVER_EMAIL,
-                               [admin[1] for admin in settings.ADMINS])
+        message = EmailMessage(
+            settings.EMAIL_SUBJECT_PREFIX + subject,
+            html,
+            settings.SERVER_EMAIL,
+            [admin[1] for admin in settings.ADMINS],
+        )
 
-        message.content_subtype = 'html'
+        message.content_subtype = "html"
         message.send(fail_silently=True)
 
     def error_handler(self, error, request, meth, em_format):
@@ -360,23 +381,31 @@ class Resource(object):
             rep = ExceptionReporter(request, exc_type, exc_value, tb.tb_next)
             self.email_exception(rep)
         elif isinstance(error, errors.ClientError):
-            logging.info("ClientError (%s): status_code=%s error_message=%s",
-                         error.__class__.__name__, error.status_code, error.as_dict())
+            logging.info(
+                "ClientError (%s): status_code=%s error_message=%s",
+                error.__class__.__name__,
+                error.status_code,
+                error.as_dict(),
+            )
 
         emitter, ct = Emitter.get(em_format)
         content = emitter(error.as_dict(), None)
-        return HttpResponseServerError(content.render(request), content_type=ct, status=error.status_code, error=error)
+        return HttpResponseServerError(
+            content.render(request),
+            content_type=ct,
+            status=error.status_code,
+            error=error,
+        )
 
 
 def _no_authenticators_found(*args):
     error_code, error_message = errors.AUTHORIZATION_FAILURE
 
     response = HttpResponse()
-    response.content = json.dumps({
-        'error_code': error_code,
-        'error_message': error_message,
-    })
+    response.content = json.dumps(
+        {"error_code": error_code, "error_message": error_message}
+    )
     response.status_code = http.HTTPStatus.UNAUTHORIZED
-    response['content-type'] = 'application/json'
+    response["content-type"] = "application/json"
 
     return response

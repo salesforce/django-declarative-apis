@@ -16,7 +16,7 @@ from django_declarative_apis.resources.resource import Resource
 
 
 class Command(BaseCommand):
-    help = 'Generate documentation for declarative endpoints'
+    help = "Generate documentation for declarative endpoints"
 
     def handle(self, *args, **options):
         pprint.pprint(self.traverse())
@@ -25,7 +25,7 @@ class Command(BaseCommand):
         if url_patterns is None:
             url_patterns = __import__(settings.ROOT_URLCONF).urls.urlpatterns
         if prefix is None:
-            prefix = ''
+            prefix = ""
 
         result = []
         for url_pattern in url_patterns:
@@ -36,5 +36,10 @@ class Command(BaseCommand):
                 callback = url_pattern.callback
                 if isinstance(callback, Resource):
                     handler = callback.handler
-                    result.append({'location': endpoint_location, 'endpoint': handler.documentation})
+                    result.append(
+                        {
+                            "location": endpoint_location,
+                            "endpoint": handler.documentation,
+                        }
+                    )
         return result

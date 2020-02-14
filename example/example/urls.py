@@ -23,6 +23,4 @@ Including another URLconf
 from django.conf.urls import url, include
 import myapp.urls
 
-urlpatterns = [
-    url(r'^', include(myapp.urls)),
-]
+urlpatterns = [url(r"^", include(myapp.urls))]

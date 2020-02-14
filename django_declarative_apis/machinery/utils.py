@@ -11,7 +11,7 @@ from pydoc import locate
 from django.core.cache import cache
 
 
-def rate_limit_exceeded(key='', timeout=1):
+def rate_limit_exceeded(key="", timeout=1):
     """
     :param key: rate limit bin
     :param timeout: number of seconds to enforce between requests
@@ -33,15 +33,16 @@ def rate_limit_exceeded(key='', timeout=1):
     The design intent of this feature is protecting OTP authentication against
     brute-force attacks.
     """
-    result = not cache.add('ratelimit:{0}'.format(key), '1', timeout=timeout)
+    result = not cache.add("ratelimit:{0}".format(key), "1", timeout=timeout)
     if result:
         logging.warning("Detected rate limit exceeded! key='%s'", key)
 
     return result
 
+
 def locate_object(namespaced_name):
-    name_components = namespaced_name.split('.')
-    module_name = '.'.join(name_components[:-1])
+    name_components = namespaced_name.split(".")
+    module_name = ".".join(name_components[:-1])
     module = locate(module_name)
     class_name = name_components[-1]
     return getattr(module, class_name)
