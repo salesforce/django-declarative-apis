@@ -5,12 +5,9 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-import decimal
-import re
-import inspect
-import copy
-
-from django.conf import settings
+import json
+import pickle
+from io import StringIO
 
 try:
     # yaml isn't standard with python.  It shouldn't be required if it
@@ -20,9 +17,8 @@ except ImportError:  # pragma: nocover
     yaml = None
 
 from django.db import models
-from django.utils.xmlutils import SimplerXMLGenerator
 from django.utils.encoding import smart_str
-from django.urls import reverse, NoReverseMatch
+from django.utils.xmlutils import SimplerXMLGenerator
 
 try:
     from django.core.serializers.json import (
@@ -33,14 +29,8 @@ except ImportError:
 from django.http import HttpResponse
 from django.core import serializers
 
-import json
-import types
+from .utils import HttpStatusCode, Mimer
 
-from .utils import HttpStatusCode, Mimer, locate_object
-
-from io import StringIO
-
-import pickle
 
 
 class Emitter(object):

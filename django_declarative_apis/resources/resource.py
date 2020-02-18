@@ -5,41 +5,28 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-from django.core.exceptions import ImproperlyConfigured
-
 import collections
-import json
-import sys
-import logging
 import http.client
+import json
+import logging
+import sys
 
-import django
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from django.core.mail import EmailMessage
+from django.http import Http404
 from django.http import (
     HttpResponse,
-    Http404,
     HttpResponseNotAllowed,
-    HttpResponseForbidden,
 )
 from django.views.debug import ExceptionReporter
 from django.views.decorators.vary import vary_on_headers
-from django.conf import settings
-from django.core.mail import send_mail, EmailMessage
-from django.db.models.query import QuerySet
-from django.http import Http404
 
-from .emitters import Emitter
-
-from django_declarative_apis.machinery import errors
 from django_declarative_apis import authentication
-from .utils import (
-    coerce_put_post,
-    FormValidationError,
-    HttpStatusCode,
-    instantiate_class,
-    locate_object,
-)
-from .utils import rc, format_error, translate_mime, MimerDataException
-
+from django_declarative_apis.machinery import errors
+from .emitters import Emitter
+from .utils import HttpStatusCode, coerce_put_post, instantiate_class, locate_object
+from .utils import MimerDataException, rc, translate_mime
 
 CHALLENGE = object()
 

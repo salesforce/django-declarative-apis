@@ -5,24 +5,21 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
+import http
 import json
 import unittest
-import mock
-import http
-import urllib.parse
 
-import kombu.exceptions
 import django.core.exceptions
-from django.db import models
-from django.core.cache import cache
 import django.test
+import kombu.exceptions
+import mock
+from django.core.cache import cache
 
+import tests.models
 from django_declarative_apis import machinery, models as dda_models
 from django_declarative_apis.machinery import errors, filtering, tasks
 from django_declarative_apis.machinery.tasks import future_task_runner
-from django_declarative_apis.resources.utils import HttpStatusCode, rc
-
-import tests.models
+from django_declarative_apis.resources.utils import HttpStatusCode
 from tests import testutils
 
 _TEST_RESOURCE = {"foo": "bar"}
@@ -306,7 +303,7 @@ class EndpointBinderTestCase(django.test.TestCase):
 
 
 class EndpointFilteringTestCase(testutils.RequestCreatorMixin, django.test.TestCase):
-    from django_declarative_apis.machinery.filtering import ALWAYS, NEVER, IF_TRUTHY
+    from django_declarative_apis.machinery.filtering import ALWAYS, NEVER
 
     class DummyClassOne(object):
         def __init__(self):
