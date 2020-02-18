@@ -23,6 +23,9 @@ from .attributes import (Aggregate, ConsumerAttribute, DeferrableEndpointTask, E
                          RawRequestObjectProperty, RequestAdhocQuerySet, RequestAttribute, RequestField,
                          RequestProperty, RequestUrlField, RequireAllAttribute, RequireAllIfAnyAttribute,
                          RequireOneAttribute, ResourceField)
+# these imports are unusued in this file but may be used in other projects
+# that use `machinery` as an interface
+from .attributes import TypedEndpointAttributeMixin, RequestFieldGroup  # noqa
 from .utils import locate_object, rate_limit_exceeded
 
 
