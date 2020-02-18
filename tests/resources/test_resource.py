@@ -7,16 +7,14 @@
 
 import http
 import json
-import unittest
 
-import django.test
 import django.conf
 import django.core.exceptions
+import django.test
 import mock
 
-from django_declarative_apis import models
-from django_declarative_apis.resources import resource
 from django_declarative_apis.authentication.oauthlib import oauth_errors
+from django_declarative_apis.resources import resource
 from tests import testutils
 
 
@@ -71,7 +69,8 @@ class ResourceTestCase(testutils.RequestCreatorMixin, django.test.TestCase):
 
     def test_anonymous(self):
         class HandlerA:
-            anonymous = lambda: True
+            def anonymous(self):
+                return True
 
         handler = HandlerA()
         res = resource.Resource(lambda: handler)

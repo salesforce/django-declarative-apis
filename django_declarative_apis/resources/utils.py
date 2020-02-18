@@ -5,26 +5,15 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-import time
 import warnings
-import django
 from pydoc import locate
 
-from django.http import (
-    HttpResponseNotAllowed,
-    HttpResponseForbidden,
-    HttpResponse,
-    HttpResponseBadRequest,
-)
-from django.core.cache import cache
-from django import get_version as django_version
-from django.core.mail import send_mail, mail_admins
-from django.conf import settings
-from django.utils.translation import ugettext as _
-from django.template import loader, TemplateDoesNotExist
+import django
 from decorator import decorator
-
-from datetime import datetime, timedelta
+from django import get_version as django_version
+from django.http import (
+    HttpResponse,
+)
 
 
 def format_error(error):

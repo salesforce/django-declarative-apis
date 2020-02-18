@@ -5,17 +5,11 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-import base64
 import logging
+
+from oauthlib.oauth1 import SignatureOnlyEndpoint
 from oauthlib.oauth1.rfc5849 import SIGNATURE_RSA
 from oauthlib.oauth1.rfc5849 import errors, signature
-from oauthlib.oauth1 import SignatureOnlyEndpoint
-from cryptography.hazmat.primitives.serialization import (
-    load_der_public_key,
-    PublicFormat,
-    Encoding,
-)
-from cryptography.hazmat.backends import default_backend
 
 from django_declarative_apis.resources.utils import preprocess_rsa_key
 

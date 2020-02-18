@@ -5,15 +5,11 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-import unittest
-
 import django.test
 import mock
 
 from django_declarative_apis import models
 from django_declarative_apis.authentication.oauthlib import request_validator
-
-from tests import testutils
 
 
 class DjangoRequestValidatorTestCase(django.test.TestCase):
