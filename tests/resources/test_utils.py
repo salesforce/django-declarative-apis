@@ -9,16 +9,13 @@ import http
 import json
 import unittest
 
-import mock
 import django.test
+import mock
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 from django_declarative_apis.resources import utils
-
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives import serialization
-
-from tests import testutils
 
 
 class UtilsTestCase(unittest.TestCase):

@@ -6,17 +6,16 @@
 #
 
 import json
-import unittest
 import pickle
+import unittest
 from xml.dom import minidom
 
-import django.test
 import django.http
+import django.test
 import yaml
-from django.db import models
 
-from django_declarative_apis.resources import emitters
 import tests.models
+from django_declarative_apis.resources import emitters
 
 
 class EmitterTestCase(unittest.TestCase):

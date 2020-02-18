@@ -7,9 +7,10 @@
 
 import http
 import unittest
-import mock
+
 import django.test
-from django_declarative_apis import adapters, machinery, authentication
+
+from django_declarative_apis import adapters, authentication, machinery
 
 
 class BaseHandlerTestCase(unittest.TestCase):
