@@ -69,7 +69,7 @@ class DjangoRequestValidator(RequestValidator):
                 return None
             else:
                 return self.consumer.secret
-        except Exception as e:
+        except Exception as e:  # noqa
             logging.error(
                 "This should never happen, since consumer is already validated"
             )
@@ -78,7 +78,7 @@ class DjangoRequestValidator(RequestValidator):
     def get_rsa_key(self, client_key, request):
         try:
             return self.consumer.rsa_public_key_pem
-        except Exception as e:
+        except Exception as e:  # noqa
             logging.error(
                 "This should never happen, since consumer is already validated"
             )

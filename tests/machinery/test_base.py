@@ -204,7 +204,7 @@ class EndpointBinderTestCase(django.test.TestCase):
                 try:
                     manager.get_response()
                     self.fail("This should have failed")
-                except errors.ClientError as err:
+                except errors.ClientError:
                     # save should be called twice if the exception says the resource should be saved: once before
                     # tasks are executed and once during exception handling.
                     self.assertEqual(
@@ -827,7 +827,7 @@ class DeferrableTaskTestCase(django.test.TestCase):
 
             with self.settings(DECLARATIVE_ENDPOINT_TASKS_SYNCHRONOUS_FALLBACK=True):
                 try:
-                    resp = manager.get_response()
+                    manager.get_response()
                 except kombu.exceptions.OperationalError:
                     self.fail("OperationalError should not have been triggered")
                 finally:
@@ -855,7 +855,7 @@ class DeferrableTaskTestCase(django.test.TestCase):
 
             with self.settings(DECLARATIVE_ENDPOINT_TASKS_FORCE_SYNCHRONOUS=True):
                 try:
-                    resp = manager.get_response()
+                    manager.get_response()
                 except kombu.exceptions.OperationalError:
                     self.fail("OperationalError should not have been triggered")
                 finally:
@@ -897,7 +897,7 @@ class DeferrableTaskTestCase(django.test.TestCase):
             mock_apply.side_effect = _side_effect
 
             try:
-                resp = manager.get_response()
+                manager.get_response()
                 self.fail("should have triggered a kombu.exceptions.OperationalError")
             except kombu.exceptions.OperationalError:
                 pass
