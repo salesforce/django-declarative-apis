@@ -50,7 +50,7 @@ class ResourceTestCase(testutils.RequestCreatorMixin, django.test.TestCase):
         ) as mock_translate:
             mock_translate.side_effect = resource.MimerDataException
 
-            resp = res(req)
+            res(req)
 
     def test_call_put(self):
         class Handler:
@@ -62,7 +62,7 @@ class ResourceTestCase(testutils.RequestCreatorMixin, django.test.TestCase):
         body = {"foo": "bar"}
         req = self.create_request(method="PUT", body=body)
         res = resource.Resource(lambda: Handler())
-        resp = res(req)
+        res(req)
 
         # make sure request coercion did its thing to allow django to support it
         self.assertEqual(req.PUT, req.POST)
@@ -138,7 +138,7 @@ class ResourceTestCase(testutils.RequestCreatorMixin, django.test.TestCase):
             with mock.patch(
                 "django_declarative_apis.resources.resource.Resource.email_exception"
             ) as mock_email:
-                resp = res.error_handler(err, req, "GET", "json")
+                res.error_handler(err, req, "GET", "json")
 
         (reporter,), kwargs = mock_email.call_args_list[0]
         self.assertEqual(mock_email.call_count, 1)
