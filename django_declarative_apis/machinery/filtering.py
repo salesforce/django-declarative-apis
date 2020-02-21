@@ -32,7 +32,7 @@ def expandable(model_class=None, display_key=None):
     if model_class and display_key:
         try:
             model_class._meta.get_field(display_key)
-        except models.FieldDoesNotExist as e:
+        except models.FieldDoesNotExist as e:  # noqa
             raise ValueError(f"{display_key} is not a field on {model_class.__name__}")
     return _ExpandableForeignKey(display_key, model_class)
 
@@ -72,7 +72,7 @@ def _get_filtered_field_value(
     else:
         try:
             val = getattr(inst, field_name)
-        except (AttributeError, models.fields.FieldDoesNotExist) as e:
+        except (AttributeError, models.fields.FieldDoesNotExist) as e:  # noqa
             return None
 
     if isinstance(val, models.Manager):

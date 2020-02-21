@@ -230,13 +230,13 @@ class EndpointBinder(object):
 
         try:
             self._bind_endpoint(endpoint)
-        except Exception as e:
+        except Exception as e:  # noqa
             bound_endpoint_manager.binding_exc_info = sys.exc_info()
             return bound_endpoint_manager
 
         try:
             self._validate_endpoint(endpoint)
-        except Exception as e:
+        except Exception as e:  # noqa
             bound_endpoint_manager.validation_exc_info = sys.exc_info()
 
         return bound_endpoint_manager

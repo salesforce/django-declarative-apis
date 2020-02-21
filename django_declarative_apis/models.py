@@ -25,7 +25,7 @@ def get_consumer(key):
     if getter_str is None:
         try:
             return OauthConsumer.objects.get(key=key)
-        except OauthConsumer.DoesNotExist as e:
+        except OauthConsumer.DoesNotExist as e:  # noqa
             return None
     else:
         module, getter = getter_str.rsplit(".", 1)
