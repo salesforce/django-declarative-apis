@@ -5,6 +5,6 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-from django.contrib import admin
+from django.contrib import admin  # noqa
 
 # Register your models here.
