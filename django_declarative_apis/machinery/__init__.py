@@ -230,13 +230,13 @@ class EndpointBinder(object):
 
         try:
             self._bind_endpoint(endpoint)
-        except Exception as e:
+        except Exception as e:  # noqa
             bound_endpoint_manager.binding_exc_info = sys.exc_info()
             return bound_endpoint_manager
 
         try:
             self._validate_endpoint(endpoint)
-        except Exception as e:
+        except Exception as e:  # noqa
             bound_endpoint_manager.validation_exc_info = sys.exc_info()
 
         return bound_endpoint_manager
@@ -258,7 +258,7 @@ class EndpointBinder(object):
                         missing_required_properties.append(request_property)
             except errors.ClientErrorMissingFields as mfe:  # TODO: seems unreachable
                 extra_error_message += mfe.error_message  # pragma: nocover
-            except (ValueError, errors.ClientErrorInvalidFieldValues) as ve:
+            except (ValueError, errors.ClientErrorInvalidFieldValues) as ve:  # noqa
                 # Collect invalid values and report them all together
                 invalid_value_properties.append(request_property)  # pragma: nocover
 

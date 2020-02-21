@@ -17,7 +17,7 @@ import django_declarative_apis.authentication
 # don't require resources unless this adapter is in use
 try:
     from django_declarative_apis.resources.resource import Resource
-except ImportError as e:  # pragma: nocover
+except ImportError as e:  # noqa
     import traceback
 
     traceback.print_exc()
