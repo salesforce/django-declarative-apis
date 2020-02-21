@@ -258,7 +258,7 @@ class EndpointBinder(object):
                         missing_required_properties.append(request_property)
             except errors.ClientErrorMissingFields as mfe:  # TODO: seems unreachable
                 extra_error_message += mfe.error_message  # pragma: nocover
-            except (ValueError, errors.ClientErrorInvalidFieldValues) as ve:
+            except (ValueError, errors.ClientErrorInvalidFieldValues) as ve:  # noqa
                 # Collect invalid values and report them all together
                 invalid_value_properties.append(request_property)  # pragma: nocover
 
