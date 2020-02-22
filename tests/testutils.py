@@ -167,7 +167,7 @@ class OAuthClientHandler(ClientHandler):
                 oauth_request.sign_request(signature_method, consumer, None)
                 oauth_signature_data["oauth_signature"] = oauth_request.get_parameter(
                     "oauth_signature"
-                )
+                ).decode('utf-8')
 
             use_auth_header_signature = request.META.pop(
                 "use_auth_header_signature", False

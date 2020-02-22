@@ -32,9 +32,6 @@ from django.core import serializers
 from .utils import HttpStatusCode, Mimer
 
 
-# Allow people to change the reverser (default `permalink`).
-reverser = models.permalink
-
 
 class Emitter(object):
     """
