@@ -310,7 +310,10 @@ class EndpointFilteringTestCase(testutils.RequestCreatorMixin, django.test.TestC
             self.foo = "foo" * 100
             self.bar = "bar" * 100
 
-    class DummyClassTwo(DummyClassOne):
+    class DummyMixin:
+        pass
+
+    class DummyClassTwo(DummyMixin, DummyClassOne):
         def __init__(self):
             super().__init__()
             self.baz = "baz" * 100
@@ -350,6 +353,12 @@ class EndpointFilteringTestCase(testutils.RequestCreatorMixin, django.test.TestC
             "events": ALWAYS,
         },
     }
+
+    def test_filter_inheritance_with_mixin(self):
+        data = EndpointFilteringTestCase.DummyClassTwo()
+        filtered_data = filtering.apply_filters_to_object(data, EndpointFilteringTestCase.TEST_FILTERS)
+        self.assertTrue('foo' in filtered_data)
+        self.assertTrue('bar' in filtered_data)
 
     def test_filter_large_collection(self):
         data = [EndpointFilteringTestCase.DummyClassFour() for _ in range(1000)]
