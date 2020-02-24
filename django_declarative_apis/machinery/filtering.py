@@ -121,11 +121,10 @@ def _apply_filters_to_object(inst, filter_def, expand_children=None, klass=None)
         return result
     else:
         # first, recursively populate from any ancestor classes in the inheritance hierarchy
-        mro = inspect.getmro(klass)
         result = defaultdict(list)
-        if len(mro) > 1:
+        for base in klass.__bases__:
             filtered_ancestor = _apply_filters_to_object(
-                inst, filter_def, expand_children=expand_children, klass=mro[1]
+                inst, filter_def, expand_children=expand_children, klass=base
             )
             if filtered_ancestor:
                 result.update(filtered_ancestor)
