@@ -15,10 +15,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import EmailMessage
 from django.http import Http404
-from django.http import (
-    HttpResponse,
-    HttpResponseNotAllowed,
-)
+from django.http import HttpResponse, HttpResponseNotAllowed
 from django.views.debug import ExceptionReporter
 from django.views.decorators.vary import vary_on_headers
 

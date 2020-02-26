@@ -23,8 +23,10 @@ class OAuthTimestampError(OAuthError):
         )
         start_time = int(time.time()) - 300
         end_time = int(time.time())
-        self.auth_header = ('OAuth realm="API",oauth_problem=timestamp_refused'
-                            f'&oauth_acceptable_timestamps={start_time}-{end_time}')
+        self.auth_header = (
+            'OAuth realm="API",oauth_problem=timestamp_refused'
+            f"&oauth_acceptable_timestamps={start_time}-{end_time}"
+        )
 
 
 class OAuthMissingParameterError(OAuthError):
