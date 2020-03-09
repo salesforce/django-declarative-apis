@@ -5,10 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
-# []
+# [0.20.0] - 2020-03-09
 ### Added
 - [PR 21](https://github.com/salesforce/django-declarative-apis/pull/21) Add Makefile targets for Black formatter
 - [PR 22](https://github.com/salesforce/django-declarative-apis/pull/22) Format code with Black
+- [PR 34](https://github.com/salesforce/django-declarative-apis/pull/34) Test coverage, vulnerabilities, and format with TravisCI
 
 ### Changed
 - [PR 28](https://github.com/salesforce/django-declarative-apis/pull/28) Require Django 2.2
@@ -22,6 +23,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - [PR 26](https://github.com/salesforce/django-declarative-apis/pull/26) Use yaml.safe_load in test
 - [PR 27](https://github.com/salesforce/django-declarative-apis/pull/27) Fix more flake8 warnings
 - [PR 29](https://github.com/salesforce/django-declarative-apis/pull/29) Ignore unused imports in example
+- [PR 33](https://github.com/salesforce/django-declarative-apis/pull/33) Fix filters for classes with mixins
 
 # [0.19.3] - 2020-02-04
 - Increase celery version range
