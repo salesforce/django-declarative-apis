@@ -34,7 +34,7 @@ readme:
 
 # Test targets
 
-test-all: coverage static vuln-static formatcheck
+test-all: coverage vuln-static formatcheck
 .PHONY: test-all
 
 test:

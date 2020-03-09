@@ -11,9 +11,7 @@ from pydoc import locate
 import django
 from decorator import decorator
 from django import get_version as django_version
-from django.http import (
-    HttpResponse,
-)
+from django.http import HttpResponse
 
 
 def format_error(error):

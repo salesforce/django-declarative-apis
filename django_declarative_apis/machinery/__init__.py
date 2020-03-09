@@ -19,10 +19,24 @@ from django_declarative_apis.machinery.filtering import apply_filters_to_object
 from django_declarative_apis.models import BaseConsumer
 from django_declarative_apis.resources.utils import HttpStatusCode
 from . import errors
-from .attributes import (Aggregate, ConsumerAttribute, DeferrableEndpointTask, EndpointAttribute, EndpointTask,
-                         RawRequestObjectProperty, RequestAdhocQuerySet, RequestAttribute, RequestField,
-                         RequestProperty, RequestUrlField, RequireAllAttribute, RequireAllIfAnyAttribute,
-                         RequireOneAttribute, ResourceField)
+from .attributes import (
+    Aggregate,
+    ConsumerAttribute,
+    DeferrableEndpointTask,
+    EndpointAttribute,
+    EndpointTask,
+    RawRequestObjectProperty,
+    RequestAdhocQuerySet,
+    RequestAttribute,
+    RequestField,
+    RequestProperty,
+    RequestUrlField,
+    RequireAllAttribute,
+    RequireAllIfAnyAttribute,
+    RequireOneAttribute,
+    ResourceField,
+)
+
 # these imports are unusued in this file but may be used in other projects
 # that use `machinery` as an interface
 from .attributes import TypedEndpointAttributeMixin, RequestFieldGroup  # noqa

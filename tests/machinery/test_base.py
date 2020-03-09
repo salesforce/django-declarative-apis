@@ -356,9 +356,11 @@ class EndpointFilteringTestCase(testutils.RequestCreatorMixin, django.test.TestC
 
     def test_filter_inheritance_with_mixin(self):
         data = EndpointFilteringTestCase.DummyClassTwo()
-        filtered_data = filtering.apply_filters_to_object(data, EndpointFilteringTestCase.TEST_FILTERS)
-        self.assertTrue('foo' in filtered_data)
-        self.assertTrue('bar' in filtered_data)
+        filtered_data = filtering.apply_filters_to_object(
+            data, EndpointFilteringTestCase.TEST_FILTERS
+        )
+        self.assertTrue("foo" in filtered_data)
+        self.assertTrue("bar" in filtered_data)
 
     def test_filter_large_collection(self):
         data = [EndpointFilteringTestCase.DummyClassFour() for _ in range(1000)]

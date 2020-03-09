@@ -32,7 +32,6 @@ from django.core import serializers
 from .utils import HttpStatusCode, Mimer
 
 
-
 class Emitter(object):
     """
     Super emitter. All other emitters should subclass
