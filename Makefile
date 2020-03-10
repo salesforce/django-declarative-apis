@@ -10,6 +10,7 @@ TEST_WARNINGS_CMD = ${PYTHON} -Wa manage.py test
 COVERAGE_CMD = coverage run manage.py test --noinput && coverage xml && coverage report
 STATIC_CMD = flake8 ${PACKAGE_DIR} ${TEST_DIR} ${EXAMPLE_DIR} setup.py
 VULN_STATIC_CMD = bandit -r -ii -ll -x ${PACKAGE_DIR}/migrations ${PACKAGE_DIR} 
+VULN_DEPS_CMD = safety check --full-report
 FORMAT_CMD = black ${PACKAGE_DIR} ${TEST_DIR} ${EXAMPLE_DIR} setup.py
 FORMATCHECK_CMD = ${FORMAT_CMD} --check
 
@@ -34,7 +35,7 @@ readme:
 
 # Test targets
 
-test-all: coverage vuln-static formatcheck
+test-all: coverage vuln-static vuln-deps formatcheck
 .PHONY: test-all
 
 test:
@@ -56,6 +57,10 @@ static:
 vuln-static:
 	${VULN_STATIC_CMD}
 .PHONY: vuln-static
+
+vuln-deps:
+	${VULN_DEPS_CMD}
+.PHONY: vuln-deps
 
 formatcheck:
 	${FORMATCHECK_CMD}
