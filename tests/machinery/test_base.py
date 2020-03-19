@@ -123,7 +123,7 @@ class EndpointResponseAttributeTestCase(
 
 
 class EndpointBinderTestCase(django.test.TestCase):
-    @mock.patch("django_declarative_apis.machinery.logging")
+    @mock.patch("django_declarative_apis.machinery.logger")
     def test_get_response_with_non_client_error(self, mock_logging):
         class _TestException(Exception):
             pass

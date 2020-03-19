@@ -62,7 +62,7 @@ class TwoLeggedOauth1TestCase(unittest.TestCase):
         self.assertIsInstance(result, oauth_errors.OAuthInvalidSignatureError)
         self.assertTrue(result.detail.startswith("Invalid signature."))
 
-    @mock.patch("django_declarative_apis.authentication.oauthlib.oauth1.logging.error")
+    @mock.patch("django_declarative_apis.authentication.oauthlib.oauth1.logger.error")
     def test_is_authenticated_validation_error_handled(self, mocked_log):
         class ExceptionWithMessage(Exception):
             def __init__(self, msg):

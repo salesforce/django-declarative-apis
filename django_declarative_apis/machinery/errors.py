@@ -15,6 +15,8 @@ import http.client
 # Start Toopher-specific codes at 600 to avoid conflict/confusion with HTTP status codes
 import sys
 
+logger = logging.getLogger(__name__)
+
 HTTPS_REQUIRED = (600, "This request must use HTTPS")
 FORBIDDEN = (601, "Not allowed")
 EXTERNAL_REQUEST_FAILURE = (
@@ -213,7 +215,7 @@ class ServerError(ApiError):
     def __init__(self):
         error_code, error_message = LOGGED_SERVER_ERROR
         error_message = error_message.format(uuid.uuid4())
-        logging.exception(error_message)
+        logger.exception(error_message)
 
         self._cause = None
 
