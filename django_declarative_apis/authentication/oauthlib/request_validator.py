@@ -14,6 +14,9 @@ from oauthlib.oauth1 import RequestValidator
 from django_declarative_apis import models as oauth_models
 
 
+logger = logging.getLogger(__name__)
+
+
 class DjangoRequestValidator(RequestValidator):
 
     TIMESTAMP_THRESHOLD = 300
@@ -59,7 +62,7 @@ class DjangoRequestValidator(RequestValidator):
         self.consumer = oauth_models.get_consumer(client_key)
         if self.consumer is None:
             self.validation_error_message = "consumer_key_unknown"
-            logging.error("invalid consumer")
+            logger.error("invalid consumer")
             return False
         return True
 
@@ -70,7 +73,7 @@ class DjangoRequestValidator(RequestValidator):
             else:
                 return self.consumer.secret
         except Exception as e:  # noqa
-            logging.error(
+            logger.error(
                 "This should never happen, since consumer is already validated"
             )
             return ""
@@ -79,7 +82,7 @@ class DjangoRequestValidator(RequestValidator):
         try:
             return self.consumer.rsa_public_key_pem
         except Exception as e:  # noqa
-            logging.error(
+            logger.error(
                 "This should never happen, since consumer is already validated"
             )
             return ""

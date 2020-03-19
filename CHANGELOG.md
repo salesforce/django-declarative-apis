@@ -9,6 +9,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 # [Unrelased]
 ### Changed
 - [PR 39](https://github.com/salesforce/django-declarative-apis/pull/39) Add long_description to setup 
+- [PR 40](https://github.com/salesforce/django-declarative-apis/pull/40) Remove use of root logger
 
 # [0.20.0] - 2020-03-09
 ### Added

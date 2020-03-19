@@ -43,6 +43,9 @@ from .attributes import TypedEndpointAttributeMixin, RequestFieldGroup  # noqa
 from .utils import locate_object, rate_limit_exceeded
 
 
+logger = logging.getLogger(__name__)
+
+
 # TODO:
 # * Make it generically handle database write failures (updating the http_status to be 5XX)
 # * Create new error for deadline exceeded and catch it in the same place as writes
@@ -129,9 +132,9 @@ class EndpointBinder(object):
             if error:
                 exc_type, exc_value, exc_traceback = error
                 if isinstance(exc_value, errors.ClientError):
-                    logging.warning(exc_value.error_message)
+                    logger.warning(exc_value.error_message)
                 else:
-                    logging.error(str(exc_value.args) + "\n" + str(exc_traceback))
+                    logger.error(str(exc_value.args) + "\n" + str(exc_traceback))
 
                 raise exc_value.with_traceback(exc_traceback)
 
@@ -353,7 +356,7 @@ class BehavioralEndpointDefinitionRouter(object):
     def process_request_and_get_response(self, request, *args, **kwargs):
         try:
             bound_endpoint = self.bind_endpoint_to_request(request, *args, **kwargs)
-            logging.info(
+            logger.info(
                 "Processing request with handler %s",
                 bound_endpoint.bound_endpoint.__class__.__name__,
             )
