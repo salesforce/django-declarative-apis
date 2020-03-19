@@ -27,7 +27,7 @@ class DjangoRequestValidatorTestCase(django.test.TestCase):
         self.assertIsNone(validator.get_client_secret(self.consumer.key, request))
 
     @mock.patch(
-        "django_declarative_apis.authentication.oauthlib.request_validator.logging"
+        "django_declarative_apis.authentication.oauthlib.request_validator.logger"
     )
     def test_get_rsa_key(self, mock_log):
         request = django.test.RequestFactory().get("/")
