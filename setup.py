@@ -9,8 +9,14 @@
 import setuptools
 from os import path
 
-with open(path.join(path.dirname(__file__), "requirements.txt")) as requirements_file:
+
+HERE = path.dirname(__file__)
+
+with open(path.join(HERE, "requirements.txt")) as requirements_file:
     requirements = requirements_file.read().split()
+
+with open(path.join(HERE, "README.md")) as readme_file:
+    long_description = readme_file.read()
 
 setuptools.setup(
     name="django-declarative-apis",
@@ -18,6 +24,7 @@ setuptools.setup(
     author="Drew Shafer",
     url="https://salesforce.com",
     description="Simple, readable, declarative APIs for Django",
+    long_description=long_description,
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",
