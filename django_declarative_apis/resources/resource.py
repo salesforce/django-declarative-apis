@@ -28,6 +28,9 @@ from .utils import MimerDataException, rc, translate_mime
 CHALLENGE = object()
 
 
+logger = logging.getLogger(__name__)
+
+
 def _deserialize_json(req):
     if req.method == "POST":
         req.POST = json.loads(req.body)
@@ -365,7 +368,7 @@ class Resource(object):
             rep = ExceptionReporter(request, exc_type, exc_value, tb.tb_next)
             self.email_exception(rep)
         elif isinstance(error, errors.ClientError):
-            logging.info(
+            logger.info(
                 "ClientError (%s): status_code=%s error_message=%s",
                 error.__class__.__name__,
                 error.status_code,

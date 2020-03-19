@@ -11,6 +11,9 @@ from pydoc import locate
 from django.core.cache import cache
 
 
+logger = logging.getLogger(__name__)
+
+
 def rate_limit_exceeded(key="", timeout=1):
     """
     :param key: rate limit bin
@@ -35,7 +38,7 @@ def rate_limit_exceeded(key="", timeout=1):
     """
     result = not cache.add("ratelimit:{0}".format(key), "1", timeout=timeout)
     if result:
-        logging.warning("Detected rate limit exceeded! key='%s'", key)
+        logger.warning("Detected rate limit exceeded! key='%s'", key)
 
     return result
 

@@ -30,6 +30,9 @@ from . import oauth_errors
 TwoLeggedOauth1Hint = AuthenticatorHint("OAuth ")
 
 
+logger = logging.getLogger(__name__)
+
+
 class TwoLeggedOauth1(Authenticator):
     def validate_missing_parameters(self, request, parameters=None):
         parameters = parameters or []
@@ -62,7 +65,7 @@ class TwoLeggedOauth1(Authenticator):
 
         if missing:
             error_message = "parameter_absent:{}".format(",".join(missing))
-            logging.error(error_message)
+            logger.error(error_message)
             missing_param_info = oauth_errors.build_error(error_message)
             request.auth_header = getattr(missing_param_info, "auth_header", None)
             return missing_param_info
@@ -109,7 +112,7 @@ class TwoLeggedOauth1(Authenticator):
                 return oauth_errors.build_error(error_message)
         except Exception as e:
             if hasattr(e, "message"):
-                logging.error("Invalid oauthlib request: " + e.message)
+                logger.error("Invalid oauthlib request: " + e.message)
             return AuthenticationFailure()
 
     def authenticate_header(self, request):
