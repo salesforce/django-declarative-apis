@@ -180,3 +180,45 @@ class FiltersTestCase(django.test.TestCase):
         self.assertEqual(
             filtered["expandable_string"], models.TestModel.EXPANDABLE_STRING_RETURN
         )
+
+    def test_rename_expandable_foreign_key(self):
+        filtered = filtering.apply_filters_to_object(
+            self.p1c1, filters.RENAMED_EXPANDABLE_MODEL_FIELDS
+        )
+
+        self.assertEqual(filtered["renamed_test"], {"id": self.p1c1.test.pk})
+        self.assertEqual(
+            filtered["renamed_parent"], {"nonstandard_id": self.p1c1.parent.pk}
+        )
+
+        filtered = filtering.apply_filters_to_object(
+            self.p1c1,
+            filters.RENAMED_EXPANDABLE_MODEL_FIELDS,
+            expand_header="renamed_test,renamed_parent",
+        )
+        self.assertTrue(2, len(filtered["renamed_test"]))
+        self.assertIn("int_field", filtered["renamed_test"])
+        self.assertNotIn("renamed_expandable_dict", filtered["renamed_test"])
+        self.assertTrue(4, len(filtered["renamed_parent"]))
+
+        filtered = filtering.apply_filters_to_object(
+            self.p1c1,
+            filters.RENAMED_EXPANDABLE_MODEL_FIELDS,
+            expand_header="renamed_test,renamed_test.renamed_expandable_dict",
+        )
+        self.assertTrue(3, len(filtered["renamed_test"]))
+        self.assertIn("renamed_expandable_dict", filtered["renamed_test"])
+        self.assertEqual(
+            self.test_model.expandable_dict,
+            filtered["renamed_test"]["renamed_expandable_dict"],
+        )
+        self.assertNotIn("renamed_expandable_string", filtered["renamed_test"])
+
+        filtered = filtering.apply_filters_to_object(
+            self.p1c1,
+            filters.RENAMED_EXPANDABLE_MODEL_FIELDS,
+            expand_header="renamed_test,renamed_test.renamed_expandable_dict,renamed_test.renamed_expandable_string",
+        )
+        self.assertTrue(4, len(filtered["renamed_test"]))
+        self.assertIn("renamed_expandable_dict", filtered["renamed_test"])
+        self.assertIn("renamed_expandable_string", filtered["renamed_test"])

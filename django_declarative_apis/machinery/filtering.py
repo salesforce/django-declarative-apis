@@ -21,12 +21,13 @@ EXPANDABLE_FIELD_KEY = "__expandable__"
 
 
 class _ExpandableForeignKey:
-    def __init__(self, display_key, model_class):
+    def __init__(self, display_key, model_class, inst_field_name):
         self.display_key = display_key
         self.model_class = model_class
+        self.inst_field_name = inst_field_name
 
 
-def expandable(model_class=None, display_key=None):
+def expandable(model_class=None, display_key=None, inst_field_name=None):
     if model_class and not issubclass(model_class, (models.Model,)):
         raise ValueError("model_class must be an instance of a Django Model")
     if model_class and display_key:
@@ -34,7 +35,7 @@ def expandable(model_class=None, display_key=None):
             model_class._meta.get_field(display_key)
         except models.FieldDoesNotExist as e:  # noqa
             raise ValueError(f"{display_key} is not a field on {model_class.__name__}")
-    return _ExpandableForeignKey(display_key, model_class)
+    return _ExpandableForeignKey(display_key, model_class, inst_field_name)
 
 
 def _get_unexpanded_field_value(inst, field_name, field_type):
@@ -42,19 +43,22 @@ def _get_unexpanded_field_value(inst, field_name, field_type):
         return DEFAULT_UNEXPANDED_VALUE
 
     display_key = field_type.display_key or field_type.model_class._meta.pk.name
-    is_multiple = isinstance(inst.__class__._meta.get_field(field_name), ManyToOneRel)
+    inst_field_name = field_type.inst_field_name or field_name
+    is_multiple = isinstance(
+        inst.__class__._meta.get_field(inst_field_name), ManyToOneRel
+    )
 
     if is_multiple:
         # special case for keys that have multiple values (for instance, inverse fk relations)
-        obj = getattr(inst, field_name)
+        obj = getattr(inst, inst_field_name)
         return [{display_key: getattr(v, display_key)} for v in obj.all()]
 
     if display_key == field_type.model_class._meta.pk.name:
         # special case - we know this is a primary key, so we can get it without retrieving the object
-        return {display_key: getattr(inst, field_name + "_id")}
+        return {display_key: getattr(inst, inst_field_name + "_id")}
     else:
         # we're not returning the PK - have to actually retrieve the model
-        obj = getattr(inst, field_name)
+        obj = getattr(inst, inst_field_name)
         return {display_key: getattr(obj, display_key)}
 
 
@@ -67,8 +71,12 @@ def _get_filtered_field_value(
 
     if isinstance(field_type, types.FunctionType):
         val = field_type(inst)
-    elif isinstance(field_type, _ExpandableForeignKey) and not expand_this:
-        val = _get_unexpanded_field_value(inst, field_name, field_type)
+    elif isinstance(field_type, _ExpandableForeignKey):
+        if expand_this:
+            inst_field_name = field_type.inst_field_name or field_name
+            val = getattr(inst, inst_field_name)
+        else:
+            val = _get_unexpanded_field_value(inst, field_name, field_type)
     else:
         try:
             val = getattr(inst, field_name)
