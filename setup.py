@@ -25,6 +25,7 @@ setuptools.setup(
     url="https://salesforce.com",
     description="Simple, readable, declarative APIs for Django",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",
