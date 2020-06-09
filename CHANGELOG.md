@@ -6,7 +6,9 @@ and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-# [Unrelased]
+# [0.21.0]
+### Added
+- [PR 42](https://github.com/salesforce/django-declarative-apis/pull/42) Add inst_field_name to expandable fields
 ### Changed
 - [PR 39](https://github.com/salesforce/django-declarative-apis/pull/39) Add long_description to setup 
 - [PR 40](https://github.com/salesforce/django-declarative-apis/pull/40) Remove use of root logger
