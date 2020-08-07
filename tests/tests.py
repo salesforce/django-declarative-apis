@@ -8,7 +8,7 @@
 import json
 from http import HTTPStatus
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.core.cache import cache
 
 from . import testutils
@@ -16,6 +16,7 @@ from . import testutils
 from django_declarative_apis import models as auth_models
 
 
+@override_settings(DECLARATIVE_ENDPOINT_TASKS_FORCE_SYNCHRONOUS=True)
 class DeclarativeApisTestCase(TestCase):
     client_class = testutils.DeclarativeApisOAuthClient
 
