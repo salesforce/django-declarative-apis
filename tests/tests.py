@@ -7,7 +7,6 @@
 
 import json
 from http import HTTPStatus
-from unittest import mock
 
 from django.test import TestCase
 from django.core.cache import cache
@@ -40,7 +39,7 @@ class DeclarativeApisTestCase(TestCase):
 
     def test_skip_deferred_task(self):
         cache.set('deferred_task_called', False)
-        resource = self.client.get(
+        self.client.get(
             "/simple?skip_task=True",
             consumer=self.consumer,
             expected_status_code=HTTPStatus.OK
@@ -49,8 +48,8 @@ class DeclarativeApisTestCase(TestCase):
 
     def test_run_deferred_task(self):
         cache.set('deferred_task_called', False)
-        resource = self.client.get("/simple",
-                                   consumer=self.consumer,
-                                   expected_status_code=HTTPStatus.OK
-                                   )
+        self.client.get("/simple",
+                        consumer=self.consumer,
+                        expected_status_code=HTTPStatus.OK
+                        )
         self.assertTrue(cache.get('deferred_task_called'))
