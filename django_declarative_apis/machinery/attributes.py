@@ -363,6 +363,7 @@ class DeferrableEndpointTask(EndpointTask):
         routing_key=None,
         retries=0,
         retry_exception_filter=(),
+        execute_unless=None,
         **kwargs
     ):
         super(DeferrableEndpointTask, self).__init__(**kwargs)
@@ -378,6 +379,13 @@ class DeferrableEndpointTask(EndpointTask):
         self.retries = retries
         self.retry_exception_filter = retry_exception_filter
 
+        if execute_unless:
+            assert callable(execute_unless), (
+                "execute_unless MUST be an instance method that takes no arguments"
+            )
+
+        self.execute_unless = execute_unless
+
         assert task_args_factory is None or callable(task_args_factory)
         self.task_args_factory = task_args_factory
 
@@ -392,6 +400,9 @@ class DeferrableEndpointTask(EndpointTask):
             return maybe_callable
 
     def _run_task(self, owner_instance):
+        if self.execute_unless and self.execute_unless(owner_instance):
+            return
+
         resource = owner_instance.resource
 
         assert isinstance(
