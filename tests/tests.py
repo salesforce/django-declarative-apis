@@ -7,8 +7,10 @@
 
 import json
 from http import HTTPStatus
+from unittest import mock
 
 from django.test import TestCase
+from django.core.cache import cache
 
 from . import testutils
 
@@ -35,3 +37,20 @@ class DeclarativeApisTestCase(TestCase):
         error = json.loads(response.content.decode("utf-8"))
         self.assertEqual(error["error_code"], 703)
         self.assertTrue("Invalid values for field(s): int_type_field")
+
+    def test_skip_deferred_task(self):
+        cache.set('deferred_task_called', False)
+        resource = self.client.get(
+            "/simple?skip_task=True",
+            consumer=self.consumer,
+            expected_status_code=HTTPStatus.OK
+        )
+        self.assertFalse(cache.get('deferred_task_called'))
+
+    def test_run_deferred_task(self):
+        cache.set('deferred_task_called', False)
+        resource = self.client.get("/simple",
+                                   consumer=self.consumer,
+                                   expected_status_code=HTTPStatus.OK
+                                   )
+        self.assertTrue(cache.get('deferred_task_called'))

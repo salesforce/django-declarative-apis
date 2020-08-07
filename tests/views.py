@@ -5,7 +5,10 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-from django_declarative_apis.machinery import EndpointDefinition, field
+from django_declarative_apis.machinery import EndpointDefinition, field, deferrable_task, endpoint_resource
+from django.core.cache import cache
+
+from tests.models import TestModel
 
 
 class SimpleEndpointDefinition(EndpointDefinition):
@@ -13,7 +16,16 @@ class SimpleEndpointDefinition(EndpointDefinition):
         return True
 
     int_type_field = field(type=int)
+    skip_task = field(type=bool, default=False)
 
-    @property
+    @endpoint_resource(type=TestModel)
     def resource(self):
-        return {}
+        return TestModel.objects.create(int_field=1)
+
+    def execution_decider(self):
+        return self.skip_task
+
+    @deferrable_task(execute_unless=execution_decider)
+    @staticmethod
+    def deferred_task(inst):
+        cache.set('deferred_task_called', True)
