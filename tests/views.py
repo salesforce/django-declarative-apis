@@ -5,7 +5,12 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-from django_declarative_apis.machinery import EndpointDefinition, field, deferrable_task, endpoint_resource
+from django_declarative_apis.machinery import (
+    EndpointDefinition,
+    field,
+    deferrable_task,
+    endpoint_resource,
+)
 from django.core.cache import cache
 
 from tests.models import TestModel
@@ -28,4 +33,4 @@ class SimpleEndpointDefinition(EndpointDefinition):
     @deferrable_task(execute_unless=execution_decider)
     @staticmethod
     def deferred_task(inst):
-        cache.set('deferred_task_called', True)
+        cache.set("deferred_task_called", True)

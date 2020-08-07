@@ -380,9 +380,9 @@ class DeferrableEndpointTask(EndpointTask):
         self.retry_exception_filter = retry_exception_filter
 
         if execute_unless:
-            assert callable(execute_unless), (
-                "execute_unless MUST be an instance method that takes no arguments"
-            )
+            assert callable(
+                execute_unless
+            ), "execute_unless MUST be an instance method that takes no arguments"
 
         self.execute_unless = execute_unless
 

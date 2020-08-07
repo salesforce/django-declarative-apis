@@ -38,18 +38,17 @@ class DeclarativeApisTestCase(TestCase):
         self.assertTrue("Invalid values for field(s): int_type_field")
 
     def test_skip_deferred_task(self):
-        cache.set('deferred_task_called', False)
+        cache.set("deferred_task_called", False)
         self.client.get(
             "/simple?skip_task=True",
             consumer=self.consumer,
-            expected_status_code=HTTPStatus.OK
+            expected_status_code=HTTPStatus.OK,
         )
-        self.assertFalse(cache.get('deferred_task_called'))
+        self.assertFalse(cache.get("deferred_task_called"))
 
     def test_run_deferred_task(self):
-        cache.set('deferred_task_called', False)
-        self.client.get("/simple",
-                        consumer=self.consumer,
-                        expected_status_code=HTTPStatus.OK
-                        )
-        self.assertTrue(cache.get('deferred_task_called'))
+        cache.set("deferred_task_called", False)
+        self.client.get(
+            "/simple", consumer=self.consumer, expected_status_code=HTTPStatus.OK
+        )
+        self.assertTrue(cache.get("deferred_task_called"))
