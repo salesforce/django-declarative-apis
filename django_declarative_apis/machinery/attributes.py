@@ -7,6 +7,7 @@
 
 import abc
 import collections.abc
+import inspect
 import random
 import string
 import time
@@ -380,9 +381,10 @@ class DeferrableEndpointTask(EndpointTask):
         self.retry_exception_filter = retry_exception_filter
 
         if execute_unless:
-            assert callable(
-                execute_unless
-            ), "execute_unless MUST be an instance method that takes no arguments"
+            assert callable(execute_unless), "execute_unless MUST be callable"
+            assert inspect.getfullargspec(execute_unless).args == [
+                "self"
+            ], "execute_unless MUST be an instance method that takes only the 'self' argument"
 
         self.execute_unless = execute_unless
 
