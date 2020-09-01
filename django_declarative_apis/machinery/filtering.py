@@ -115,6 +115,13 @@ def _apply_filters_to_object(inst, filter_def, expand_children=None, klass=None)
             )
             for item in inst
         ]
+    elif isinstance(inst, (dict,)):
+        return {
+            k: _apply_filters_to_object(
+                v, filter_def, expand_children=expand_children, klass=v.__class__
+            )
+            for k, v in inst.items()
+        }
 
     fields_def = filter_def.get(klass)
     if fields_def is None:

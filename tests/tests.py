@@ -28,6 +28,29 @@ class DeclarativeApisTestCase(TestCase):
             "/simple", consumer=self.consumer, expected_status_code=HTTPStatus.OK
         )
 
+    def test_dict_endpoint(self):
+        resp = self.client.get(
+            "/dict", consumer=self.consumer, expected_status_code=HTTPStatus.OK
+        )
+        data = resp.json()
+        self.assertEqual(
+            data,
+            {
+                "test": {
+                    "pk": 1,
+                    "int_field": 1,
+                    "__expandable__": ["expandable_dict", "expandable_string"],
+                },
+                "deep_test": {
+                    "test": {
+                        "pk": 1,
+                        "int_field": 1,
+                        "__expandable__": ["expandable_dict", "expandable_string"],
+                    }
+                },
+            },
+        )
+
     def test_typed_parameter(self):
         response = self.client.get(
             "/simple?int_type_field=not_an_int",
