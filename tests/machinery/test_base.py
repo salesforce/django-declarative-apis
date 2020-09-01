@@ -14,6 +14,7 @@ import django.test
 import kombu.exceptions
 import mock
 from django.core.cache import cache
+from django.http import HttpRequest
 
 import tests.models
 from django_declarative_apis import machinery, models as dda_models
@@ -291,10 +292,15 @@ class EndpointBinderTestCase(django.test.TestCase):
             def response(self):
                 return {"people": self.resource}
 
+            def __call__(self):
+                return self
+
         endpoint = _TestEndpoint()
         manager = machinery.EndpointBinder.BoundEndpointManager(
             machinery._EndpointRequestLifecycleManager(endpoint), endpoint
         )
+        machinery.EndpointBinder(endpoint).create_bound_endpoint(manager, HttpRequest())
+
         status, resp = manager.get_response()
         self.assertEqual(status, http.HTTPStatus.OK)
         # make sure the list is in the expected order
@@ -723,6 +729,9 @@ class _TestEndpoint(machinery.EndpointDefinition):
         super(_TestEndpoint, self).__init__(*args, **kwargs)
         self.expected_response = expected_response
 
+    def __call__(self):
+        return self
+
     @machinery.endpoint_resource(
         type=tests.models.TestModel, filter={str: filtering.ALWAYS}
     )
@@ -787,6 +796,7 @@ class DeferrableTaskTestCase(django.test.TestCase):
         manager = machinery.EndpointBinder.BoundEndpointManager(
             machinery._EndpointRequestLifecycleManager(endpoint), endpoint
         )
+        machinery.EndpointBinder(endpoint).create_bound_endpoint(manager, HttpRequest())
 
         conf = tasks.future_task_runner.app.conf
         old_val = conf["task_always_eager"]
@@ -826,6 +836,7 @@ class DeferrableTaskTestCase(django.test.TestCase):
         manager = machinery.EndpointBinder.BoundEndpointManager(
             machinery._EndpointRequestLifecycleManager(endpoint), endpoint
         )
+        machinery.EndpointBinder(endpoint).create_bound_endpoint(manager, HttpRequest())
 
         conf = tasks.future_task_runner.app.conf
         old_val = conf["task_always_eager"]
@@ -854,6 +865,7 @@ class DeferrableTaskTestCase(django.test.TestCase):
         manager = machinery.EndpointBinder.BoundEndpointManager(
             machinery._EndpointRequestLifecycleManager(endpoint), endpoint
         )
+        machinery.EndpointBinder(endpoint).create_bound_endpoint(manager, HttpRequest())
 
         conf = tasks.future_task_runner.app.conf
         old_val = conf["task_always_eager"]
@@ -883,6 +895,7 @@ class DeferrableTaskTestCase(django.test.TestCase):
         manager = machinery.EndpointBinder.BoundEndpointManager(
             machinery._EndpointRequestLifecycleManager(endpoint), endpoint
         )
+        machinery.EndpointBinder(endpoint).create_bound_endpoint(manager, HttpRequest())
 
         conf = tasks.future_task_runner.app.conf
         old_val = conf["task_always_eager"]
@@ -926,6 +939,7 @@ class DeferrableTaskTestCase(django.test.TestCase):
         manager = machinery.EndpointBinder.BoundEndpointManager(
             machinery._EndpointRequestLifecycleManager(endpoint), endpoint
         )
+        machinery.EndpointBinder(endpoint).create_bound_endpoint(manager, HttpRequest())
 
         # can't use mock.patch.dict here because it doesn't implement the api that the unpatcher expects
         conf = tasks.future_task_runner.app.conf
