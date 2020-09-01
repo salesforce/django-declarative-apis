@@ -182,19 +182,6 @@ class EndpointBinder(object):
                     return status_code, data
                 else:
                     raise HttpStatusCode(data)
-            elif isinstance(data, dict):
-                result = {}
-                for key, value in data.items():
-                    if isinstance(value, (list, tuple, models.query.QuerySet)):
-                        result[key] = []
-                        for item in value:
-                            result[key].append(
-                                apply_filters_to_object(item, filter_def)
-                            )
-                    else:
-                        result[key] = apply_filters_to_object(value, filter_def)
-
-                return status_code, result
             else:
                 return (
                     status_code,
