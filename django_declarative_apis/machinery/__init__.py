@@ -192,7 +192,7 @@ class EndpointBinder(object):
                                 apply_filters_to_object(item, filter_def)
                             )
                     else:
-                        result[key] = value
+                        result[key] = apply_filters_to_object(value, filter_def)
 
                 return status_code, result
             else:
