@@ -34,3 +34,14 @@ class SimpleEndpointDefinition(EndpointDefinition):
     @staticmethod
     def deferred_task(inst):
         cache.set("deferred_task_called", True)
+
+
+class DictEndpointDefinition(EndpointDefinition):
+    def is_authorized(self):
+        return True
+
+    @endpoint_resource(type=TestModel)
+    def resource(self):
+        return {
+            'test': TestModel.objects.create(int_field=1)
+        }
