@@ -723,7 +723,9 @@ class _TestEndpoint(machinery.EndpointDefinition):
         super(_TestEndpoint, self).__init__(*args, **kwargs)
         self.expected_response = expected_response
 
-    @machinery.endpoint_resource(type=tests.models.TestModel, filter={str: filtering.ALWAYS})
+    @machinery.endpoint_resource(
+        type=tests.models.TestModel, filter={str: filtering.ALWAYS}
+    )
     def resource(self):
         return tests.models.TestModel(int_field=0)
 

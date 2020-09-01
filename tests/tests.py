@@ -33,13 +33,16 @@ class DeclarativeApisTestCase(TestCase):
             "/dict", consumer=self.consumer, expected_status_code=HTTPStatus.OK
         )
         data = resp.json()
-        self.assertEqual(data,
-                         {'test': {
-                             'pk': 1,
-                             'int_field': 1,
-                             '__expandable__': ['expandable_dict', 'expandable_string']
-                         }
-                         })
+        self.assertEqual(
+            data,
+            {
+                "test": {
+                    "pk": 1,
+                    "int_field": 1,
+                    "__expandable__": ["expandable_dict", "expandable_string"],
+                }
+            },
+        )
 
     def test_typed_parameter(self):
         response = self.client.get(
