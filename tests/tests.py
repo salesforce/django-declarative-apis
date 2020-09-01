@@ -46,8 +46,8 @@ class DeclarativeApisTestCase(TestCase):
                         "pk": 1,
                         "int_field": 1,
                         "__expandable__": ["expandable_dict", "expandable_string"],
-                    },
-                }
+                    }
+                },
             },
         )
 

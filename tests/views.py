@@ -43,7 +43,4 @@ class DictEndpointDefinition(EndpointDefinition):
     @endpoint_resource(type=TestModel)
     def resource(self):
         inst = TestModel.objects.create(int_field=1)
-        return {"test": inst,
-                "deep_test": {
-                    "test": inst
-                }}
+        return {"test": inst, "deep_test": {"test": inst}}
