@@ -28,7 +28,7 @@ Create django app
 Add app to INSTALLED\_APPS
 --------------------------
 
-``` sourceCode
+``` python
 INSTALLED_APPS = [
    'django_declarative_apis',
    'myapp',
@@ -38,7 +38,7 @@ INSTALLED_APPS = [
 Add required config
 -------------------
 
-``` sourceCode
+``` python
 DECLARATIVE_ENDPOINT_RESOURCE_ADAPTER = 'django_declarative_apis.adapters.EndpointResource'
 DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS = 'django_declarative_apis.authentication.oauthlib.oauth1.TwoLeggedOauth1'
 ```
@@ -46,7 +46,7 @@ DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS = 'django_declarative_apis.authenti
 myapp/urls.py
 -------------
 
-``` sourceCode
+``` python
 from django_declarative_apis import adapters
 import myapp.resources
 
@@ -70,7 +70,7 @@ urlpatterns = [
 myproject/myproject/urls.py
 ---------------------------
 
-``` sourceCode
+``` python
 from django.conf.urls import url, include
 import myapp.urls
 
@@ -82,7 +82,7 @@ urlpatterns = [
 myapp/resources.py
 ------------------
 
-``` sourceCode
+``` python
 from django_declarative_apis import machinery
 
 
