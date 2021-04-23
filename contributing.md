@@ -1,8 +1,8 @@
 This project is owned by the [Mobile Identity Team](https://gus.lightning.force.com/lightning/r/CollaborationGroup/0F9B00000002nQMKAY/view).
-To contribute to this progect, you'll need to follow the [fork-and-PR](https://help.github.com/articles/creating-a-pull-request-from-a-fork/) workflow.
+To contribute to this project, you'll need to follow the [fork-and-PR](https://help.github.com/articles/creating-a-pull-request-from-a-fork/) workflow.
 
 * We try to follow [PEP 8](https://www.python.org/dev/peps/pep-0008/) for coding standards.
-* Tests run as a side effect of PRs must not be broken (see [our Jenkins instance](https://salesforceauth.ci.data.com/job/declarative-apis-test/)
+* Tests run as a side effect of PRs must not be broken (see [our Jenkins instance](https://salesforceauth.ci.data.com/job/declarative-apis-test/))
 
 As this library is powering production services, new features must be approved by the team. Feel free to contribute PRs for bug fixes, but anything beyond that should
 have at least have a discussion first. Please use the Github issue tracker to kick off the discussion. Rough ideas to fully fleshed out designs are welcome!
