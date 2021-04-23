@@ -1,7 +1,7 @@
 bandit~=1.6
 black==19.3b0
 bumpversion~=0.5
-coverage==4.3.4
+coverage~=5.0
 flake8~=3.7.0
 ipython==4.2.1
 mock==2.0.0
