@@ -183,12 +183,17 @@ class EndpointBinder(object):
                 else:
                     raise HttpStatusCode(data)
             else:
+                try:
+                    x_expand = self.bound_endpoint.request.META.get("HTTP_X_EXPAND")
+                except:
+                    x_expand = ""
+
                 return (
                     status_code,
                     apply_filters_to_object(
                         data,
                         filter_def,
-                        self.bound_endpoint.request.META.get("HTTP_X_EXPAND"),
+                        x_expand
                     ),
                 )
 

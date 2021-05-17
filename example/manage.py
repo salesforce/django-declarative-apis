@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # Copyright (c) 2019, salesforce.com, inc.
 # All rights reserved.
@@ -5,7 +6,6 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-#!/usr/bin/env python
 import os
 import sys
 
