@@ -33,9 +33,9 @@ urlpatterns = [
         resource_adapter(get=resources.MeDefinition, post=resources.MeUpdateDefinition),
     ),
     url(
-        r"^ping$", resource_adapter(
-            get=resources.PingDefinition,
-            authentication={None: (NoAuth(),)}
-        )
+        r"^ping$",
+        resource_adapter(
+            get=resources.PingDefinition, authentication={None: (NoAuth(),)}
+        ),
     ),
 ]

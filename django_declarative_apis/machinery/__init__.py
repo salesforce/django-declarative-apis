@@ -190,11 +190,7 @@ class EndpointBinder(object):
 
                 return (
                     status_code,
-                    apply_filters_to_object(
-                        data,
-                        filter_def,
-                        x_expand
-                    ),
+                    apply_filters_to_object(data, filter_def, x_expand),
                 )
 
     def __init__(self, endpoint_definition):
