@@ -68,6 +68,7 @@ class MeUpdateDefinition(MeResourceMixin, machinery.ResourceUpdateEndpointDefini
 class PingDefinition(machinery.BaseEndpointDefinition):
     """A basic "ping" endpoint
     """
+
     # filter definition for the resource. values will be masked by default (i.e. without this, the user would get
     # '{"ping": null}' in the response body.
     response_filter = {str: filtering.ALWAYS}
