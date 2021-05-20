@@ -185,7 +185,7 @@ class EndpointBinder(object):
             else:
                 try:
                     x_expand = self.bound_endpoint.request.META.get("HTTP_X_EXPAND")
-                except:
+                except AttributeError:
                     x_expand = ""
 
                 return (
