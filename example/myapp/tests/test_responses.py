@@ -1,9 +1,7 @@
-from django.http import request
 import http
-import oauthlib
 
 from django.test import TestCase
-from .testutils import  OAuthClient
+from .testutils import OAuthClient
 from django_declarative_apis.models import OauthConsumer
 
 class ResponseTestCase(TestCase):
@@ -22,5 +20,8 @@ class ResponseTestCase(TestCase):
             '/me',
             {},
             consumer=consumer,
+            secure=True,
         )
         self.assertEqual(resp.status_code, http.HTTPStatus.OK)
+        self.assertEqual(resp.json()['key'], consumer.key)
+        self.assertEqual(resp.json()['name'], consumer.name)

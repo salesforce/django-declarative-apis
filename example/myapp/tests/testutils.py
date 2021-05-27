@@ -1,29 +1,16 @@
 import oauth2
 import oauthlib
 import time
-import sys
 
 from django.test.client import ClientHandler
 from django.http import QueryDict
 from django import test
-import traceback
-import logging
 from django_declarative_apis.models import OauthConsumer
 
-logger = logging.getLogger(__name__)
 
 class OAuthClientHandler(ClientHandler):
     def __init__(self, *args, **kwargs):
         super(OAuthClientHandler, self).__init__(*args, **kwargs)
-        self.one_time_client_timestamp_override = None
-
-    def get_oauth_client_timestamp(self):
-        if self.one_time_client_timestamp_override:
-            result = self.one_time_client_timestamp_override
-            self.one_time_client_timestamp_override = None
-        else:
-            result = int(time.time())
-        return result
 
     def get_response(self, request):
         consumer = OauthConsumer.objects.get(name='smith')
@@ -42,10 +29,10 @@ class OAuthClientHandler(ClientHandler):
             # This provides a way for us to override default values for testing.
             oauth_version = request.META.get('oauth_version', '1.0')
             oauth_nonce = request.META.get('oauth_nonce', oauth2.generate_nonce())
-            oauth_client_timestamp = request.META.get('oauth_timestamp', self.get_oauth_client_timestamp())
+            oauth_client_timestamp = request.META.get('oauth_timestamp', int(time.time()))
 
             rsa_key = request.META.get('rsa_key', None)
-            oauth_signature_method = oauthlib.oauth1.SIGNATURE_RSA if rsa_key else oauthlib.oauth1.SIGNATURE_HMAC
+            oauth_signature_method = oauthlib.oauth1.SIGNATURE_HMAC
 
 
             oauth_signature_data = {
@@ -60,34 +47,21 @@ class OAuthClientHandler(ClientHandler):
             all_request_parameters = data.copy()
             all_request_parameters.update(oauth_signature_data)
 
-            if oauth_signature_method == oauthlib.oauth1.SIGNATURE_RSA:
-                # use RSA-SHA1 signature method
-                oauth1_client = oauthlib.oauth1.Client(
-                    consumer.key,
-                    signature_method=oauth_signature_method,
-                    rsa_key=rsa_key
-                )
 
-                oauth_request = oauthlib.common.Request(request.build_absolute_uri(request.path),
-                                                        http_method=request.method,
-                                                        body=all_request_parameters)
+            # use HMAC-SHA1 signature method
+            oauth_signature_data.update({'oauth_signature_method': 'HMAC-SHA1'})
 
-                oauth_signature_data['oauth_signature'] = oauth1_client.get_oauth_signature(oauth_request)
-            else:
-                # use HMAC-SHA1 signature method
-                oauth_signature_data.update({'oauth_signature_method': 'HMAC-SHA1'})
+            # Create oauth request object to compute signature
+            oauth_request = oauth2.Request.from_consumer_and_token(consumer, None,
+                                                                   request.method,
+                                                                   request.build_absolute_uri(request.path),
+                                                                   all_request_parameters,
+                                                                   is_form_encoded=True)
 
-                # Create oauth request object to compute signature
-                oauth_request = oauth2.Request.from_consumer_and_token(consumer, None,
-                                                                       request.method,
-                                                                       request.build_absolute_uri(request.path),
-                                                                       all_request_parameters,
-                                                                       is_form_encoded=True)
-
-                # Add signature to django request
-                signature_method = oauth2.SignatureMethod_HMAC_SHA1()
-                oauth_request.sign_request(signature_method, consumer, None)
-                oauth_signature_data['oauth_signature'] = oauth_request.get_parameter('oauth_signature').decode('utf-8')
+            # Add signature to django request
+            signature_method = oauth2.SignatureMethod_HMAC_SHA1()
+            oauth_request.sign_request(signature_method, consumer, None)
+            oauth_signature_data['oauth_signature'] = oauth_request.get_parameter('oauth_signature').decode('utf-8')
 
             use_auth_header_signature = request.META.pop('use_auth_header_signature', False)
             if use_auth_header_signature:
@@ -111,38 +85,8 @@ class OAuthClient(test.Client):
         test.Client.__init__(self, *args, **kwargs)
         self.handler = OAuthClientHandler()
 
-    def request(self, expected_status_code=None, **kwargs):
+    def request(self, **kwargs):
         response = super(OAuthClient, self).request(**kwargs)
-        if expected_status_code is not None:
-            if response.status_code != expected_status_code:
-                logger.info("Response content:\n{}\n".format(response.content))
-
-                # If response has an error traceback, print it
-                try:
-                    error = response.error
-                    cause = error.__cause__
-                    tb = cause.__traceback__
-                    logger.info("Server error traceback:")
-                    traceback.print_exception(type(cause), cause, tb, file=sys.stdout)
-                except AttributeError:
-                    pass  # No server error traceback available
-
-                raise AssertionError(
-                    "Status code, {}, did not match expected status code, {}".format(
-                        response.status_code, expected_status_code
-                    )
-                )
-
-        # check cache-control header here, so we can globally ensure that all OAuth endpoints (including those
-        # added in the future) include the correct Cache-Control value
-        # if "Cache-Control" not in response:
-        #     raise AssertionError("Cache-Control header missing")
-        # if response["Cache-Control"] != "no-cache, no-store":
-        #     raise AssertionError(
-        #         "Cache-Control header value is {0}, should be no-store".format(
-        #             response["Cache-Control"]
-        #         )
-        #     )
 
         return response
 
