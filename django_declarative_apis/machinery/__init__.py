@@ -183,13 +183,14 @@ class EndpointBinder(object):
                 else:
                     raise HttpStatusCode(data)
             else:
+                try:
+                    x_expand = self.bound_endpoint.request.META.get("HTTP_X_EXPAND")
+                except AttributeError:
+                    x_expand = ""
+
                 return (
                     status_code,
-                    apply_filters_to_object(
-                        data,
-                        filter_def,
-                        self.bound_endpoint.request.META.get("HTTP_X_EXPAND"),
-                    ),
+                    apply_filters_to_object(data, filter_def, x_expand),
                 )
 
     def __init__(self, endpoint_definition):

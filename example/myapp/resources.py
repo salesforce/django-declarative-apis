@@ -5,6 +5,10 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
+import json
+
+import django.http
+
 from django_declarative_apis import machinery, models
 from django_declarative_apis.machinery import filtering
 
@@ -65,6 +69,10 @@ class PingDefinition(machinery.BaseEndpointDefinition):
     """A basic "ping" endpoint
     """
 
+    # filter definition for the resource. values will be masked by default (i.e. without this, the user would get
+    # '{"ping": null}' in the response body.
+    response_filter = {str: filtering.ALWAYS}
+
     def is_authorized(self):
         """User should always be authorized
         """
@@ -73,8 +81,5 @@ class PingDefinition(machinery.BaseEndpointDefinition):
     @property
     def resource(self):
         """The endpoint resource
-
-        Endpoint resources can be implemented as either properties or machinery.endpoint_resources.
-        The latter will require filters to be defined.
         """
         return {"ping": "pong"}

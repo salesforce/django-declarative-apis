@@ -126,6 +126,12 @@ STATIC_URL = "/static/"
 DECLARATIVE_ENDPOINT_RESOURCE_ADAPTER = (
     "django_declarative_apis.adapters.EndpointResource"
 )
-DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS = (
-    "django_declarative_apis.authentication.oauthlib.oauth1.TwoLeggedOauth1",
-)
+DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS = [
+    (
+        (
+            None,
+            "django_declarative_apis.authentication.oauthlib.oauth1.TwoLeggedOauth1Hint",
+        ),
+        "django_declarative_apis.authentication.oauthlib.oauth1.TwoLeggedOauth1",
+    )
+]

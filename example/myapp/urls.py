@@ -7,12 +7,13 @@
 
 from django.conf.urls import url
 
+from django_declarative_apis import authentication
 from django_declarative_apis.adapters import resource_adapter
 
 from myapp import resources
 
 
-class NoAuth:
+class NoAuth(authentication.Authenticator):
     """A custom NoAuth class to treat all requests as authenticated
 
     By default, django-declarative-apis requires authentication. This allows us to get around that.
@@ -22,6 +23,9 @@ class NoAuth:
     def is_authenticated(request):
         return True
 
+    def challenge(self, error):
+        super().challenge(error)
+
 
 urlpatterns = [
     url(
@@ -29,6 +33,9 @@ urlpatterns = [
         resource_adapter(get=resources.MeDefinition, post=resources.MeUpdateDefinition),
     ),
     url(
-        r"^ping$", resource_adapter(get=resources.PingDefinition, authentication=NoAuth)
+        r"^ping$",
+        resource_adapter(
+            get=resources.PingDefinition, authentication={None: (NoAuth(),)}
+        ),
     ),
 ]

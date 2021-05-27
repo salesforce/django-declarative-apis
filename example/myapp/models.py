@@ -10,5 +10,7 @@ import django_declarative_apis.models
 
 
 class User(models.Model):
-    consumer = models.ForeignKey(django_declarative_apis.models.OauthConsumer)
+    consumer = models.ForeignKey(
+        django_declarative_apis.models.OauthConsumer, on_delete=models.CASCADE
+    )
     name = models.CharField(max_length=50, null=False, blank=False)
