@@ -11,6 +11,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - [PR 52](https://github.com/salesforce/django-declarative-apis/pull/52) Update cryptography and coverage dependencies
+- [PR 56](https://github.com/salesforce/django-declarative-apis/pull/56) Add Python 3.8 and 3.9 to Travis CI testing
 
 # [0.22.2] - 2020-08-11
 ### Fixed
