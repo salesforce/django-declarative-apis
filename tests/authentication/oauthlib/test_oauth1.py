@@ -11,7 +11,7 @@ import unittest
 
 import django.test
 import django.http
-import mock
+from unittest import mock
 
 from django_declarative_apis import models
 from django_declarative_apis import authentication
