@@ -6,7 +6,7 @@
 #
 
 import django.test
-import mock
+from unittest import mock
 
 from django_declarative_apis.machinery import filtering
 

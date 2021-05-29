@@ -11,7 +11,7 @@ import json
 import django.conf
 import django.core.exceptions
 import django.test
-import mock
+from unittest import mock
 
 from django_declarative_apis.authentication.oauthlib import oauth_errors
 from django_declarative_apis.resources import resource

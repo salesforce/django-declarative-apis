@@ -12,7 +12,7 @@ import unittest
 import django.core.exceptions
 import django.test
 import kombu.exceptions
-import mock
+from unittest import mock
 from django.core.cache import cache
 from django.http import HttpRequest
 
