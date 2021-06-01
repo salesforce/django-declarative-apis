@@ -133,5 +133,5 @@ DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS = [
             "django_declarative_apis.authentication.oauthlib.oauth1.TwoLeggedOauth1Hint",
         ),
         "django_declarative_apis.authentication.oauthlib.oauth1.TwoLeggedOauth1",
-    )
+    ),
 ]
