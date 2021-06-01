@@ -14,8 +14,7 @@ from django_declarative_apis.machinery import filtering
 
 
 class MeResourceMixin:
-    """Resource mixin for create and get endpoints
-    """
+    """Resource mixin for create and get endpoints"""
 
     @machinery.endpoint_resource(
         type=models.OauthConsumer,
@@ -66,20 +65,17 @@ class MeUpdateDefinition(MeResourceMixin, machinery.ResourceUpdateEndpointDefini
 
 
 class PingDefinition(machinery.BaseEndpointDefinition):
-    """A basic "ping" endpoint
-    """
+    """A basic "ping" endpoint"""
 
     # filter definition for the resource. values will be masked by default (i.e. without this, the user would get
     # '{"ping": null}' in the response body.
     response_filter = {str: filtering.ALWAYS}
 
     def is_authorized(self):
-        """User should always be authorized
-        """
+        """User should always be authorized"""
         return True
 
     @property
     def resource(self):
-        """The endpoint resource
-        """
+        """The endpoint resource"""
         return {"ping": "pong"}

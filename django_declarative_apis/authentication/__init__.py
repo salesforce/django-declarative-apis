@@ -10,7 +10,7 @@ import typing
 
 
 class AuthenticatorHint(typing.NamedTuple):
-    """ Tuple to provide hints for authentication implementations
+    """Tuple to provide hints for authentication implementations
 
     header_hint: A string used to match the `Authentication: ` header.
     """
@@ -25,7 +25,7 @@ class Authenticator(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def challenge(self, error):
-        """ Results in the challenge response sent to the user
+        """Results in the challenge response sent to the user
 
         This should result in a django.http.HttpResponse that should include information through the
         WWW-Authenticate header around expectations.
@@ -61,7 +61,7 @@ class AuthenticationFailure(AuthenticationResult):
 
 
 def validate_authentication_config(config):
-    """ Validate the computed configuration of authentication handlers
+    """Validate the computed configuration of authentication handlers
 
     The schema for the config is:
 
