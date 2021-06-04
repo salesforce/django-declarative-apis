@@ -8,6 +8,7 @@ TEST_CMD = ${PYTHON} manage.py test --parallel
 TEST_WARNINGS_CMD = ${PYTHON} -Wa manage.py test
 # see .coveragerc for settings
 COVERAGE_CMD = coverage run manage.py test --noinput && coverage xml && coverage report
+EXAMPLE_COVERAGE_CMD = cd ${EXAMPLE_DIR} && coverage run manage.py test --noinput && coverage xml && coverage report
 STATIC_CMD = flake8 ${PACKAGE_DIR} ${TEST_DIR} ${EXAMPLE_DIR} setup.py
 VULN_STATIC_CMD = bandit -r -ii -ll -x ${PACKAGE_DIR}/migrations ${PACKAGE_DIR} 
 FORMAT_CMD = black ${PACKAGE_DIR} ${TEST_DIR} ${EXAMPLE_DIR} setup.py
@@ -34,7 +35,7 @@ readme:
 
 # Test targets
 
-test-all: coverage vuln-static formatcheck
+test-all: coverage example-tests-coverage vuln-static formatcheck
 .PHONY: test-all
 
 test:
@@ -48,6 +49,10 @@ test-warnings:
 coverage:
 	${COVERAGE_CMD}
 .PHONY: coverage
+
+example-tests-coverage:
+	${EXAMPLE_COVERAGE_CMD}
+.PHONY: example-tests-coverage
 
 static:
 	${STATIC_CMD}
