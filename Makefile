@@ -4,10 +4,11 @@ PACKAGE_DIR = django_declarative_apis
 TEST_DIR = tests
 EXAMPLE_DIR = example
 
-TEST_CMD = ${PYTHON} manage.py test --parallel
+TEST_CMD = ${PYTHON} manage.py test --parallel && cd ${EXAMPLE_DIR} && ${PYTHON} manage.py test
 TEST_WARNINGS_CMD = ${PYTHON} -Wa manage.py test
 # see .coveragerc for settings
 COVERAGE_CMD = coverage run manage.py test --noinput && coverage xml && coverage report
+EXAMPLE_COVERAGE_CMD = cd ${EXAMPLE_DIR} && coverage run manage.py test --noinput && coverage xml && coverage report
 STATIC_CMD = flake8 ${PACKAGE_DIR} ${TEST_DIR} ${EXAMPLE_DIR} setup.py
 VULN_STATIC_CMD = bandit -r -ii -ll -x ${PACKAGE_DIR}/migrations ${PACKAGE_DIR} 
 FORMAT_CMD = black ${PACKAGE_DIR} ${TEST_DIR} ${EXAMPLE_DIR} setup.py
@@ -34,7 +35,7 @@ readme:
 
 # Test targets
 
-test-all: coverage vuln-static formatcheck
+test-all: coverage vuln-static formatcheck test-example
 .PHONY: test-all
 
 test:
@@ -44,6 +45,10 @@ test:
 test-warnings:
 	${TEST_WARNINGS_CMD}
 .PHONY: test-warnings
+
+test-example:
+	${EXAMPLE_COVERAGE_CMD}
+.PHONY: test-example
 
 coverage:
 	${COVERAGE_CMD}

@@ -6,6 +6,9 @@ and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [unreleased] - YYYY-MM-DD
+### Added
+- [PR 59](https://github.com/salesforce/django-declarative-apis/pull/59) Add tests for example app's models and endpoint responses
+
 ### Fixed
 - [PR 55](https://github.com/salesforce/django-declarative-apis/pull/55) Backwards compatibility fix for field expansion headers, update example app
 
