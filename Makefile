@@ -34,7 +34,7 @@ readme:
 
 # Test targets
 
-test-all: coverage vuln-static formatcheck
+test-all: coverage vuln-static formatcheck subsystem
 .PHONY: test-all
 
 test:
@@ -60,3 +60,6 @@ vuln-static:
 formatcheck:
 	${FORMATCHECK_CMD}
 .PHONY: formatcheck
+
+subsystem:
+	$(MAKE) -C example
