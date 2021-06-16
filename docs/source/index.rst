@@ -15,11 +15,17 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   auth
-   resources
+   resource_adapter
+   endpoint_definitions
+   consumer
    fields
+   aggregates
    tasks
    filters
+
+
+
+
 
 
 Indices and tables
