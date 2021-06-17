@@ -67,6 +67,6 @@ OAuthConsumer
     # consumer.type
 
 Django Config Settings Related to Consumer
-----------------------------------------
+--------------------------------------------
 :code:`DECLARATIVE_ENDPOINT_CONSUMER_GETTER`
     Tries to get the consumer using the provided primary key. Should point to :code:`consumer_getter` function defined by the developer.

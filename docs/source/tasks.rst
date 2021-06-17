@@ -136,19 +136,19 @@ Deferrable Task
 
     **Default Value |** None
 
-**Example**
+    **Example**
 
-.. code-block:: python
+    .. code-block:: python
 
-    from django-declarative-apis import deferrable_task
+        from django-declarative-apis import deferrable_task
 
-    class SampleClass:
-        # code
+        class SampleClass:
+            # code
 
-        @deferrable_task(execute_unless=<condition>)
-        @staticmethod
-        def sample_method(arg):
-            # your code goes here
+            @deferrable_task(execute_unless=<condition>)
+            @staticmethod
+            def sample_method(arg):
+                # your code goes here
 
 
 

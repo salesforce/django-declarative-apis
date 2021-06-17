@@ -15,7 +15,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   resource_adapter
+   endpoint_resource
    endpoint_definitions
    consumer
    fields

@@ -115,10 +115,12 @@ Let’s set up the URLs in :code:`todo/urls.py`.
 
 1. :code:`resource_adapter` is a helper function that will look into Django’s config settings and find the endpoint resource adapter to call. In our case, :code:`DECLARATIVE_ENDPOINT_RESOURCE_ADAPTER` is set to :code:`EndpointResource`, which is the endpoint resource that will be called.
 
+
 2. :code:`EndpointResource` will perform:
     1. Authentication configuration check.
-    2. Performs authentication
-    3. Endpoint binding, which means routing the request to an endpoint definition based on the **HTTP verb** used and the **required parameters** accepted by the endpoint definition.
+    2. Endpoint binding, which means routing the request to an endpoint definition based on the **HTTP verb** used and the **required parameters** accepted by the endpoint definition.
+    3. The endpoint binder then executes the authentication checks defined in the endpoint definition, which are :code:`is_authorized`, :code:`is_permitted`, and :code:`is_valid`.
+
 
 3. Once the endpoint binding is successful, the request will be routed to the endpoint definition that can handle it. In our case it will be routed to :code:`resources.TodoUpdateDefinition`.
 
@@ -160,9 +162,9 @@ Let’s set up our endpoint definition in a new file named :code:`todo/resources
 
 **The important points to note here:**
 
-1. Once the authentication and binding are successfully completed, the framework will run TodoUpdateDefinition.resource(), which will refer to the fields.
+1. Once the authentication and binding are successfully completed, the framework will run :code:`TodoUpdateDefinition.resource()`, which will refer to the fields.
 
-2. fields will process the request data
+2. fields will process the request data.
 
     .. note::
         If :code:`aggregates` and :code:`tasks` are present, the framework will also be process those in this stage.

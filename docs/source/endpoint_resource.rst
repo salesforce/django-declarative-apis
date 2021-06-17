@@ -1,6 +1,6 @@
 Endpoint Resource
 ==================
-A endpoint resource maps to a single URL endpoint in a Django app’s urls.py. Each endpont resource can have one or more :code:`EndpointDefinition` that implements the handler code. HTTP verbs such as :code:`POST`, :code:`GET`, along with parameters present in the request determine which :code:`EndpointDefinition` is used.
+A endpoint resource maps to a single URL endpoint in a Django app’s urls.py. Each endpoint resource can have one or more :code:`EndpointDefinition` that implements the handler code. HTTP verbs such as :code:`POST`, :code:`GET`, along with parameters present in the request determine which :code:`EndpointDefinition` is used.
 
 
 Set Up Resource Adapter
@@ -28,7 +28,7 @@ Authentication Handler
     **Optional |** If not specified, :code:`OAuth1.0a` will be used by default.
 
     **Example:**
-    Handler defined in a separate file named handlers.py
+    Handler defined in a separate file named :code:`handlers.py`.
 
     .. code-block::
 
@@ -38,7 +38,7 @@ Authentication Handler
             authentication={None: (NoAuth(),)},
         )
 
-    Django app’s urls.py
+    Django app’s :code:`urls.py`.
 
     .. code-block::
 
@@ -66,10 +66,10 @@ Authentication is tied to the resource adapter. It is the first step that a requ
     Set :code:`DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS` to point to the authentication handler.
 
 :code:`resource_adapter()`
-    **Optional |** Defines authentication handler for a specific EndpointDefinition. To implement, set
+    **Optional |** Defines authentication handler for a specific endpoint definition. To implement, set
     :code:`authentication=<{<AuthenticatorHint>: [Authenticator]}>` in an argument to the :code:`resource_adapter()`.
 
-    Once specified, it will override the default authentication set up in settings.py
+    Once specified, it will override the default authentication setup in :code:`settings.py`.
 
     **Default Value |** :code:`None`
 
@@ -85,7 +85,7 @@ Authentication is tied to the resource adapter. It is the first step that a requ
         )
 
 
-The resource_adapter expects the authentication handler to conform to the following configuration schema.
+The :code:`resource_adapter` expects the authentication handler to conform to the following configuration schema.
 
 .. code-block::
 
@@ -111,7 +111,7 @@ The resource_adapter expects the authentication handler to conform to the follow
         SampleAuthenticatorHint = AuthenticatorHint("OAuth ")
 
 
-    If there are more complexities to the authenticator, catch-alls are allowed by using a key of None. The catch-all authenticators are always executed after matched authenticators.
+    If there are more complexities to the authenticator, catch-alls are allowed by using a key of :code:`None`. The catch-all authenticators are always executed after matched authenticators.
 
     .. code-block::
 
@@ -135,7 +135,7 @@ The resource_adapter expects the authentication handler to conform to the follow
 
         from django_declarative_apis.authentication import Authenticator
 
-        class SampleAuthenticator(*Authenticator*):
+        class SampleAuthenticator(Authenticator):
             # your code goes here
 
 **Example**
@@ -168,7 +168,7 @@ Features of DDA Authentication
         Takes in the request as an argument and identifies whether the requester is valid.
 
     :code:`challenge(error)`
-        Results in the challenge response sent to the user. This should result in a django.http.HttpResponse that should include information through the :code:`WWW-Authenticate` header around expectations.
+        Results in the challenge response sent to the user. This should result in a :code:`django.http.HttpResponse` that should include information through the :code:`WWW-Authenticate` header around expectations.
 
     **Example**
 
@@ -239,7 +239,7 @@ Features of DDA Authentication
     It is an authentication handler that always returns :code:`True`, so no authentication is needed.
 
     .. note::
-        **Important:** In this implementation the challenge method is missing and must be implemented by the user. Otherwise, it will raise NotImplementedError.
+        **Important:** In this implementation the :code:`challenge` method is missing and must be implemented by the user. Otherwise, it will raise :code:`NotImplementedError`.
 
     **Import**
 
@@ -269,7 +269,7 @@ Custom Authenticator Class
 --------------------------
 Any authenticator class **must** be an instance of :code:`authentication.Authenticator`.
 
-The built-in Authenticator class requires the user to override the built in :code:`is_authenticated` and :code:`challenge methods`, and write their own authentication methods. If not implemented, it will raise a :code:`NotImplementedError`.
+The built-in Authenticator class requires the user to override the built in :code:`is_authenticated` and :code:`challenge` methods, and write their own authentication methods. If not implemented, it will raise a :code:`NotImplementedError`.
 
 **Example**
 
@@ -299,14 +299,20 @@ TwoLeggedOauth1
     Ensures that the request contains all required parameters. Otherwise, raises a Parameters absent error.
 
     **Required Parameters**
-    :code:`oauth_consumer_key`
-    :code:`oauth_nonce`
-    :code:`oauth_signature`
-    :code:`oauth_signature_method`
-    :code:`oauth_timestamp`
+
+    * :code:`oauth_consumer_key`
+
+    * :code:`oauth_nonce`
+
+    * :code:`oauth_signature`
+
+    * :code:`oauth_signature_method`
+
+    * :code:`oauth_timestamp`
+
 
 :code:`is_authenticated`
-    Authenticates the requester using OAuth1.0a
+    Authenticates the requester using OAuth1.0a.
 
 :code:`authenticate_header`
     Returns the authentication header. If it does not exist, returns "Unknown OAuth Error"
@@ -324,9 +330,20 @@ Determining whether an :code:`EndpointDefinition` can handle the request happens
 
 EndpointBinder
 ~~~~~~~~~~~~~~
-The :code:`EndpointBinder` checks whether all the required fields for an :code:`EndpointDefinition` are present. **If everything binds successfully and all the required fields are present, the EndpointDefinition is going to handle the request.** If there are errors and other endpoint definitions are present, then the endpoint binder will try the next endpoint definition.
+The :code:`EndpointBinder` performs three important roles.
 
-If there is one endpoint definition, or all endpoint definitions present give error then the endpoint binder will raise an error.
+1. It checks whether all the required fields for an :code:`EndpointDefinition` are present. **If everything binds successfully and all the required fields are present, the EndpointDefinition is going to handle the request.** If there are errors and other endpoint definitions are present, then the endpoint binder will try the next endpoint definition. If all the endpoint definitions present give error then the endpoint binder will raise an error.
+
+2. It runs the three standard validators required by the endpoint definition that checks whether the requester should have access to :code:`<endpoint>.resource()`.
+
+    1. :code:`is_authorized()`
+    2. :code:`is_permitted()`
+    3. :code:`is_valid()`
+
+3. It checks the rate limits defined in the endpoint definition, which are:
+
+    1. :code:`rate_limit_key()`
+    2. :code:`rate_limit_period()`
 
 **Example**
 
