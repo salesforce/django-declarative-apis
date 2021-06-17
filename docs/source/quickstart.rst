@@ -16,6 +16,9 @@ Create a new project named dda_project and a new app called todo.
     python -m venv env
     source env/bin/activate
 
+    # install django
+    pip install django
+
     # create a new project
     django-admin startproject dda_project
     cd dda_project
@@ -24,10 +27,18 @@ Create a new project named dda_project and a new app called todo.
     python manage.py startapp todo
     cd ..
 
+Install django-declarative-apis
+--------------------------------
+Clone django-declarative-apis repository.
+
+.. code-block::
+
+    git clone https://github.com/salesforce/django-declarative-apis.git
+
 
 Django Config Settings Setup
 ------------------------------
-Add the todo app to the list of installed apps in :code:`settings.py`.
+Add the todo app and django-declarative-apis to the list of installed apps in :code:`settings.py`.
 
 .. code-block::
 
