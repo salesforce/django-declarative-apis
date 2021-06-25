@@ -40,33 +40,18 @@ If more complex logic is required (i.e. the resource belongs to the requesting c
 
 BaseConsumer
 ------------
-:code:`BaseConsumer` is shared in common by all consumers. It implements Django’s :code:`GenericForiegnKey` to find what the consumer is supposed to point to, which could be the service calling the API to perform authentication, or it could be a mobile app instance.
-You can also set the read and write privileges of the consumer using TYPE_READ_ONLY and TYPE_READ_WRITE.
-
+.. autoclass:: django_declarative_apis.models.BaseConsumer
+   :members:
 
 OAuthConsumer
 -------------
 
-:code:`OAuthConsumer` inherits from :code:`BaseConsumer` and it based on :code:`OAuth1.0a`. It adds the additional properties of key, secret, and rsa_public_key_pem.
+.. autoclass:: django_declarative_apis.models.OauthConsumer
+   :members:
+   :show-inheritance:
 
-**Example**
-
-.. code-block:: python
-
-    from django_declarative_apis import models
-
-    consumer = models.OAuthConsumer.objects.create()
-
-    # *consumer will have:*
-    # consumer.content_type_id
-    # consumer.id
-    # consumer.key
-    # consumer.name
-    # consumer.object_id
-    # consumer.secret
-    # consumer.type
 
 Django Config Settings Related to Consumer
 --------------------------------------------
-:code:`DECLARATIVE_ENDPOINT_CONSUMER_GETTER`
+DECLARATIVE_ENDPOINT_CONSUMER_GETTER
     Tries to get the consumer using the provided primary key. Should point to :code:`consumer_getter` function defined by the developer.

@@ -56,7 +56,7 @@ Filters can be defined in four places:
     **Important:** Items lower in the list take precedence over items at the top of the list. For instance, :code:`response_filter` overrides the default filter defined in :code:`settings.py`.
 
 
-1. :code:`settings.py`
+1. settings.py
     **Required |** Set default filters for the entire application in settings.py by setting :code:`DECLARATIVE_ENDPOINT_DEFAULT_FITLERS` to your :code:`filters.py` file.
 
     **Example:**
@@ -66,7 +66,7 @@ Filters can be defined in four places:
 
         DECLARATIVE_ENDPOINT_DEFAULT_FILTERS = "todo.filters.TodoResponseFilter"
 
-2. :code:`response_filter`
+2. ``response_filter``
 
     **Optional |** Defines filters for a class and can be used interchangeably with :code:`@endpoint_resource()`. To implement, set :code:`response_filter` as a class-level field on your :code:`EndpointDefinition`.
 
@@ -79,7 +79,7 @@ Filters can be defined in four places:
         class TodoCreationEndpoint:
             response_filter = filters.TodoResponseFilter
 
-3. :code:`@endpoint_resource`
+3. ``@endpoint_resource``
 
     **Optional |** Defines filters for a class and can be used interchangeably with response filter. To implement, set :code:`filter=<filter>` in an argument to the :code:`@endpoint_resource` decorator.
 
@@ -99,7 +99,7 @@ Filters can be defined in four places:
                 return Todo.objects.all()
 
 
-4. :code:`_api_filter`
+4. ``_api_filter``
     **Optional |** Defines filters for a return object. To implement, set :code:`_api_filter` on the object returned from :code:`@endpoint_resource`.
 
     **Default Value |** :code:`None`

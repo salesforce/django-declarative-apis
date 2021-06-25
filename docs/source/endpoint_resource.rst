@@ -17,42 +17,14 @@ defined in :code:`settings.py`. To use a custom resource adapter,  set :code:`DE
 
 Helper Function
 ----------------
-:code:`resource_adapter()` is a helper function that finds the endpoint resource adapter from settings.py and calls that resource adapter.
 
-**resource_adapter takes two arguments:**
-
-Handler/Resource
-    **Required |** The :code:`EndpointDefinition` implementation along with an HTTP verb.
-
-Authentication Handler
-    **Optional |** If not specified, :code:`OAuth1.0a` will be used by default.
-
-    **Example:**
-    Handler defined in a separate file named :code:`handlers.py`.
-
-    .. code-block::
-
-        TodoEndpoint = resource_adapter(
-            post=resources.TodoUpdateDefinition,
-            get=resources.TodoDefinition,
-            authentication={None: (NoAuth(),)},
-        )
-
-    Django app’s :code:`urls.py`.
-
-    .. code-block::
-
-        url(
-            r"^tasks/$",
-            handlers.TodoEndpoint,
-        )
-
+.. autofunction:: django_declarative_apis.adapters.resource_adapter
 
 
 EndpointResource
 ----------------
-:code:`EndpointResource` is the DDA default resource adapter. It validates the configuration of the authentication handler, and in combination with Django’s native urls.py routes requests (through behavioral routing) to the same URL but to different handlers based on request attributes.
 
+.. autoclass:: django_declarative_apis.adapters.EndpointResource
 
 Authentication
 ~~~~~~~~~~~~~~
@@ -60,12 +32,12 @@ Authentication is tied to the resource adapter. It is the first step that a requ
 
 **Authentication can be set up in two places**
 
-:code:`settings.py`
+settings.py
     **Required |** Sets the default authenticator for the entire application. In other words, all endpoint definitions will use the authenticator defined here.
 
     Set :code:`DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS` to point to the authentication handler.
 
-:code:`resource_adapter()`
+resource_adapter()
     **Optional |** Defines authentication handler for a specific endpoint definition. To implement, set
     :code:`authentication=<{<AuthenticatorHint>: [Authenticator]}>` in an argument to the :code:`resource_adapter()`.
 
@@ -94,7 +66,7 @@ The :code:`resource_adapter` expects the authentication handler to conform to th
         <AuthenticatorHint>: [<Authenticator>, <Authenticator>...],
     }
 
-* :code:`<AuthenticatorHint>`
+* <AuthenticatorHint>
     **Required |** It is used to match Authorization headers for quick handler lookup.
 
     **Properties**
@@ -121,7 +93,7 @@ The :code:`resource_adapter` expects the authentication handler to conform to th
 
 
 
-* :code:`<Authenticator>`
+* <Authenticator>
     **Required |** Responsible for looking at the request and determining whether it can validate the requester.
 
     **Properties**
@@ -157,95 +129,24 @@ This will ensure that any time an ‘Authorization: OAuth ...’  header is seen
 Features of DDA Authentication
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:code:`Authenticator`
-    The base class for constructing an authenticator.
-
-    The Authenticator class has two methods: :code:`is_authenticated` and :code:`challenge`. Both of these need to be overridden by the authenticator implementation that inherits from :code:`Authenticator` class. Otherwise, it will throw a :code:`NotImplementedError`.
-
-    **Methods**
-
-    :code:`is_authenticated(request)`
-        Takes in the request as an argument and identifies whether the requester is valid.
-
-    :code:`challenge(error)`
-        Results in the challenge response sent to the user. This should result in a :code:`django.http.HttpResponse` that should include information through the :code:`WWW-Authenticate` header around expectations.
-
-    **Example**
-
-    .. code-block::
-
-        from django_declarative_apis.authentication import Authenticator
-
-        class SampleAuthenticator(Authenticator):
-            def is_authenticated(request):
-                # authentication code
-
-            def challenge(self, error):
-                # challenge code
+.. autoclass:: django_declarative_apis.authentication.Authenticator
+   :members:
 
 
-:code:`AuthenticatorHint`
-    Takes a tuple to provide hints for authentication implementations
+.. autoclass:: django_declarative_apis.authentication.AuthenticatorHint
+   :members:
 
-    **Import**
+.. autoclass:: django_declarative_apis.authentication.AuthenticationResult
+   :members:
 
-    .. code-block::
+.. autoclass:: django_declarative_apis.authentication.AuthenticationSuccess
+   :members:
 
-        from django_declarative_apis.authentication import AuthenticatorHint
+.. autoclass:: django_declarative_apis.authentication.AuthenticationFailure
+   :members:
 
-
-:code:`AuthenticationResult`
-    A class definition that take in and stores the authentication header and detail of the result.
-
-    **Arguments**
-
-    :code:`detail`
-        **Defualt Value |** :code:`None`
-
-    :code:`auth_header`
-        **Default Value |** :code:`None`
-
-    **Import**
-
-    .. code-block::
-
-        from django_declarative_apis.authentication import AuthenticationResult
-
-
-
-:code:`AuthenticationSuccess`
-    It is an instance of :code:`AuthenticationResult` and returns :code:`True`. It can be used as a return response in an authenticator implementation.
-
-    **Import**
-
-    .. code-block::
-
-        from django_declarative_apis.authentication import AuthenticationSuccess
-
-
-
-:code:`AuthenticationFailure`
-    It is an instance of :code:`AuthenticationResult` returns :code:`False`. It can be used as a return response in an authenticator implementation.
-
-    **Import**
-
-    .. code-block::
-
-        from django_declarative_apis.authentication import AuthenticationFailure
-
-
-
-:code:`NoAuthentication`
-    It is an authentication handler that always returns :code:`True`, so no authentication is needed.
-
-    .. note::
-        **Important:** In this implementation the :code:`challenge` method is missing and must be implemented by the user. Otherwise, it will raise :code:`NotImplementedError`.
-
-    **Import**
-
-    .. code-block::
-
-        from django_declarative_apis.authentication import NoAuthentication
+.. autoclass:: django_declarative_apis.authentication.NoAuthentication
+   :members:
 
 **Example**
 
@@ -293,33 +194,9 @@ The current authentication implementation is `OAuth 1.0a <https://tools.ietf.org
 
 TwoLeggedOauth1
 ~~~~~~~~~~~~~~~~
-**Methods**
 
-:code:`validate_missing_parameters`
-    Ensures that the request contains all required parameters. Otherwise, raises a Parameters absent error.
-
-    **Required Parameters**
-
-    * :code:`oauth_consumer_key`
-
-    * :code:`oauth_nonce`
-
-    * :code:`oauth_signature`
-
-    * :code:`oauth_signature_method`
-
-    * :code:`oauth_timestamp`
-
-
-:code:`is_authenticated`
-    Authenticates the requester using OAuth1.0a.
-
-:code:`authenticate_header`
-    Returns the authentication header. If it does not exist, returns "Unknown OAuth Error"
-
-:code:`challenge`
-    Returns a 401 response with a some information on what OAuth is, and where to learn more about it.
-
+.. autoclass:: django_declarative_apis.authentication.oauthlib.oauth1.TwoLeggedOauth1
+   :members:
 
 
 Behavioral Routing
@@ -330,6 +207,9 @@ Determining whether an :code:`EndpointDefinition` can handle the request happens
 
 EndpointBinder
 ~~~~~~~~~~~~~~
+.. autoclass:: django_declarative_apis.machinery.EndpointBinder
+   :members:
+
 The :code:`EndpointBinder` performs three important roles.
 
 1. It checks whether all the required fields for an :code:`EndpointDefinition` are present. **If everything binds successfully and all the required fields are present, the EndpointDefinition is going to handle the request.** If there are errors and other endpoint definitions are present, then the endpoint binder will try the next endpoint definition. If all the endpoint definitions present give error then the endpoint binder will raise an error.
@@ -360,53 +240,9 @@ The :code:`EndpointBinder` performs three important roles.
 Helper Functions
 -----------------
 
-:code:`endpoint_resource` decorator
-    It is used as a decorator on a resource function. It specifies the attributes of that resource.
+.. autoclass:: django_declarative_apis.machinery.EndpointResourceAttribute
+    :members:
 
-    **Parameters**
+.. autoclass:: django_declarative_apis.machinery.EndpointResponseAttribute
 
-    :code:`type=<type>`
-        **Required |** Specifies the model type. It is used only for documentation generation purposes.
-
-    :code:`filter=<filter>`
-        **Optional |** Defines the class filters. Overrides the default filters.
-
-        **Default Value |** :code:`None`
-
-    :code:`returns_list=<returns_list>`
-        **Optional |** It is used for documentation generation purposes.
-
-        **Default Value |** :code:`False`
-
-    **Example**
-
-    .. code-block::
-
-        class TodoSingleTaskDefinition(TodoResourceMixin, machinery.ResourceEndpointDefinition):
-            resource_id = url_field(name='id')  # grabs the id from url
-
-            @endpoint_resource(type=Todo)
-            def resource(self):
-                return Todo.objects.get(id=self.resource_id)
-
-
-:code:`endpoint_response` decorator
-    It is used as a decorator on a response function. It specifies the attributes of the response.
-
-    **Parameters**
-
-    :code:`type=<type>`
-        **Required |** Specifies the response type, which can be dictionary, list, or model type. It is used only for documentation generation purposes.
-
-    :code:`filter=<filter>`
-        **Optional |** Defines the class filters. Overrides the default filters.
-        **Default Value |** :code:`None`
-
-    **Example**
-
-    .. code-block::
-
-        @endpoint_response(type=dict)
-        def response(self):
-            return http.status.OK
 
