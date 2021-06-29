@@ -373,7 +373,7 @@ class EndpointDefinitionMixin(metaclass=EndpointDefinitionMeta):
 class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
     @abc.abstractmethod
     def is_authorized(self):
-        """ Authorization check. Should be overridden by endpoint definition implementations.
+        """Authorization check. Should be overridden by endpoint definition implementations.
 
         Returns:
             ``bool``: Whether or not the user should be able to access the resource. Defaults to ``False``.
@@ -417,7 +417,7 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
     @property
     @abc.abstractmethod
     def resource(self):
-        """ The instance of a resource. Should either be a ``dict`` or instance of a Django Model or QuerySet.
+        """The instance of a resource. Should either be a ``dict`` or instance of a Django Model or QuerySet.
 
         This property *must* be implemented by all endpoint definitions.
         """
@@ -514,7 +514,7 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
 
 class EndpointDefinition(BaseEndpointDefinition):
-    """ A base class to be used when defining endpoints.
+    """A base class to be used when defining endpoints.
 
     Base class to be used implementing endpoints that aren't necessarily tied to a model. Also implements
     basic consumer-based authentication.
@@ -527,7 +527,7 @@ class EndpointDefinition(BaseEndpointDefinition):
     """
 
     def is_permitted(self):
-        """ Checks authorization for the current consumer.
+        """Checks authorization for the current consumer.
 
         Returns:
             ``bool``: Whether or not the user has permission to the resource.
@@ -581,8 +581,7 @@ class ResourceCreationMixin(object):
 
 
 class ResourceEndpointDefinition(EndpointDefinition):
-    """ A base class to be used when defining endpoints bound to models.
-    """
+    """A base class to be used when defining endpoints bound to models."""
 
     consumer = RequestAttribute()
 
@@ -603,7 +602,7 @@ class ResourceEndpointDefinition(EndpointDefinition):
 
     @property
     def resource(self):
-        """ Resource implementation
+        """Resource implementation
 
         Queries the object manager of `self.resource_model` for the given id (`self.resource_id`).
         """

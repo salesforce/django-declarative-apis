@@ -89,8 +89,10 @@ class TweakedSignatureOnlyEndpoint(SignatureOnlyEndpoint):
             base_signing_string = signature.construct_base_string(
                 request.http_method, uri, norm_params
             )  # TOOPHER
-            self.validation_error_message = "Invalid signature. Expected signature base string: {0}".format(
-                base_signing_string
+            self.validation_error_message = (
+                "Invalid signature. Expected signature base string: {0}".format(
+                    base_signing_string
+                )
             )  # TOOPHER
         return v, request
 

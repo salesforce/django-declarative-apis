@@ -1,5 +1,5 @@
 bandit~=1.7
-black==19.3b0
+black==21.5b1
 bumpversion~=0.5
 coverage~=5.0
 flake8~=3.9.0
