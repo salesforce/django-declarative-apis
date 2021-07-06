@@ -77,6 +77,7 @@ class EndpointResourceAttribute(EndpointAttribute):
             def resource(self):
                 return Todo.objects.get(id=self.resource_id)
     """
+
     def __init__(self, type, filter=None, returns_list=False, **kwargs):
         super(EndpointResourceAttribute, self).__init__(**kwargs)
         self.type = type
@@ -126,6 +127,7 @@ class EndpointResponseAttribute(EndpointAttribute):
         def response(self):
             return http.status.OK
     """
+
     def __init__(self, type, filter=None, **kwargs):
         super(EndpointResponseAttribute, self).__init__(**kwargs)
         self.type = type
@@ -417,6 +419,7 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
     :code:`BaseEndpointDefinition` class.
     This is how the EndpointBinder will know how to communicate with the endpoint and query its fields.
     """
+
     @abc.abstractmethod
     def is_authorized(self):
         """The authentication layer of DDA that is tied to the resource adapter is only responsible
@@ -890,6 +893,7 @@ class ResourceUpdateEndpointDefinition(ResourceEndpointDefinition):
     """It handles the changes to the resource that happened from the
     request, and saves the resource. It can be used for :code:`POST` and :code:`PUT`.
     """
+
     @EndpointTask(priority=-100)
     def mutate(self):
         """Modifies values of the resource fields by mapping the values of endpoint attributes to the resource.

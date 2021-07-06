@@ -48,6 +48,7 @@ class BaseConsumer(django_models.Model):
     authentication, or it could be a mobile app instance.
     You can also set the read and write privileges of the consumer using TYPE_READ_ONLY and TYPE_READ_WRITE.
     """
+
     class Meta:
         abstract = True
 
@@ -97,6 +98,7 @@ class OauthConsumer(BaseConsumer):
         # consumer.secret
         # consumer.type
     """
+
     objects = OauthConsumerManager()
 
     key = django_models.CharField(max_length=KEY_SIZE, db_index=True)

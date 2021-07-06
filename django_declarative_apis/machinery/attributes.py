@@ -171,6 +171,7 @@ class RequestUrlField(TypedEndpointAttributeMixin, EndpointAttribute):
                 task = Todo.objects.delete(id=self.resource_id)
                 return django.http.HttpResponse(status=http.HTTPStatus.OK)
     """
+
     def __init__(self, *args, **kwargs):
         self.api_name = kwargs.pop("name", None)
         self.value = None
@@ -241,6 +242,7 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
     In the :code:`EndpointDefintion`, :code:`self.foo` would be equal to ['bar1', 'bar2']
 
     """
+
     VALID_FIELD_TYPES = (bool, int, float, complex, str, dict)
 
     def __init__(self, *args, **kwargs):
@@ -308,6 +310,7 @@ class RequestAttribute(RequestProperty):
 
         consumer = request_attribute()
     """
+
     def __init__(self, attribute_getter=None, required=True, default=None, **kwargs):
         super(RequestAttribute, self).__init__(
             property_getter=self.get_request_attribute, required=required, **kwargs
@@ -347,6 +350,7 @@ class ConsumerAttribute(RequestAttribute):
 
         requester = consumer_attribute()
     """
+
     def __init__(self, *args, field_name=None, **kwargs):
         self.field_name = field_name
         super(ConsumerAttribute, self).__init__(*args, **kwargs)
@@ -370,6 +374,7 @@ class RawRequestObjectProperty(RequestAttribute):
 
         request = RawRequestObjectProperty()
     """
+
     class SafeRequestWrapper(object):
         __hidden_request_attribute_name = "_" + "".join(
             random.choice(string.printable) for _ in range(10)
@@ -573,6 +578,7 @@ class DeferrableEndpointTask(EndpointTask):
                 # your code goes here
 
     """
+
     @staticmethod
     def unwrap_staticmethod(method):
         assert isinstance(method, staticmethod), (
@@ -731,6 +737,7 @@ class RequireOneAttribute(RequestFieldGroup):
                 sample_field_2,
             )
     """
+
     def get_value(self, owner_instance, request):
         missing_fields = self._get_missing_component_fields(owner_instance, request)
 
@@ -746,6 +753,7 @@ class RequireOneAttribute(RequestFieldGroup):
 
 class RequireAllAttribute(RequestFieldGroup):
     """All fields must be populated."""
+
     def get_value(self, owner_instance, request):
         missing_fields = self._get_missing_component_fields(owner_instance, request)
 
@@ -760,6 +768,7 @@ class RequireAllAttribute(RequestFieldGroup):
 
 class RequireAllIfAnyAttribute(RequestFieldGroup):
     """Either all fields must be present or all fields must be missing."""
+
     def get_value(self, owner_instance, request):
         missing_fields = self._get_missing_component_fields(owner_instance, request)
 
@@ -817,6 +826,7 @@ class Aggregate(EndpointAttribute):
                     raise Exception("User with matching id not found")
                 return user
     """
+
     def __init__(self, aggregation_function=None, **kwargs):
         self.aggregation_function = aggregation_function
         self.depends_on = kwargs.pop("depends_on", None)

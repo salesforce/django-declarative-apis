@@ -38,6 +38,7 @@ class Authenticator(metaclass=abc.ABCMeta):
             def challenge(self, error):
                 # challenge code
     """
+
     @abc.abstractmethod
     def is_authenticated(self, request):
         """Takes in the request as an argument and identifies whether the requester is valid."""
@@ -55,6 +56,7 @@ class Authenticator(metaclass=abc.ABCMeta):
 
 class AuthenticationResult(object):
     """A class definition that take in and stores the authentication header and detail of the result."""
+
     def __init__(self, detail=None, auth_header=None):
         self.detail = detail
         self.auth_header = auth_header
@@ -78,6 +80,7 @@ class NoAuthentication(AuthenticationResult, Authenticator):
 class AuthenticationSuccess(AuthenticationResult):
     """It is an instance of :code:`AuthenticationResult` and returns :code:`True`.
     It can be used as a return response in an authenticator implementation."""
+
     def __bool__(self):
         return True
 
@@ -86,6 +89,7 @@ class AuthenticationFailure(AuthenticationResult):
     """It is an instance of :code:`AuthenticationResult` returns :code:`False`.
     It can be used as a return response in an authenticator implementation.
     """
+
     def __bool__(self):
         return False
 
