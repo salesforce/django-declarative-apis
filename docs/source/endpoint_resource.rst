@@ -1,6 +1,6 @@
 Endpoint Resource
 ==================
-A endpoint resource maps to a single URL endpoint in a Django app’s urls.py. Each endpoint resource can have one or more :code:`EndpointDefinition` that implements the handler code. HTTP verbs such as :code:`POST`, :code:`GET`, along with parameters present in the request determine which :code:`EndpointDefinition` is used.
+An endpoint resource maps to a single URL endpoint in a Django app’s urls.py. Each endpoint resource can have one or more :code:`EndpointDefinition` that implements the handler code. HTTP verbs such as :code:`POST`, :code:`GET`, along with parameters present in the request determine which :code:`EndpointDefinition` is used.
 
 
 Set Up Resource Adapter

@@ -89,7 +89,7 @@ Let’s set up a Todo model in :code:`todo/models.py`.
 Filters Setup
 ---------------
 
-Let’s set up filters in :code:`todo/filters.py` that will decide the format of the api response.
+Let’s set up filters in :code:`todo/filters.py` that will decide the format of the API response.
 
 .. code-block::
 
