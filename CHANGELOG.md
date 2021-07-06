@@ -17,6 +17,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - [PR 53](https://github.com/salesforce/django-declarative-apis/pull/53) Update dev dependencies: flake8, bandit, ipython
 - [PR 54](https://github.com/salesforce/django-declarative-apis/pull/54) Remove unneeded `mock` dependency
 - [PR 56](https://github.com/salesforce/django-declarative-apis/pull/56) Add Python 3.8 and 3.9 to Travis CI testing
+- [PR 58](https://github.com/salesforce/django-declarative-apis/pull/58) Update black dev dependency
 
 # [0.22.2] - 2020-08-11
 ### Fixed
