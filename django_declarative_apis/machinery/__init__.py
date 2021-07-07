@@ -801,8 +801,7 @@ class EndpointDefinition(BaseEndpointDefinition):
     """
 
     def is_permitted(self):
-        """ Checks whether user has permission to access the resource.
-        """
+        """Checks whether user has permission to access the resource."""
         if (
             self._consumer_type is None
             or self._consumer_type == BaseConsumer.TYPE_READ_WRITE
@@ -842,8 +841,7 @@ class EndpointDefinition(BaseEndpointDefinition):
 
     @classmethod
     def documentation(cls):
-        """Returns a dictionary containing class name, fields, and consumer type. Used for documentation purposes.
-        """
+        """Returns a dictionary containing class name, fields, and consumer type. Used for documentation purposes."""
         docs = super().documentation()
         docs["consumer_type"] = cls.get_consumer_type()
         return docs
@@ -882,8 +880,7 @@ class ResourceEndpointDefinition(EndpointDefinition):
 
     @property
     def resource(self):
-        """ Queries the object manager of `self.resource_model` for the given id (`self.resource_id`).
-        """
+        """Queries the object manager of `self.resource_model` for the given id (`self.resource_id`)."""
         if not self._cached_resource:
             self._cached_resource = self.resource_model.objects.get(id=self.resource_id)
         return self._cached_resource
@@ -896,8 +893,7 @@ class ResourceUpdateEndpointDefinition(ResourceEndpointDefinition):
 
     @EndpointTask(priority=-100)
     def mutate(self):
-        """Modifies values of the resource fields by mapping the values of endpoint attributes to the resource.
-        """
+        """Modifies values of the resource fields by mapping the values of endpoint attributes to the resource."""
         resource = self.resource
         for resource_field in self.get_resource_fields():
             field_value = getattr(self, resource_field.name)
@@ -906,8 +902,7 @@ class ResourceUpdateEndpointDefinition(ResourceEndpointDefinition):
 
     @EndpointTask(priority=-101)
     def validate_input(self):
-        """Checks whether there are any unexpected resource fields present. If so, raises an error and returns the unexpected fields.
-        """
+        """Checks whether there are any unexpected resource fields present. If so, raises an error and returns the unexpected fields."""
         resource = self.resource
         expected_fields = set(
             list(field.name for field in self.get_resource_fields())
