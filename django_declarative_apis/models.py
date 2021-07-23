@@ -43,6 +43,12 @@ def get_random_string(
 
 
 class BaseConsumer(django_models.Model):
+    """:code:`BaseConsumer` is shared in common by all consumers. It implements Django’s :code:`GenericForiegnKey`
+    to find what the consumer is supposed to point to, which could be the service calling the API to perform
+    authentication, or it could be a mobile app instance.
+    You can also set the read and write privileges of the consumer using TYPE_READ_ONLY and TYPE_READ_WRITE.
+    """
+
     class Meta:
         abstract = True
 
@@ -72,6 +78,27 @@ class OauthConsumerManager(django_models.Manager):
 
 
 class OauthConsumer(BaseConsumer):
+    """:code:`OAuthConsumer` inherits from :code:`BaseConsumer` and it based on :code:`OAuth1.0a`. It adds the additional
+    properties of key, secret, and rsa_public_key_pem.
+
+    **Example**
+
+    .. code-block:: python
+
+        from django_declarative_apis import models
+
+        consumer = models.OAuthConsumer.objects.create()
+
+        # *consumer will have:*
+        # consumer.content_type_id
+        # consumer.id
+        # consumer.key
+        # consumer.name
+        # consumer.object_id
+        # consumer.secret
+        # consumer.type
+    """
+
     objects = OauthConsumerManager()
 
     key = django_models.CharField(max_length=KEY_SIZE, db_index=True)

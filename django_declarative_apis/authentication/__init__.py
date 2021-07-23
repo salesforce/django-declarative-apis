@@ -10,17 +10,38 @@ import typing
 
 
 class AuthenticatorHint(typing.NamedTuple):
-    """Tuple to provide hints for authentication implementations
+    """Tuple to provide hints for authentication implementations.
 
-    header_hint: A string used to match the `Authentication: ` header.
+    header_hint: a string used to match the :code:`Authentication:` header.
     """
 
     header: str
 
 
 class Authenticator(metaclass=abc.ABCMeta):
+    """The base class for constructing an authenticator.
+
+    The Authenticator class has two methods: :code:`is_authenticated` and :code:`challenge`.
+    Both of these need to be overridden by the authenticator implementation that inherits from :code:`Authenticator` class.
+    Otherwise, it will throw a :code:`NotImplementedError`.
+
+    **Example**
+
+    .. code-block::
+
+        from django_declarative_apis.authentication import Authenticator
+
+        class SampleAuthenticator(Authenticator):
+            def is_authenticated(request):
+                # authentication code
+
+            def challenge(self, error):
+                # challenge code
+    """
+
     @abc.abstractmethod
     def is_authenticated(self, request):
+        """Takes in the request as an argument and identifies whether the requester is valid."""
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -34,6 +55,8 @@ class Authenticator(metaclass=abc.ABCMeta):
 
 
 class AuthenticationResult(object):
+    """A class definition that take in and stores the authentication header and detail of the result."""
+
     def __init__(self, detail=None, auth_header=None):
         self.detail = detail
         self.auth_header = auth_header
@@ -43,7 +66,11 @@ class NoAuthentication(AuthenticationResult, Authenticator):
     """
     Authentication handler that always returns
     True, so no authentication is needed, nor
-    initiated (`challenge` is missing.)
+    initiated.
+
+    .. note::
+        **Important:** In this implementation the :code:`challenge` method is missing and must be implemented by the user.
+        Otherwise, it will raise :code:`NotImplementedError`.
     """
 
     def is_authenticated(self, request):
@@ -51,11 +78,18 @@ class NoAuthentication(AuthenticationResult, Authenticator):
 
 
 class AuthenticationSuccess(AuthenticationResult):
+    """It is an instance of :code:`AuthenticationResult` and returns :code:`True`.
+    It can be used as a return response in an authenticator implementation."""
+
     def __bool__(self):
         return True
 
 
 class AuthenticationFailure(AuthenticationResult):
+    """It is an instance of :code:`AuthenticationResult` returns :code:`False`.
+    It can be used as a return response in an authenticator implementation.
+    """
+
     def __bool__(self):
         return False
 

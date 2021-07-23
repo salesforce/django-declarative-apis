@@ -140,6 +140,38 @@ class TypedEndpointAttributeMixin(object):
 
 
 class RequestUrlField(TypedEndpointAttributeMixin, EndpointAttribute):
+    """It is a specialized form of field that takes any parameter that directly appears in the URL path.
+
+    :param name: Allows the name of the field in HTTP API to be different from its name defined on the EndpointDefinition. Defaults to :code:`None`
+    :type name: optional
+
+    **Example:**
+    URL defined in :code:`urls.py`
+
+    .. code-block:: python
+
+        url_patterns = [
+            url(
+                r"^tasks/(?P<id>{0})/$".format(r"[0-9]{1}"),
+                handlers.TodoDetailEndpoint,
+                )
+        ]
+
+    :code:`url_field` is used to extract the id of a single task from the above URL for deleting that task.
+
+    .. code-block:: python
+
+        from django-declarative-apis.machinery import url_field
+
+        class TodoDeleteSingleTaskDefinition(TodoResourceMixin, machinery.ResourceEndpointDefinition):
+            resource_id = url_field(name='id')
+
+            @endpoint_resource(type=Todo)
+            def resource(self):
+                task = Todo.objects.delete(id=self.resource_id)
+                return django.http.HttpResponse(status=http.HTTPStatus.OK)
+    """
+
     def __init__(self, *args, **kwargs):
         self.api_name = kwargs.pop("name", None)
         self.value = None
@@ -159,6 +191,58 @@ class RequestAdhocQuerySet(RequestUrlField):
 
 
 class RequestField(TypedEndpointAttributeMixin, RequestProperty):
+    """Endpoint properties are called fields. Fields can be simple types such as int , or they can be used as a decorator on a function.
+
+    **Valid field types:** :code:`int`, :code:`bool`, :code:`float`, :code:`str`, :code:`dict`, :code:`complex`
+
+    **Example**
+
+    .. code-block:: python
+
+        from django-declarative-apis.machinery import field
+
+        task = field(required=True, type=str)
+
+
+    :param required: Determines whether the field is required for the EndpointDefinition. Defaults to :code:`True`.
+    :type required: optional
+
+    :param name: Allows the name of the field in HTTP API to be different from its name defined on the EndpointDefinition. Defaults to :code:`None`.
+    :type name: optional
+
+    :param type: Determines the type of the field. Type needs to be on of the *valid field types* listed above. Defaults to :code:`String`
+    :type type: optional
+
+    :param default: Sets the default value for the field. Defaults to :code:`None`.
+    :type default: optional
+
+    :param description: Describes the purpose of the field. Defaults to :code:`None`.
+    :type description: optional
+
+    :param multivalued: Allows a field to to be specified multiple times in the request. With multivalued set to True, the EndpointHandler will receive a list of values instead of a single value. Defaults to :code:`False`.
+    :type multivalued: optional
+
+    **Example**
+
+    Request:
+
+    .. code-block::
+
+        GET https://example.com?foo=bar1&foo=bar2
+
+    EndpointDefinition:
+
+    .. code-block:: python
+
+        from django-declarative-apis.machinery import field
+
+        class FooDefinition(EndpointDefinition):
+            foo = field(multivalued=True)
+
+    In the :code:`EndpointDefintion`, :code:`self.foo` would be equal to ['bar1', 'bar2']
+
+    """
+
     VALID_FIELD_TYPES = (bool, int, float, complex, str, dict)
 
     def __init__(self, *args, **kwargs):
@@ -216,6 +300,17 @@ class ResourceField(RequestField):
 
 
 class RequestAttribute(RequestProperty):
+    """It can be used to initialize a consumer object for an endpoint definition.
+
+    **Example**
+
+    .. code-block:: python
+
+        from django_declarative_apis.machinery import request_attribute
+
+        consumer = request_attribute()
+    """
+
     def __init__(self, attribute_getter=None, required=True, default=None, **kwargs):
         super(RequestAttribute, self).__init__(
             property_getter=self.get_request_attribute, required=required, **kwargs
@@ -245,6 +340,17 @@ class RequestAttribute(RequestProperty):
 
 
 class ConsumerAttribute(RequestAttribute):
+    """Creates a requester/authenticator object for an endpoint definition.
+
+    **Example**
+
+    .. code-block:: python
+
+        from django_declarative_apis.machinery import consumer_attribute
+
+        requester = consumer_attribute()
+    """
+
     def __init__(self, *args, field_name=None, **kwargs):
         self.field_name = field_name
         super(ConsumerAttribute, self).__init__(*args, **kwargs)
@@ -258,6 +364,17 @@ class ConsumerAttribute(RequestAttribute):
 
 
 class RawRequestObjectProperty(RequestAttribute):
+    """Creates a request object for an endpoint definition.
+
+    **Example**
+
+    .. code-block:: python
+
+        from django_declarative_apis.machinery import RawRequestObjectProperty
+
+        request = RawRequestObjectProperty()
+    """
+
     class SafeRequestWrapper(object):
         __hidden_request_attribute_name = "_" + "".join(
             random.choice(string.printable) for _ in range(10)
@@ -294,6 +411,53 @@ class RawRequestObjectProperty(RequestAttribute):
 
 
 class EndpointTask(EndpointAttribute):
+    """:code:`task` is used as a decorator on a function. It encapsulate the side-effect operations of an endpoint.
+    For instance, if hitting an endpoint causes an operation to happen in another resource or it causes an operation
+    to be queued and run as a background task.
+
+    :code:`task` runs **synchronously**, which means it will be executed before the response is returned to the user.
+    It can also affect the response by making changes to the :code:`EndpointDefinition.resource()`.
+
+
+    **Example**
+
+    .. code-block:: python
+
+        from django-declarative-apis.machinery import task
+
+        class SampleClass:
+            # code
+
+            @task
+            def sample_function():
+                # your code goes here
+
+
+
+    :param task_runner: It is a callable that dictates how the task is executed. Defaults to :code:`None`.
+    :type task_runner: optional
+
+    :param depends_on: It is a reference to another task that should be run before this one.  Overrides :code:`priority`. Defaults to :code:`None`. It is important to note that :code:`deferrable_task` cannot be used as a :code:`depends_on` argument.
+    :type depends_on: optional
+
+    :param priority: Specifies the priority of the task. Tasks with lower priority are executed first. Defaults to :code:`0`.
+    :type priority: optional
+
+    **Example**
+
+    .. code-block:: python
+
+        from django-declarative-apis.machinery import task
+
+        class SampleEndpointDefinition:
+           def is_authorized(self):
+             return True
+
+           @task
+           def set_response_filter(self):
+                self.response._api_filter = filters.SampleFilters
+    """
+
     STATE_NOT_RUN = 0
     STATE_RUNNING = 1
     STATE_COMPLETED = 2
@@ -345,6 +509,76 @@ class EndpointTask(EndpointAttribute):
 
 
 class DeferrableEndpointTask(EndpointTask):
+    """:code:`deferrable_task` is used as a decorator on a function. It is similar to :code:`task` in that it encapsulates side-effects, but can be automatically executed in a deferred queue outside of the request-response cycle.
+
+    :code:`deferrable_task` runs **asynchronously** and because of that it is used for operations that take time and when we want to avoid delaying the response to the user.
+
+    **Deferrable Task Rules**:
+
+    * Deferrable task methods must always be a :code:`staticmethod`. Therefore, anything a deferrable task needs to know should be saved in the :code:`EndpointDefinition.resource()`.
+
+    * The :code:`staticmethod` decorator should come after :code:`deferrable_task` decorator.
+
+        .. code-block:: python
+
+          from django-declarative-apis.machinery import deferrable_task
+
+          class SampleClass:
+            # code
+
+            @deferrable_task
+            @staticmethod
+            def sample_method(arg):
+               # your code goes here
+
+    * Works only with a Django Model instance as the resource
+
+
+    .. note:: Depending on the parameters used, a deferrable task can be run in different time intervals. In some cases, it can be made to run synchronously.
+
+    :param task_runner: It is a callable that dictates how the task is executed. Defaults to :code:`None`.
+    :type task_runner: optional
+
+    :param delay: Sets the delay in seconds before running the task. Requires :code:`always_defer=True.` Defaults to :code:`None`.
+    :type delay: optional
+
+    :param always_defer: Runs task in deferred queue even when :code:`delay=0.` Defaults to :code:`False`.
+    :type always_defer: optional
+
+    :param task_args_factory: Stores task args and kwargs. :code:`task_args_factory` must be a **callable**. Defaults to :code:`None`.
+    :type task_args_factory: optional
+
+    :param queue: Sets the celery queue that will be used for storing the tasks. Defaults to :code:`None`.
+    :type queue: optional
+
+    :param routing_key: It is used to determine which queue the task should be routed to. Defaults to :code:`None`.
+    :type routing_key: optional
+
+    :param retries: Specifies the number of times the current task has been retried. Defaults to :code:`0`
+    :type retries: optional
+
+    :param retry_exception_filter: It is used to store retry exception information that is used in logs. Defaults to :code:`()` - empty tuple.
+    :type retry_exception_filter: optional
+
+    :param execute_unless: Execute the task unless a condition is met.It must be a **callable**. Defaults to  :code:`None`.
+    :type execute_unless: optional
+
+    **Example**
+
+    .. code-block:: python
+
+        from django-declarative-apis.machinery import deferrable_task
+
+        class SampleClass:
+            # code
+
+            @deferrable_task(execute_unless=<condition>)
+            @staticmethod
+            def sample_method(arg):
+                # your code goes here
+
+    """
+
     @staticmethod
     def unwrap_staticmethod(method):
         assert isinstance(method, staticmethod), (
@@ -487,6 +721,23 @@ class RequestFieldGroup(RequestProperty):
 
 
 class RequireOneAttribute(RequestFieldGroup):
+    """Exactly one of the given fields must be present.
+
+    **Example**
+
+    .. code-block:: python
+
+        from django-declarative-apis.machinery import require_one
+
+        sample_field_1 = field()
+        sample_field_2 = field()
+
+        sample_require_one = require_one(
+                sample_field_1,
+                sample_field_2,
+            )
+    """
+
     def get_value(self, owner_instance, request):
         missing_fields = self._get_missing_component_fields(owner_instance, request)
 
@@ -501,6 +752,8 @@ class RequireOneAttribute(RequestFieldGroup):
 
 
 class RequireAllAttribute(RequestFieldGroup):
+    """All fields must be populated."""
+
     def get_value(self, owner_instance, request):
         missing_fields = self._get_missing_component_fields(owner_instance, request)
 
@@ -514,6 +767,8 @@ class RequireAllAttribute(RequestFieldGroup):
 
 
 class RequireAllIfAnyAttribute(RequestFieldGroup):
+    """Either all fields must be present or all fields must be missing."""
+
     def get_value(self, owner_instance, request):
         missing_fields = self._get_missing_component_fields(owner_instance, request)
 
@@ -529,6 +784,49 @@ class RequireAllIfAnyAttribute(RequestFieldGroup):
 
 
 class Aggregate(EndpointAttribute):
+    """DDA uses aggregates to perform memoization to avoid repeated calculations, querying, or any task that can
+    be performed once and the result cached.
+    Aggregates retrieve or create a related object based on one or more field that is in use in the EndpointDefinition.
+    An aggregate is calculated only once and then the data is cached for future retrieval.
+
+    **Aggregates are used as decorators on functions.**
+
+    .. code-block:: python
+
+        from django-declarative-apis.machinery import aggregate
+
+        class SampleClass:
+            # code
+
+            @aggregate
+            def sample_function():
+                # code
+
+    :param required: Defines whether the aggregate is required or not. Defaults to :code:`False`.
+    :type required: optional
+
+    :param depends_on: Reference to another aggregate that should be run before this aggregate. Defaults to :code:`None`.
+    :type depends_on: optional
+
+    **Example:**
+    We want to query a user only once and cache that information for future use.
+
+    .. code-block:: python
+
+        from django-declarative-apis.machinery import aggregate
+
+        class SampleClass:
+            user_id = url_field()
+
+            @aggregate(required=True)
+            def get_user(self):
+                try:
+                    user = models.User.objects.get(id=self.user_id)
+                except:
+                    raise Exception("User with matching id not found")
+                return user
+    """
+
     def __init__(self, aggregation_function=None, **kwargs):
         self.aggregation_function = aggregation_function
         self.depends_on = kwargs.pop("depends_on", None)

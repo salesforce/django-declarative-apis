@@ -53,6 +53,31 @@ logger = logging.getLogger(__name__)
 
 
 class EndpointResourceAttribute(EndpointAttribute):
+    """It is used as a decorator on a resource function. It specifies the attributes of that resource.
+
+    :param type: Specifies the model type. It is used only for documentation generation purposes.
+    :type type: required
+
+    :param filter: Defines the class filters. Overrides the default filters. Defaults to :code:`None`.
+    :type filter: optional
+
+    :param returns_list:  It is used for documentation generation purposes. Defaults to :code:`False`
+    :type returns_list: optional
+
+    **Example**
+
+    .. code-block::
+
+        from django_declarative_apis.machinery import endpoint_resource
+
+        class TodoSingleTaskDefinition(TodoResourceMixin, machinery.ResourceEndpointDefinition):
+            resource_id = url_field(name='id')  # grabs the id from url
+
+            @endpoint_resource(type=Todo)
+            def resource(self):
+                return Todo.objects.get(id=self.resource_id)
+    """
+
     def __init__(self, type, filter=None, returns_list=False, **kwargs):
         super(EndpointResourceAttribute, self).__init__(**kwargs)
         self.type = type
@@ -84,6 +109,25 @@ class EndpointResourceAttribute(EndpointAttribute):
 
 
 class EndpointResponseAttribute(EndpointAttribute):
+    """It is used as a decorator on a response function. It specifies the attributes of the response.
+
+    :param type: Specifies the response type, which can be dictionary, list, or model type. It is used only for documentation generation purposes.
+    :type type: required
+
+    :param filter: Defines the class filters. Overrides the default filters. Defaults to :code:`None`.
+    :type filter: optional
+
+    **Example**
+
+    .. code-block::
+
+        from django_declarative_apis.machinery import endpoint_response
+
+        @endpoint_response(type=dict)
+        def response(self):
+            return http.status.OK
+    """
+
     def __init__(self, type, filter=None, **kwargs):
         super(EndpointResponseAttribute, self).__init__(**kwargs)
         self.type = type
@@ -371,36 +415,97 @@ class EndpointDefinitionMixin(metaclass=EndpointDefinitionMeta):
 
 
 class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
+    """It is the base class for implementing Endpoints. At the very least a developer needs to inherit from
+    :code:`BaseEndpointDefinition` class.
+    This is how the EndpointBinder will know how to communicate with the endpoint and query its fields.
+    """
+
     @abc.abstractmethod
     def is_authorized(self):
-        """Authorization check. Should be overridden by endpoint definition implementations.
+        """The authentication layer of DDA that is tied to the resource adapter is only responsible
+        for validating the requester.
+        We still need to determine whether the requester is authorized to perform certain actions,
+        which is the reason behind implementation of :code:`is_authorized`.
 
-        Returns:
-            ``bool``: Whether or not the user should be able to access the resource. Defaults to ``False``.
+        :code:`is_authorized` performs authorization check on the request to decide whether or not the user should have
+        access to the resource, and returns a boolean value.
+
+
+        :code:`is_authorized` implementation should be overridden by the endpoint definition
+        inheriting from :code:`BaseEndpointDefinition`
+
+        **Default Value |** :code:`False`
+
+        **Example:**
+        To implement an open API, set the is_authorized to always return True.
+
+        .. code-block:: python
+
+            from django_declarative_apis import machinery
+
+            SampleEndpointDefinition(machinery.BaseEndpointDefinition):
+                def is_authorized(self):
+                    return True
+            Authorization check. Should be overridden by endpoint definition implementations.
         """
         return False
 
     def is_permitted(self):
+        """Similar to code:`is_authorized`, it checks whether a user has the permission to access the resource. Returns a boolean value.
+
+        **Default Value |** :code:`True`
+        """
         return True
 
     def is_valid(self):
+        """It can be used for scenarios where a request binds correctly, however, there are combination of parameters
+        that would make the request invalid. Returns a boolean value.
+
+        For example, if the valid value for a field is from 1 to 10, this cannot be expressed through :code:`field`.
+        However, we can use the :code:`is_valid` to express it.
+
+        An alternative to :code:`is_valid` would be to use the :code:`@field` as a decorator on a function
+        and express this restriction there.
+
+        **Default Value |** :code:`True`
+
+        **Example**
+
+        .. code-block:: python
+
+            from django_declarative_apis import machinery
+
+            SampleEndpointDefinition(machinery.BaseEndpointDefinition):
+                valid_int = field(required=True, type=int)
+
+                def is_authorized(self):
+                    return True
+
+                def is_valid(self):
+                    if self.valid_int < 1 or self.valid_in > 10:
+                        raise ValueError
+                    return True
+        """
         return True
 
     def rate_limit_key(self):
-        """
-        Should return a unique key that is used for rate-limiting requests to this endpoint.
-        Return None if the request should not be rate-limited
+        """Returns a unique key used for rate-limiting requests to this endpoint.
+        Returns :code:`None` if the request should **not** be rate-limited.
+
+        **Default Value |** :code:`None`
         """
         return None
 
     def rate_limit_period(self):
-        """
-        number of seconds to enforce between requests with the same rate_limit_key
+        """Specifies and returns the number of seconds to enforce between requests with the same :code:`rate_limit_key`.
+
+        **Default Value |** 1
         """
         return 1
 
     @property
     def response_filter(self):
+        """Returns the filter that will be applied to the response."""
         filter_def_name = getattr(
             settings, "DECLARATIVE_ENDPOINT_DEFAULT_FILTERS", None
         )
@@ -412,23 +517,85 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
     @property
     def http_status(self):
+        """Returns a HTTP 200 OK success status."""
         return http.client.OK
 
     @property
     @abc.abstractmethod
     def resource(self):
-        """The instance of a resource. Should either be a ``dict`` or instance of a Django Model or QuerySet.
+        """Instance of a resource should either be a dictionary or instance of a Django Model or QuerySet.
 
-        This property *must* be implemented by all endpoint definitions.
+        This property **must** be implemented by all endpoint definitions. If not implemented, it will raise a NotImplementedError.
+
+        .. note::
+            **Important**: The DDA framework will by default return self.resource as the response, unless response is overridden to return something else.
+
+        **Example**
+
+        .. code-block:: python
+
+            from django_declarative_apis import machinery
+
+            class TodoDefinition(machinery.BaseEndpointDefinition):
+                resource_model = Todo
+
+                @endpoint_resource(type=Todo)
+                def resource(self):
+                    return Todo.objects.all()
         """
         raise NotImplementedError("Endpoints must implement self.resource property")
 
     @property
     def response(self):
+        """
+        By default it returns :code:`self.resource` unless it is overridden.
+        """
         return self.resource
 
     @classmethod
     def get_endpoint_attributes(cls):
+        """Returns a list of endpoint attributes
+
+        **Example**
+        Let’s define an endpoint that updates a single task in a todo list.
+
+        .. code-block:: python
+
+            from django_declarative_apis import machinery
+
+            class TodoUpdateSingleTaskDefinition(TodoResourceMixin, machinery.ResourceEndpointDefinition):
+                task = field(required=True, type=str)
+                priority = field(required=True, type=str)
+                completion_status = field(type=bool, default=False)
+                resource_id = url_field(name='id')
+
+                @endpoint_resource(type=Todo)
+                def resource(self):
+                    task = Todo.objects.get(id=self.resource_id)
+                    task.task = self.task
+                    task.priority = self.priority
+                    task.completion_status = self.completion_status
+                    task.save()
+                    return task
+
+        Using :code:`get_endpoint_attributes` to find all the attributes of this endpoint and print it.
+
+        .. code-block:: python
+
+            endpoint_object = resources.TodoUpdateSingleTaskDefinition
+            attributes = endpoint_object.get_endpoint_attributes()
+
+            for attribute in attributes:
+                print(attribute.name)
+
+            # It will print:
+            # request
+            # task
+            # priority
+            # completion_status
+            # resource_id
+            # resource
+        """
         endpoint_attributes = filter(
             lambda attribute: isinstance(attribute, EndpointAttribute),
             [getattr(cls, name) for name in dir(cls)],
@@ -439,6 +606,24 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
     @classmethod
     def get_request_properties(cls):
+        """Returns a list of request properties
+
+        **Example**
+
+        .. code-block:: python
+
+            endpoint_object = resources.TodoUpdateSingleTaskDefinition
+            properties = endpoint_object.get_request_properties()
+
+            for property in properties:
+                print(property.name)
+
+            # It will print:
+            # request
+            # task
+            # priority
+            # completion_status
+        """
         return list(
             filter(
                 lambda attribute: isinstance(attribute, RequestProperty),
@@ -448,12 +633,47 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
     @classmethod
     def get_required_request_properties(cls):
+        """Returns a list of required request properties
+
+        **Example**
+
+        .. code-block:: python
+
+            endpoint_object = resources.TodoUpdateSingleTaskDefinition
+            properties = endpoint_object.get_required_request_properties()
+
+            for property in properties:
+                print(property.name)
+
+            # It will print:
+            # request
+            # task
+            # priority
+        """
         return list(
             filter(lambda property: property.required, cls.get_request_properties())
         )
 
     @classmethod
     def get_request_fields(cls):
+        """Returns a list of request fields
+
+        **Example**
+
+        .. code-block:: python
+
+            endpoint_object = resources.TodoUpdateSingleTaskDefinition
+            fields = endpoint_object.get_request_field()
+
+            for field in fields:
+                print(field.name)
+
+            # It will print:
+            # request
+            # task
+            # priority
+            # completion_status
+        """
         return list(
             filter(
                 lambda property: isinstance(property, RequestField),
@@ -463,6 +683,7 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
     @classmethod
     def get_resource_fields(cls):
+        """Returns a list of resource fields"""
         return list(
             filter(
                 lambda property: isinstance(property, ResourceField),
@@ -472,6 +693,22 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
     @classmethod
     def get_required_request_fields(cls):
+        """Returns a list of required request fields
+
+        **Example**
+
+        .. code-block:: python
+
+            endpoint_object = resources.TodoUpdateSingleTaskDefinition
+            properties = endpoint_object.get_required_request_fields()
+
+            for property in properties:
+                print(property.name)
+
+            # It will print:
+            # task
+            # priority
+        """
         return list(
             filter(
                 lambda property: isinstance(property, RequestField),
@@ -481,6 +718,7 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
     @classmethod
     def get_tasks(cls):
+        """Returns endpoint tasks"""
         endpoint_tasks = filter(
             lambda property: isinstance(property, EndpointTask),
             cls.get_endpoint_attributes(),
@@ -490,6 +728,21 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
     @classmethod
     def get_url_fields(cls):
+        """Returns a list of URL fields
+
+        **Example**
+
+        .. code-block:: python
+
+            endpoint_object = resources.TodoUpdateSingleTaskDefinition
+            url_fields = endpoint_object.get_url_fields()
+
+            for field in url_fields:
+                print(field.name)
+
+            # It will print:
+            # resource_id
+        """
         return list(
             filter(
                 lambda property: isinstance(property, RequestUrlField),
@@ -499,6 +752,18 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
     @classmethod
     def documentation(cls):
+        """Returns a dictionary containing the class name and endpoint fields that can be used for documentation purposes.
+
+        **Example**::
+
+            {'class_name': 'TodoUpdateSingleTaskDefinition',
+            'fields': [{'name': 'request'},
+                       {'name': 'task', 'type': <class 'str'>, 'multivalued': False},
+                       {'name': 'priority', 'type': <class 'str'>, 'multivalued': False},
+                       {'name': 'completion_status', 'type': <class 'bool'>, 'multivalued': False, 'default_value': False}
+                       ],
+            'consumer_type': 'unknown'}
+        """
         return {
             "class_name": cls.__name__,
             "fields": [p.documentation for p in cls.get_request_properties()],
@@ -506,6 +771,7 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
     @classmethod
     def get_adhoc_queries(cls):
+        """Returns a list of ad hoc queries."""
         return [
             prop
             for prop in cls.get_endpoint_attributes()
@@ -514,24 +780,28 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
 
 class EndpointDefinition(BaseEndpointDefinition):
-    """A base class to be used when defining endpoints.
-
-    Base class to be used implementing endpoints that aren't necessarily tied to a model. Also implements
-    basic consumer-based authentication.
+    """This base class can be used for implementing endpoints that
+    are not tied to a model. It also implements a basic consumer-based authentication.
     """
 
     request = RawRequestObjectProperty()
+    """Initialize request using :code:`RawRequestObjectProperty()`"""
+
     _consumer_type = ConsumerAttribute(field_name="type", default="RW")
+    """Defines the consumer type with the default privileges of read and write.
+
+    .. note::
+        If you do not want to define a consumer for your api, set :code:`consumer` and :code:`_consumer_type` to :code:`None`.
+    """
+
     is_read_only = False
-    """ Used to determine accessibility for the current consumer.
+    """ Determines whether the consumer has read-only privileges or not.
+
+    **Default Value |** :code:`False`
     """
 
     def is_permitted(self):
-        """Checks authorization for the current consumer.
-
-        Returns:
-            ``bool``: Whether or not the user has permission to the resource.
-        """
+        """Checks whether user has permission to access the resource."""
         if (
             self._consumer_type is None
             or self._consumer_type == BaseConsumer.TYPE_READ_WRITE
@@ -551,6 +821,7 @@ class EndpointDefinition(BaseEndpointDefinition):
 
     @classmethod
     def get_consumer_attributes(cls):
+        """Returns a list of consumer attributes"""
         return list(
             filter(
                 lambda property: isinstance(property, ConsumerAttribute),
@@ -560,6 +831,7 @@ class EndpointDefinition(BaseEndpointDefinition):
 
     @classmethod
     def get_consumer_type(cls):
+        """Returns consumer type. If consumer is set to :code:`None` it will return unknown."""
         consumer_attribute = cls.get_consumer_attributes()
         if len(consumer_attribute) == 1:
             consumer_attribute = consumer_attribute[0]
@@ -569,6 +841,7 @@ class EndpointDefinition(BaseEndpointDefinition):
 
     @classmethod
     def documentation(cls):
+        """Returns a dictionary containing class name, fields, and consumer type. Used for documentation purposes."""
         docs = super().documentation()
         docs["consumer_type"] = cls.get_consumer_type()
         return docs
@@ -581,19 +854,24 @@ class ResourceCreationMixin(object):
 
 
 class ResourceEndpointDefinition(EndpointDefinition):
-    """A base class to be used when defining endpoints bound to models."""
+    """It is a specialization of :code:`EndpointDefinition` that performs
+    queries on the URL. It can be used when defining endpoints bound to models.
+
+    :code:`ResourceEndpointDefinition` is mainly used for :code:`GET`.
+    """
 
     consumer = RequestAttribute()
+    """Initialize consumer using :code:`request_attribute()`. It can also be set to :code:`None`.
+    """
 
     resource_id = RequestUrlField(
         name="id", description="UUID of the resource to retrieve"
     )
-    """ The ID of the resource being fetched or updated.
+    """ The ID of the resource being fetched from the URL or being updated.
     """
     resource_model = None
-    """ The model to attach to the resource endpoint definition.
-
-    Must extend or implement the Django ORM model interface as required.
+    """ The model to attach to the resource endpoint definition. 
+    It must extend or implement the Django ORM model interface as required.
     """
 
     def __init__(self, *args, **kwargs):
@@ -602,18 +880,20 @@ class ResourceEndpointDefinition(EndpointDefinition):
 
     @property
     def resource(self):
-        """Resource implementation
-
-        Queries the object manager of `self.resource_model` for the given id (`self.resource_id`).
-        """
+        """Queries the object manager of `self.resource_model` for the given id (`self.resource_id`)."""
         if not self._cached_resource:
             self._cached_resource = self.resource_model.objects.get(id=self.resource_id)
         return self._cached_resource
 
 
 class ResourceUpdateEndpointDefinition(ResourceEndpointDefinition):
+    """It handles the changes to the resource that happened from the
+    request, and saves the resource. It can be used for :code:`POST` and :code:`PUT`.
+    """
+
     @EndpointTask(priority=-100)
     def mutate(self):
+        """Modifies values of the resource fields by mapping the values of endpoint attributes to the resource."""
         resource = self.resource
         for resource_field in self.get_resource_fields():
             field_value = getattr(self, resource_field.name)
@@ -622,6 +902,7 @@ class ResourceUpdateEndpointDefinition(ResourceEndpointDefinition):
 
     @EndpointTask(priority=-101)
     def validate_input(self):
+        """Checks whether there are any unexpected resource fields present. If so, raises an error and returns the unexpected fields."""
         resource = self.resource
         expected_fields = set(
             list(field.name for field in self.get_resource_fields())

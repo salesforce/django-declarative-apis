@@ -72,6 +72,11 @@ class EndpointHandler(object):
 
 
 class EndpointResource(Resource):
+    """:code:`EndpointResource` is the DDA default resource adapter.
+    It validates the configuration of the authentication handler, and in combination with Django’s native urls.py
+    routes requests (through behavioral routing) to the same URL but to different handlers based on request attributes.
+    """
+
     def __init__(self, authentication=None, **kwargs):
         super(EndpointResource, self).__init__(EndpointHandler(**kwargs))
 
@@ -83,6 +88,36 @@ class EndpointResource(Resource):
 
 
 def resource_adapter(*args, **kwargs):
+    """:code:`resource_adapter()` is a helper function that finds the endpoint resource adapter from settings.py and calls that resource adapter.
+
+    **resource_adapter takes two arguments:**
+
+    Handler/Resource
+        **Required |** The :code:`EndpointDefinition` implementation along with an HTTP verb.
+
+    Authentication Handler
+        **Optional |** If not specified, :code:`OAuth1.0a` will be used by default.
+
+    **Example:**
+    Handler defined in a separate file named :code:`handlers.py`.
+
+    .. code-block::
+
+        TodoEndpoint = resource_adapter(
+            post=resources.TodoUpdateDefinition,
+            get=resources.TodoDefinition,
+            authentication={None: (NoAuth(),)},
+        )
+
+    Django app’s :code:`urls.py`.
+
+    .. code-block::
+
+        url(
+            r"^tasks/$",
+            handlers.TodoEndpoint,
+        )
+    """
     setting_name = "DECLARATIVE_ENDPOINT_RESOURCE_ADAPTER"
     adapter_name = getattr(settings, setting_name, None)
     if not adapter_name:

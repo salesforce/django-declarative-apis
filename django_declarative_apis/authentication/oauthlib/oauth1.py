@@ -73,6 +73,7 @@ class TwoLeggedOauth1(Authenticator):
             return True
 
     def is_authenticated(self, request):
+        """Authenticates the requester using OAuth1.0a."""
         param_check = self.validate_missing_parameters(request)
         if isinstance(param_check, AuthenticationFailure):
             return param_check
@@ -116,6 +117,7 @@ class TwoLeggedOauth1(Authenticator):
             return AuthenticationFailure()
 
     def authenticate_header(self, request):
+        """Returns the authentication header. If it does not exist, returns "Unknown OAuth Error"""
         return getattr(request, "auth_header", "Unknown OAuth Error")
 
     def challenge(self, oauth_error=None):
