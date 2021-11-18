@@ -6,6 +6,8 @@ and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [unreleased] - YYYY-MM-DD
+
+# [0.22.3] - 2021-11-18
 ### Added 
 - [PR 59](https://github.com/salesforce/django-declarative-apis/pull/59) Add test cases for example app's model and responses
 
