@@ -1,7 +1,6 @@
-name: release
-on: [release]
+name: DDA Release
+on: release
 jobs:
-
   source-build:
     runs-on: ubuntu-latest
     steps:
