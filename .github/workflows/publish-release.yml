@@ -2,7 +2,7 @@
 # Publishes the release to PyPI and docs to github pages
 #
 
-name: publish release
+name: "publish release"
 
 on: 
   release:
