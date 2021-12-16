@@ -2,11 +2,11 @@
 # Publishes the release to PyPI and docs to github pages
 #
 
-name: DDA PyPI and docs release
+name: publish release
 
 on: 
   release:
-    types: [created]
+    types: [published]
 
 jobs:
   build-source:
