@@ -1,7 +1,12 @@
-name: DDA Release
-on: release
+
+name: DDA PyPI and docs release
+
+on: 
+  release:
+    types: [created]
+
 jobs:
-  source-build:
+  build-source:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -10,7 +15,7 @@ jobs:
           python-version: '3.7'
       - run: python setup.py sdist
 
-  wheel-build:
+  build-wheel:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -20,7 +25,7 @@ jobs:
       - run: pip install wheel
       - run: python setup.py bdist_wheel
 
-  docs-build:
+  build-docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,15 +35,15 @@ jobs:
       - run: pip install -r requirements-dev.txt -r requirements.txt
       - run: cd docs && DJANGO_SETTINGS_MODULE=test.settings make html 
 
-  pypi-publish:
-    needs: [source-build, wheel-build]
+  publish-pypi:
+    needs: [build-source, build-wheel]
     uses: pypa/gh-action-pypi-publish@release/v1
     with:
       user: __token__
       password: ${{ secrets.PYPI_API_TOKEN }}
 
-  gh-pages-publish:
-    needs: [docs-build]
+  publish-gh-pages:
+    needs: [build-docs]
     uses: crazy-max/ghaction-github-pages@v2
     with:
       target_branch: gh-pages
