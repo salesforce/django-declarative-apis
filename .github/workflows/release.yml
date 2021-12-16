@@ -1,0 +1,48 @@
+name: release
+on: [release]
+jobs:
+
+  source-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - run: python setup.py sdist
+
+  wheel-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - run: pip install wheel
+      - run: python setup.py bdist_wheel
+
+  docs-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - run: pip install -r requirements-dev.txt -r requirements.txt
+      - run: cd docs && DJANGO_SETTINGS_MODULE=test.settings make html 
+
+  pypi-publish:
+    needs: [source-build, wheel-build]
+    uses: pypa/gh-action-pypi-publish@release/v1
+    with:
+      user: __token__
+      password: ${{ secrets.PYPI_API_TOKEN }}
+
+  gh-pages-publish:
+    needs: [docs-build]
+    uses: crazy-max/ghaction-github-pages@v2
+    with:
+      target_branch: gh-pages
+      build_dir: docs/build/html
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -20,7 +20,7 @@ with open(path.join(HERE, "README.md")) as readme_file:
 
 setuptools.setup(
     name="django-declarative-apis",
-    version="0.22.3",  # set by bumpversion
+    version="0.22.4",  # set by bumpversion
     author="Drew Shafer",
     url="https://salesforce.com",
     description="Simple, readable, declarative APIs for Django",
