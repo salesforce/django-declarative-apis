@@ -61,21 +61,21 @@ jobs:
             ${{ runner.os }}-build
             ${{ runner.os }}-
 
-  publish-pypi:
-    runs-on: ubuntu-latest
-    needs: [build-source]
-    steps:
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
-
-  publish-gh-pages:
-    runs-on: ubuntu-latest
-    needs: [build-docs]
-    uses: crazy-max/ghaction-github-pages@v2
-    with:
-      target_branch: gh-pages
-      build_dir: docs/build/html
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#  publish-pypi:
+#    runs-on: ubuntu-latest
+#    needs: [build-source]
+#    steps:
+#      - uses: pypa/gh-action-pypi-publish@release/v1
+#        with:
+#          user: __token__
+#          password: ${{ secrets.PYPI_API_TOKEN }}
+#
+#  publish-gh-pages:
+#    runs-on: ubuntu-latest
+#    needs: [build-docs]
+#    uses: crazy-max/ghaction-github-pages@v2
+#    with:
+#      target_branch: gh-pages
+#      build_dir: docs/build/html
+#    env:
+#      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
