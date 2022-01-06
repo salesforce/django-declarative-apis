@@ -7,7 +7,7 @@
 
 import logging
 from pydoc import locate
-from celery.task import task as celery_task
+from celery import shared_task as celery_task
 import celery
 import time
 from typing import NamedTuple
