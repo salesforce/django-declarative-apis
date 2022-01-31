@@ -5,7 +5,7 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-from django.conf.urls import url
+from django.urls import re_path
 
 from django_declarative_apis import authentication
 from django_declarative_apis.adapters import resource_adapter
@@ -28,11 +28,11 @@ class NoAuth(authentication.Authenticator):
 
 
 urlpatterns = [
-    url(
+    re_path(
         r"^me$",
         resource_adapter(get=resources.MeDefinition, post=resources.MeUpdateDefinition),
     ),
-    url(
+    re_path(
         r"^ping$",
         resource_adapter(
             get=resources.PingDefinition, authentication={None: (NoAuth(),)}
