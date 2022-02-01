@@ -34,7 +34,8 @@ readme:
 
 # Test targets
 
-test-all: coverage vuln-static formatcheck subsystem
+# requires install and example-install
+test-all: coverage vuln-static formatcheck example-coverage
 .PHONY: test-all
 
 test:
@@ -61,5 +62,11 @@ formatcheck:
 	${FORMATCHECK_CMD}
 .PHONY: formatcheck
 
-subsystem:
-	$(MAKE) -C example
+example-install:
+	$(MAKE) -C example install
+
+example-test:
+	$(MAKE) -C example test
+
+example-coverage:
+	$(MAKE) -C example coverage
