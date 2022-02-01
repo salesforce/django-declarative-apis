@@ -13,7 +13,7 @@ from os import path
 HERE = path.dirname(__file__)
 
 with open(path.join(HERE, "requirements.txt")) as requirements_file:
-    requirements = requirements_file.read().split()
+    requirements = requirements_file.read().strip().split("\n")
 
 with open(path.join(HERE, "README.md")) as readme_file:
     long_description = readme_file.read()

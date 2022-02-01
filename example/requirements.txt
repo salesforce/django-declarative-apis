@@ -1,5 +1,5 @@
 ../../django-declarative-apis
-Django~=2.2.0
+Django~=3.2
 django-sslserver==0.20
 oauth2==1.9.0.post1
 oauthlib==2.0.6
