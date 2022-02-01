@@ -1,7 +1,7 @@
 bandit~=1.7
 black~=22.1
 bumpversion~=0.5
-coverage~=5.0
+coverage~=6.3
 flake8~=3.9.0
 ipython~=7.0
 oauth2==1.9.0.post1
