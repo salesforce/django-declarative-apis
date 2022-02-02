@@ -1,11 +1,11 @@
 bandit~=1.7
-black==21.5b1
+black~=22.1
 bumpversion~=0.5
-coverage~=5.0
-flake8~=3.9.0
+coverage~=6.3
+flake8~=4.0
 ipython~=7.0
 oauth2==1.9.0.post1
-pyyaml~=5.3
+pyyaml~=6.0
 sphinx_rtd_theme==0.5.2
 tblib~=1.6.0
 tox==2.6.0
