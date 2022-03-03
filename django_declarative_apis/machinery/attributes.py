@@ -689,9 +689,7 @@ class DeferrableEndpointTask(EndpointTask):
 
 class RequestFieldGroup(RequestProperty):
     def __init__(self, *component_field_getters, **kwargs):
-        super().__init__(
-            property_getter=self.get_value, **kwargs
-        )
+        super().__init__(property_getter=self.get_value, **kwargs)
         self.component_field_getters = component_field_getters
         self.component_field_names = []
         for component_field_getter in self.component_field_getters:
