@@ -26,7 +26,7 @@ class TweakedSignatureOnlyEndpoint(SignatureOnlyEndpoint):
     """
 
     def __init__(self, *args, **kwargs):
-        super(TweakedSignatureOnlyEndpoint, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.validation_error_message = ""
 
     def validate_request(self, uri, http_method="GET", body=None, headers=None):
@@ -102,4 +102,4 @@ class TweakedSignatureOnlyEndpoint(SignatureOnlyEndpoint):
             key_str = preprocess_rsa_key(key_str)
             return signature.verify_rsa_sha1(request, key_str)
 
-        return super(TweakedSignatureOnlyEndpoint, self)._check_signature(request)
+        return super()._check_signature(request)

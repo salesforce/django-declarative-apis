@@ -35,7 +35,7 @@ class EndpointHandler:
     """
 
     def __init__(self, **kwargs):
-        super(EndpointHandler, self).__init__()
+        super().__init__()
 
         self.method_handlers = {}
         for method, handler in kwargs.items():
@@ -78,7 +78,7 @@ class EndpointResource(Resource):
     """
 
     def __init__(self, authentication=None, **kwargs):
-        super(EndpointResource, self).__init__(EndpointHandler(**kwargs))
+        super().__init__(EndpointHandler(**kwargs))
 
         if authentication is not None:
             django_declarative_apis.authentication.validate_authentication_config(

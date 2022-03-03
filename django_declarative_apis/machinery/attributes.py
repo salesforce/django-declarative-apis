@@ -30,7 +30,7 @@ class EndpointAttribute(metaclass=abc.ABCMeta):
     def __init__(
         self, name=None, required=False, description=None, hidden=False, advanced=False
     ):
-        super(EndpointAttribute, self).__init__()
+        super().__init__()
 
         self.hidden = hidden
         self.name = name  # will be populated by EndpointDefinitionMeta
@@ -79,7 +79,7 @@ class RequestProperty(EndpointAttribute):
         return cls.__hidden_request_attribute_name in instance.__dict__
 
     def __init__(self, property_getter, **kwargs):
-        super(RequestProperty, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self.property_getter = property_getter
 
@@ -117,7 +117,7 @@ class TypedEndpointAttributeMixin:
                     self.field_type.__name__
                 )
             )
-        super(TypedEndpointAttributeMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def coerce_value_to_type(self, raw_value):
         try:
@@ -175,7 +175,7 @@ class RequestUrlField(TypedEndpointAttributeMixin, EndpointAttribute):
     def __init__(self, *args, **kwargs):
         self.api_name = kwargs.pop("name", None)
         self.value = None
-        super(RequestUrlField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def set_value(self, value):
         self.value = value
@@ -249,7 +249,7 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
         self.default_value = kwargs.pop("default", None)
         self.api_name = kwargs.pop("name", None)
         self.multivalued = kwargs.pop("multivalued", False)
-        super(RequestField, self).__init__(property_getter=self.get_field, **kwargs)
+        super().__init__(property_getter=self.get_field, **kwargs)
         self.post_processor = None
 
     def __call__(self, post_processor):
@@ -258,7 +258,7 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
 
     @property
     def documentation(self):
-        result = super(RequestField, self).documentation
+        result = super().documentation
         result["type"] = self.field_type
         result["multivalued"] = self.multivalued
         if self.api_name:
@@ -312,7 +312,7 @@ class RequestAttribute(RequestProperty):
     """
 
     def __init__(self, attribute_getter=None, required=True, default=None, **kwargs):
-        super(RequestAttribute, self).__init__(
+        super().__init__(
             property_getter=self.get_request_attribute, required=required, **kwargs
         )
 
@@ -353,7 +353,7 @@ class ConsumerAttribute(RequestAttribute):
 
     def __init__(self, *args, field_name=None, **kwargs):
         self.field_name = field_name
-        super(ConsumerAttribute, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_without_default(self, owner_instance, request):
         consumer = request.consumer
@@ -469,7 +469,7 @@ class EndpointTask(EndpointAttribute):
         priority=0,  # lower priority gets executed first
         **kwargs
     ):
-        super(EndpointTask, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.task_runner = task_runner
         self.depends_on = depends_on
         self.task_state = EndpointTask.STATE_NOT_RUN
@@ -601,7 +601,7 @@ class DeferrableEndpointTask(EndpointTask):
         execute_unless=None,
         **kwargs
     ):
-        super(DeferrableEndpointTask, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         if task_runner:
             self.task_runner = DeferrableEndpointTask.unwrap_staticmethod(task_runner)
         else:
@@ -689,7 +689,7 @@ class DeferrableEndpointTask(EndpointTask):
 
 class RequestFieldGroup(RequestProperty):
     def __init__(self, *component_field_getters, **kwargs):
-        super(RequestFieldGroup, self).__init__(
+        super().__init__(
             property_getter=self.get_value, **kwargs
         )
         self.component_field_getters = component_field_getters
@@ -830,7 +830,7 @@ class Aggregate(EndpointAttribute):
     def __init__(self, aggregation_function=None, **kwargs):
         self.aggregation_function = aggregation_function
         self.depends_on = kwargs.pop("depends_on", None)
-        super(Aggregate, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def __call__(self, aggregation_function):
         self.aggregation_function = aggregation_function

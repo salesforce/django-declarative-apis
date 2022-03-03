@@ -726,7 +726,7 @@ class MySpecialException(Exception):
 
 class _TestEndpoint(machinery.EndpointDefinition):
     def __init__(self, expected_response, *args, **kwargs):
-        super(_TestEndpoint, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.expected_response = expected_response
 
     def __call__(self):

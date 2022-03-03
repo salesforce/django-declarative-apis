@@ -72,7 +72,7 @@ class OauthConsumerManager(django_models.Manager):
     def create(self, **kwargs):
         key = kwargs.pop("key", get_random_string(length=KEY_SIZE))
         secret = kwargs.pop("secret", get_random_string(length=SECRET_SIZE))
-        return super(OauthConsumerManager, self).create(
+        return super().create(
             key=key, secret=secret, **kwargs
         )
 

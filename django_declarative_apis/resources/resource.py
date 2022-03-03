@@ -45,7 +45,7 @@ _DESERIALIZERS = collections.defaultdict(
 class HttpResponseServerError(HttpResponse):
     def __init__(self, *args, **kwargs):
         self.error = kwargs.pop("error", None)
-        super(HttpResponseServerError, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class Resource:

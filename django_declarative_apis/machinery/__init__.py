@@ -79,7 +79,7 @@ class EndpointResourceAttribute(EndpointAttribute):
     """
 
     def __init__(self, type, filter=None, returns_list=False, **kwargs):
-        super(EndpointResourceAttribute, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.type = type
         self.filter = filter
         self.func = None
@@ -129,7 +129,7 @@ class EndpointResponseAttribute(EndpointAttribute):
     """
 
     def __init__(self, type, filter=None, **kwargs):
-        super(EndpointResponseAttribute, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.type = type
         self.filter = filter
         self.func = None
@@ -238,7 +238,7 @@ class EndpointBinder:
                 )
 
     def __init__(self, endpoint_definition):
-        super(EndpointBinder, self).__init__()
+        super().__init__()
         self.endpoint_definition = endpoint_definition
         self.endpoint_attributes = endpoint_definition.get_endpoint_attributes()
         self.request_properties = endpoint_definition.get_request_properties()
@@ -347,7 +347,7 @@ class EndpointBinder:
 
 class _EndpointRequestLifecycleManager:
     def __init__(self, endpoint_definition):
-        super(_EndpointRequestLifecycleManager, self).__init__()
+        super().__init__()
         self.endpoint_definition = endpoint_definition
         self.binder = EndpointBinder(endpoint_definition)
         self.endpoint_tasks = endpoint_definition.get_tasks()
@@ -365,7 +365,7 @@ class _EndpointRequestLifecycleManager:
 
 class BehavioralEndpointDefinitionRouter:
     def __init__(self, *endpoint_definitions):
-        super(BehavioralEndpointDefinitionRouter, self).__init__()
+        super().__init__()
         self.endpoint_definitions = endpoint_definitions
         self.endpoint_managers = [
             _EndpointRequestLifecycleManager(endpoint)
@@ -875,7 +875,7 @@ class ResourceEndpointDefinition(EndpointDefinition):
     """
 
     def __init__(self, *args, **kwargs):
-        super(ResourceEndpointDefinition, self).__init__()
+        super().__init__()
         self._cached_resource = None
 
     @property
