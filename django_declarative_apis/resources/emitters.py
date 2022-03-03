@@ -16,7 +16,6 @@ try:
 except ImportError:  # pragma: nocover
     yaml = None
 
-from django.db import models
 from django.utils.encoding import smart_str
 from django.utils.xmlutils import SimplerXMLGenerator
 
