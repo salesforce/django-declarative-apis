@@ -48,7 +48,7 @@ class HttpResponseServerError(HttpResponse):
         super(HttpResponseServerError, self).__init__(*args, **kwargs)
 
 
-class Resource(object):
+class Resource:
     """
     Resource. Create one for your URL mappings, just
     like you would with Django. Takes one argument,

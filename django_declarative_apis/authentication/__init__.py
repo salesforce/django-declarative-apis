@@ -54,7 +54,7 @@ class Authenticator(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
 
-class AuthenticationResult(object):
+class AuthenticationResult:
     """A class definition that take in and stores the authentication header and detail of the result."""
 
     def __init__(self, detail=None, auth_header=None):

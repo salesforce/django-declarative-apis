@@ -311,7 +311,7 @@ class EndpointBinderTestCase(django.test.TestCase):
 class EndpointFilteringTestCase(testutils.RequestCreatorMixin, django.test.TestCase):
     from django_declarative_apis.machinery.filtering import ALWAYS, NEVER
 
-    class DummyClassOne(object):
+    class DummyClassOne:
         def __init__(self):
             self.foo = "foo" * 100
             self.bar = "bar" * 100

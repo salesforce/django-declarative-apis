@@ -89,7 +89,7 @@ class DjangoRequestValidator(RequestValidator):
 
     @property
     def dummy_client(self):
-        class DummyClient(object):
+        class DummyClient:
             def __init__(self, *args, **kwargs):
                 self.secret = ""
                 self.key = ""

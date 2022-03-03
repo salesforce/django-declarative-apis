@@ -163,8 +163,8 @@ class EndpointDefinitionMeta(abc.ABCMeta, metaclass=abc.ABCMeta):
                 pass
 
 
-class EndpointBinder(object):
-    class BoundEndpointManager(object):
+class EndpointBinder:
+    class BoundEndpointManager:
         def __init__(self, manager, bound_endpoint):
             self.manager = manager
             self.bound_endpoint = bound_endpoint
@@ -345,7 +345,7 @@ class EndpointBinder(object):
             raise errors.ClientErrorRequestThrottled()
 
 
-class _EndpointRequestLifecycleManager(object):
+class _EndpointRequestLifecycleManager:
     def __init__(self, endpoint_definition):
         super(_EndpointRequestLifecycleManager, self).__init__()
         self.endpoint_definition = endpoint_definition
@@ -363,7 +363,7 @@ class _EndpointRequestLifecycleManager(object):
         return self.endpoint_definition.__name__
 
 
-class BehavioralEndpointDefinitionRouter(object):
+class BehavioralEndpointDefinitionRouter:
     def __init__(self, *endpoint_definitions):
         super(BehavioralEndpointDefinitionRouter, self).__init__()
         self.endpoint_definitions = endpoint_definitions
@@ -847,7 +847,7 @@ class EndpointDefinition(BaseEndpointDefinition):
         return docs
 
 
-class ResourceCreationMixin(object):
+class ResourceCreationMixin:
     @property
     def http_status(self):
         return http.client.CREATED

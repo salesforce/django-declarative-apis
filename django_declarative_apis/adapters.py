@@ -24,11 +24,11 @@ except ImportError as e:  # noqa
     Resource = object
 
 
-class BaseHandler(object):
+class BaseHandler:
     defined_methods = {"get", "put", "patch", "post", "delete"}
 
 
-class EndpointHandler(object):
+class EndpointHandler:
     """
     Glue for combining the new-style endpoint definitions into the old-style piston handler
 

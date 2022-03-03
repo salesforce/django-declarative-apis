@@ -108,7 +108,7 @@ class RequestProperty(EndpointAttribute):
         return result
 
 
-class TypedEndpointAttributeMixin(object):
+class TypedEndpointAttributeMixin:
     def __init__(self, *args, **kwargs):
         self.field_type = kwargs.pop("type", str)
         if self.field_type not in RequestField.VALID_FIELD_TYPES:
@@ -375,7 +375,7 @@ class RawRequestObjectProperty(RequestAttribute):
         request = RawRequestObjectProperty()
     """
 
-    class SafeRequestWrapper(object):
+    class SafeRequestWrapper:
         __hidden_request_attribute_name = "_" + "".join(
             random.choice(string.printable) for _ in range(10)
         )
