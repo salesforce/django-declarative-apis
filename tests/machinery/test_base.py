@@ -151,6 +151,9 @@ class EndpointBinderTestCase(django.test.TestCase):
             def is_dirty(self, check_relationship=False):
                 return True
 
+            def save_dirty_fields(self):
+                return None
+
             def save(self):
                 pass
 
@@ -169,7 +172,8 @@ class EndpointBinderTestCase(django.test.TestCase):
 
         manager.bound_endpoint.request = _FakeRequest()
 
-        with mock.patch.object(_TestResource, "save", return_value=None) as mock_save:
+        #with mock.patch.object(_TestResource, "save", return_value=None) as mock_save:
+        with mock.patch.object(_TestResource, "save_dirty_fields", return_value=None) as mock_save:
             manager.get_response()
             # save is called before and after tasks. since we've hardcoded _TestResource.is_dirty to return True,
             # both of them should fire
@@ -179,6 +183,9 @@ class EndpointBinderTestCase(django.test.TestCase):
         class _TestResource:
             def is_dirty(self, check_relationship=False):
                 return True
+
+            def save_dirty_fields(self):
+                return
 
             def save(self):
                 pass
@@ -197,7 +204,8 @@ class EndpointBinderTestCase(django.test.TestCase):
                 )
 
         for error_should_save_changes in (True, False):
-            with mock.patch.object(_TestResource, "save") as mock_save:
+            #with mock.patch.object(_TestResource, "save") as mock_save:
+            with mock.patch.object(_TestResource, "save_dirty_fields") as mock_save:
                 endpoint = _TestEndpoint()
                 manager = machinery.EndpointBinder.BoundEndpointManager(
                     machinery._EndpointRequestLifecycleManager(endpoint), endpoint
