@@ -181,7 +181,8 @@ class EndpointBinder(object):
             self.binding_exc_info = None
             self.validation_exc_info = None
 
-        def get_response(self):
+        # TODO: make this method less complex and remove the `noqa`
+        def get_response(self):  # noqa: C901
             error = self.binding_exc_info or self.validation_exc_info
             if error:
                 exc_type, exc_value, exc_traceback = error

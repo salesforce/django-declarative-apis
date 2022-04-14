@@ -194,7 +194,8 @@ class Resource(object):
         # XXX: this might be a little weird as it'll contain information about the last executed authenticator
         return actor, anonymous, error
 
-    @vary_on_headers("Authorization")
+    # TODO: make this method less complex and remove the `noqa`
+    @vary_on_headers("Authorization")  # noqa: C901
     def __call__(self, request, *args, **kwargs):
         """
         NB: Sends a `Vary` header so we don't cache requests
