@@ -107,7 +107,9 @@ def _get_filtered_field_value(
 
 
 # TODO: make this method less complex and remove the `noqa`
-def _apply_filters_to_object(inst, filter_def, expand_children=None, klass=None):  # noqa: C901
+def _apply_filters_to_object(  # noqa: C901
+    inst, filter_def, expand_children=None, klass=None
+):
     if isinstance(inst, (list, tuple, models.query.QuerySet)):
         # if it's a tuple or list, iterate over the collection and call _apply_filters_to_object on each item
         return [

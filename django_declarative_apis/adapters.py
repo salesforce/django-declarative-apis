@@ -75,7 +75,7 @@ class EndpointResource(Resource):
     """:code:`EndpointResource` is the DDA default resource adapter. It validates the
     configuration of the authentication handler, and in combination with Django’s native
     urls.py routes requests (through behavioral routing) to the same URL but to
-    different handlers based on request attributes. """
+    different handlers based on request attributes."""
 
     def __init__(self, authentication=None, **kwargs):
         super(EndpointResource, self).__init__(EndpointHandler(**kwargs))

@@ -486,8 +486,7 @@ class EndpointTask(EndpointAttribute):
     def __init__(
         self,
         task_runner=None,
-        depends_on=None,  # Reference to another task that should be run before this
-                          # one.  Overrides priority
+        depends_on=None,  # Reference to another task that should be run before this one. Overrides priority
         priority=0,  # lower priority gets executed first
         **kwargs,
     ):
