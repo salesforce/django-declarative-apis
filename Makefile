@@ -23,7 +23,7 @@ format:
 .PHONY: format
 
 docs:
-	DJANGO_SETTINGS_MODULE=tests.settings $(MAKE) -C docs html
+	DJANGO_SETTINGS_MODULE=tests.settings $(MAKE) -C docs html SPHINXOPTS="-W"
 .PHONY: docs
 
 readme:
