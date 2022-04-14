@@ -42,11 +42,6 @@ from .attributes import (
 from .attributes import TypedEndpointAttributeMixin, RequestFieldGroup  # noqa
 from .utils import locate_object, rate_limit_exceeded
 
-try:
-    from dirtyfields.dirtyfields import reset_state
-except ImportError:
-    reset_state = none
-
 
 logger = logging.getLogger(__name__)
 
