@@ -52,15 +52,19 @@ logger = logging.getLogger(__name__)
 
 
 class EndpointResourceAttribute(EndpointAttribute):
-    """It is used as a decorator on a resource function. It specifies the attributes of that resource.
+    """Used as a decorator on a resource function. Specifies the attributes of that
+    resource.
 
-    :param type: Specifies the model type. It is used only for documentation generation purposes.
+    :param type: Specifies the model type. It is used only for documentation generation
+        purposes.
     :type type: required
 
-    :param filter: Defines the class filters. Overrides the default filters. Defaults to :code:`None`.
+    :param filter: Defines the class filters. Overrides the default filters. Defaults to
+        :code:`None`.
     :type filter: optional
 
-    :param returns_list:  It is used for documentation generation purposes. Defaults to :code:`False`
+    :param returns_list:  It is used for documentation generation purposes. Defaults to
+        :code:`False`
     :type returns_list: optional
 
     **Example**
@@ -69,7 +73,10 @@ class EndpointResourceAttribute(EndpointAttribute):
 
         from django_declarative_apis.machinery import endpoint_resource
 
-        class TodoSingleTaskDefinition(TodoResourceMixin, machinery.ResourceEndpointDefinition):
+        class TodoSingleTaskDefinition(
+            TodoResourceMixin,
+            machinery.ResourceEndpointDefinition
+        ):
             resource_id = url_field(name='id')  # grabs the id from url
 
             @endpoint_resource(type=Todo)
@@ -108,12 +115,15 @@ class EndpointResourceAttribute(EndpointAttribute):
 
 
 class EndpointResponseAttribute(EndpointAttribute):
-    """It is used as a decorator on a response function. It specifies the attributes of the response.
+    """Used as a decorator on a response function. Specifies the attributes of the
+    response.
 
-    :param type: Specifies the response type, which can be dictionary, list, or model type. It is used only for documentation generation purposes.
+    :param type: Specifies the response type, which can be dictionary, list, or
+        type. It is used only for documentation generation purposes.
     :type type: required
 
-    :param filter: Defines the class filters. Overrides the default filters. Defaults to :code:`None`.
+    :param filter: Defines the class filters. Overrides the default filters.
+        Defaults to :code:`None`.
     :type filter: optional
 
     **Example**
@@ -151,8 +161,9 @@ class EndpointDefinitionMeta(abc.ABCMeta, metaclass=abc.ABCMeta):
     def __init__(cls, class_name, bases=None, dict=None):
         super(EndpointDefinitionMeta, cls).__init__(class_name, bases, dict)
 
-        # This metaclass sets EndpointAttributeDiscriptor's names if they haven't otherwise been set
-        # This will walk parent classes as well so that attributes can be defined through inheritance
+        # This metaclass sets EndpointAttributeDescriptor's names if they haven't
+        # otherwise been set. This will walk parent classes as well so that attributes
+        # can be defined through inheritance
         ancestor_attribs = (ancestor.__dict__.items() for ancestor in cls.mro())
         for name, attribute in itertools.chain(dict.items(), *ancestor_attribs):
             try:
@@ -270,8 +281,8 @@ class EndpointBinder(object):
                 }
             )
 
-        # Bind the request object within the instance (this allows RequestProperties to access the request
-        # without the endpoint definition having direct access to it)
+        # Bind the request object within the instance (this allows RequestProperties to
+        # access the request without the endpoint definition having direct access to it)
         RequestProperty.bind_request_to_instance(endpoint, request)
 
         bound_endpoint_manager = EndpointBinder.BoundEndpointManager(manager, endpoint)
@@ -290,7 +301,8 @@ class EndpointBinder(object):
         return bound_endpoint_manager
 
     def _bind_endpoint(self, endpoint):
-        # Access all request properties (this validates a request using the definition and caches the values)
+        # Access all request properties (this validates a request using the definition
+        # and caches the values)
         extra_error_message = ""
         missing_required_properties = []
         invalid_value_properties = []
@@ -414,24 +426,24 @@ class EndpointDefinitionMixin(metaclass=EndpointDefinitionMeta):
 
 
 class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
-    """It is the base class for implementing Endpoints. At the very least a developer needs to inherit from
-    :code:`BaseEndpointDefinition` class.
-    This is how the EndpointBinder will know how to communicate with the endpoint and query its fields.
+    """The base class for implementing Endpoints. At the very least a developer needs to
+    inherit from :code:`BaseEndpointDefinition` class. This is how the EndpointBinder
+    will know how to communicate with the endpoint and query its fields.
     """
 
     @abc.abstractmethod
     def is_authorized(self):
-        """The authentication layer of DDA that is tied to the resource adapter is only responsible
-        for validating the requester.
-        We still need to determine whether the requester is authorized to perform certain actions,
-        which is the reason behind implementation of :code:`is_authorized`.
+        """The authentication layer of DDA that is tied to the resource adapter is only
+        responsible for validating the requester. We still need to determine whether the
+        requester is authorized to perform certain actions, which is the reason behind
+        implementation of :code:`is_authorized`.
 
-        :code:`is_authorized` performs authorization check on the request to decide whether or not the user should have
-        access to the resource, and returns a boolean value.
+        :code:`is_authorized` performs an authorization check on the request to decide
+        whether or not the user should have access to the resource and returns a boolean
+        value.
 
-
-        :code:`is_authorized` implementation should be overridden by the endpoint definition
-        inheriting from :code:`BaseEndpointDefinition`
+        :code:`is_authorized` implementation should be overridden by the endpoint
+        definition inheriting from :code:`BaseEndpointDefinition`
 
         **Default Value |** :code:`False`
 
@@ -442,29 +454,30 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
             from django_declarative_apis import machinery
 
-            SampleEndpointDefinition(machinery.BaseEndpointDefinition):
+            class SampleEndpointDefinition(machinery.BaseEndpointDefinition):
                 def is_authorized(self):
                     return True
-            Authorization check. Should be overridden by endpoint definition implementations.
         """
         return False
 
     def is_permitted(self):
-        """Similar to code:`is_authorized`, it checks whether a user has the permission to access the resource. Returns a boolean value.
+        """Similar to :code:`is_authorized`, it checks whether a user has the permission
+        to access the resource. Returns a boolean value.
 
         **Default Value |** :code:`True`
         """
         return True
 
     def is_valid(self):
-        """It can be used for scenarios where a request binds correctly, however, there are combination of parameters
-        that would make the request invalid. Returns a boolean value.
+        """Used in scenarios where a request binds correctly but there are combination
+        of parameters that would make the request invalid. Returns a boolean value.
 
-        For example, if the valid value for a field is from 1 to 10, this cannot be expressed through :code:`field`.
-        However, we can use the :code:`is_valid` to express it.
+        For example, if the valid value for a field is from 1 to 10, this cannot be
+        expressed through :code:`field`. However, we can use the :code:`is_valid` to
+        express it.
 
-        An alternative to :code:`is_valid` would be to use the :code:`@field` as a decorator on a function
-        and express this restriction there.
+        An alternative to :code:`is_valid` would be to use the :code:`@field` as a
+        decorator on a function and express this restriction there.
 
         **Default Value |** :code:`True`
 
@@ -474,7 +487,7 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
             from django_declarative_apis import machinery
 
-            SampleEndpointDefinition(machinery.BaseEndpointDefinition):
+            class SampleEndpointDefinition(machinery.BaseEndpointDefinition):
                 valid_int = field(required=True, type=int)
 
                 def is_authorized(self):
@@ -496,7 +509,8 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
         return None
 
     def rate_limit_period(self):
-        """Specifies and returns the number of seconds to enforce between requests with the same :code:`rate_limit_key`.
+        """Specifies and returns the number of seconds to enforce between requests with
+        the same :code:`rate_limit_key`.
 
         **Default Value |** 1
         """
@@ -522,12 +536,15 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
     @property
     @abc.abstractmethod
     def resource(self):
-        """Instance of a resource should either be a dictionary or instance of a Django Model or QuerySet.
+        """Instance of a resource should either be a dictionary or instance of a Django
+        Model or QuerySet.
 
-        This property **must** be implemented by all endpoint definitions. If not implemented, it will raise a NotImplementedError.
+        This property **must** be implemented by all endpoint definitions. If not
+        implemented, it will raise a NotImplementedError.
 
         .. note::
-            **Important**: The DDA framework will by default return self.resource as the response, unless response is overridden to return something else.
+            **Important**: The DDA framework will by default return self.resource as the
+            response, unless response is overridden to return something else.
 
         **Example**
 
@@ -562,7 +579,10 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
             from django_declarative_apis import machinery
 
-            class TodoUpdateSingleTaskDefinition(TodoResourceMixin, machinery.ResourceEndpointDefinition):
+            class TodoUpdateSingleTaskDefinition(
+                TodoResourceMixin,
+                machinery.ResourceEndpointDefinition,
+            ):
                 task = field(required=True, type=str)
                 priority = field(required=True, type=str)
                 completion_status = field(type=bool, default=False)
@@ -577,7 +597,8 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
                     task.save()
                     return task
 
-        Using :code:`get_endpoint_attributes` to find all the attributes of this endpoint and print it.
+        Using :code:`get_endpoint_attributes` to find all the attributes of this
+        endpoint and print it:
 
         .. code-block:: python
 
@@ -751,7 +772,8 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
     @classmethod
     def documentation(cls):
-        """Returns a dictionary containing the class name and endpoint fields that can be used for documentation purposes.
+        """Returns a dictionary containing the class name and endpoint fields that can
+        be used for documentation purposes.
 
         **Example**::
 
@@ -759,7 +781,8 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
             'fields': [{'name': 'request'},
                        {'name': 'task', 'type': <class 'str'>, 'multivalued': False},
                        {'name': 'priority', 'type': <class 'str'>, 'multivalued': False},
-                       {'name': 'completion_status', 'type': <class 'bool'>, 'multivalued': False, 'default_value': False}
+                       {'name': 'completion_status', 'type': <class 'bool'>,
+                        'multivalued': False, 'default_value': False}
                        ],
             'consumer_type': 'unknown'}
         """
@@ -779,8 +802,8 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
 
 
 class EndpointDefinition(BaseEndpointDefinition):
-    """This base class can be used for implementing endpoints that
-    are not tied to a model. It also implements a basic consumer-based authentication.
+    """This base class can be used for implementing endpoints that are not tied to a
+    model. It also implements a basic consumer-based authentication.
     """
 
     request = RawRequestObjectProperty()
@@ -790,7 +813,8 @@ class EndpointDefinition(BaseEndpointDefinition):
     """Defines the consumer type with the default privileges of read and write.
 
     .. note::
-        If you do not want to define a consumer for your api, set :code:`consumer` and :code:`_consumer_type` to :code:`None`.
+        If you do not want to define a consumer for your api, set
+        :code:`consumer` and :code:`_consumer_type` to :code:`None`.
     """
 
     is_read_only = False
@@ -830,7 +854,9 @@ class EndpointDefinition(BaseEndpointDefinition):
 
     @classmethod
     def get_consumer_type(cls):
-        """Returns consumer type. If consumer is set to :code:`None` it will return unknown."""
+        """Returns consumer type. If consumer is set to :code:`None` it will return
+        unknown.
+        """
         consumer_attribute = cls.get_consumer_attributes()
         if len(consumer_attribute) == 1:
             consumer_attribute = consumer_attribute[0]
@@ -840,7 +866,9 @@ class EndpointDefinition(BaseEndpointDefinition):
 
     @classmethod
     def documentation(cls):
-        """Returns a dictionary containing class name, fields, and consumer type. Used for documentation purposes."""
+        """Returns a dictionary containing class name, fields, and consumer type. Used
+        for documentation purposes.
+        """
         docs = super().documentation()
         docs["consumer_type"] = cls.get_consumer_type()
         return docs
@@ -860,7 +888,8 @@ class ResourceEndpointDefinition(EndpointDefinition):
     """
 
     consumer = RequestAttribute()
-    """Initialize consumer using :code:`request_attribute()`. It can also be set to :code:`None`.
+    """Initialize consumer using :code:`request_attribute()`. It can also be set to
+    :code:`None`.
     """
 
     resource_id = RequestUrlField(
@@ -879,20 +908,24 @@ class ResourceEndpointDefinition(EndpointDefinition):
 
     @property
     def resource(self):
-        """Queries the object manager of `self.resource_model` for the given id (`self.resource_id`)."""
+        """Queries the object manager of `self.resource_model` for the given id
+        (`self.resource_id`).
+        """
         if not self._cached_resource:
             self._cached_resource = self.resource_model.objects.get(id=self.resource_id)
         return self._cached_resource
 
 
 class ResourceUpdateEndpointDefinition(ResourceEndpointDefinition):
-    """It handles the changes to the resource that happened from the
-    request, and saves the resource. It can be used for :code:`POST` and :code:`PUT`.
+    """Handles the changes to the resource that happened from the request, and saves the
+    resource. It can be used for :code:`POST` and :code:`PUT`.
     """
 
     @EndpointTask(priority=-100)
     def mutate(self):
-        """Modifies values of the resource fields by mapping the values of endpoint attributes to the resource."""
+        """Modifies values of the resource fields by mapping the values of endpoint
+        attributes to the resource.
+        """
         resource = self.resource
         for resource_field in self.get_resource_fields():
             field_value = getattr(self, resource_field.name)
@@ -901,7 +934,9 @@ class ResourceUpdateEndpointDefinition(ResourceEndpointDefinition):
 
     @EndpointTask(priority=-101)
     def validate_input(self):
-        """Checks whether there are any unexpected resource fields present. If so, raises an error and returns the unexpected fields."""
+        """Checks whether there are any unexpected resource fields present. If so,
+        raises an error and returns the unexpected fields.
+        """
         expected_fields = set(
             list(field.name for field in self.get_resource_fields())
             + list(field.name for field in self.get_request_fields())
