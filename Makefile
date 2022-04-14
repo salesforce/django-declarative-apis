@@ -35,7 +35,7 @@ readme:
 # Test targets
 
 # requires install and example-install
-test-all: coverage vuln-static formatcheck example-coverage
+test-all: coverage static vuln-static formatcheck
 .PHONY: test-all
 
 test:
