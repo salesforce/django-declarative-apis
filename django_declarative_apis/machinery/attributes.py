@@ -467,7 +467,7 @@ class EndpointTask(EndpointAttribute):
         task_runner=None,
         depends_on=None,  # Reference to another task that should be run before this one.  Overrides priority
         priority=0,  # lower priority gets executed first
-        **kwargs
+        **kwargs,
     ):
         super(EndpointTask, self).__init__(**kwargs)
         self.task_runner = task_runner
@@ -599,7 +599,7 @@ class DeferrableEndpointTask(EndpointTask):
         retries=0,
         retry_exception_filter=(),
         execute_unless=None,
-        **kwargs
+        **kwargs,
     ):
         super(DeferrableEndpointTask, self).__init__(**kwargs)
         if task_runner:
