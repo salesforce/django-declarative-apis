@@ -23,7 +23,7 @@ format:
 .PHONY: format
 
 docs:
-	pushd docs && DJANGO_SETTINGS_MODULE=tests.settings make html && popd
+	DJANGO_SETTINGS_MODULE=tests.settings $(MAKE) -C docs html
 .PHONY: docs
 
 readme:
