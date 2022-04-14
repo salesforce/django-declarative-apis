@@ -27,7 +27,7 @@ try:
 
     _get_correlation_id = cid.locals.get_cid
 except ImportError:
-    _get_correlation_id = lambda: None
+    _get_correlation_id = lambda: None  # noqa: E731
 
 JOB_COUNT_CACHE_KEY = "future_task_runner:job_id"
 QUEUE_LENGTH_CACHE_KEY = "future_task_runner:current_queue_length"
