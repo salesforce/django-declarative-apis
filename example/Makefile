@@ -1,7 +1,7 @@
 COVERAGE_CMD = coverage run manage.py test --noinput && coverage xml && coverage report
 
 install:
-	pip install -r requirements.txt -r requirements-dev.txt
+	pip install --upgrade pip -r requirements.txt -r requirements-dev.txt
 .PHONY: install
 
 test:
