@@ -254,7 +254,7 @@ class Resource(object):
         request = _DESERIALIZERS[request.content_type](self.cleanup_request(request))
 
         try:
-            data = request.POST if request.method == "POST" else request.GET
+            _ = request.POST if request.method == "POST" else request.GET
             status_code, result = meth(request, *args, **kwargs)
         except Exception as e:
             status_code = http.client.BAD_REQUEST

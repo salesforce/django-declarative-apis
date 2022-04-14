@@ -902,7 +902,6 @@ class ResourceUpdateEndpointDefinition(ResourceEndpointDefinition):
     @EndpointTask(priority=-101)
     def validate_input(self):
         """Checks whether there are any unexpected resource fields present. If so, raises an error and returns the unexpected fields."""
-        resource = self.resource
         expected_fields = set(
             list(field.name for field in self.get_resource_fields())
             + list(field.name for field in self.get_request_fields())
