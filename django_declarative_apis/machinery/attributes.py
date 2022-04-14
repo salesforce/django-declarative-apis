@@ -750,7 +750,6 @@ class RequestFieldGroup(RequestProperty):
 
     def _get_missing_component_fields(self, owner_instance, request):
         self.component_field_names = map(lambda x: x.name, self.component_field_getters)
-        request_dict = self._get_request_dict(request)
         missing_fields = []
         for getter in self.component_field_getters:
             result = getter.get_without_default(owner_instance, request)
