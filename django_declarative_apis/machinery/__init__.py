@@ -12,7 +12,6 @@ import sys
 
 import django
 from django.conf import settings
-from django.db import models
 from django.http import HttpResponse
 
 from django_declarative_apis.machinery.filtering import apply_filters_to_object
