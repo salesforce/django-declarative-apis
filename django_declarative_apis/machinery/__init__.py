@@ -869,7 +869,7 @@ class ResourceEndpointDefinition(EndpointDefinition):
     """ The ID of the resource being fetched from the URL or being updated.
     """
     resource_model = None
-    """ The model to attach to the resource endpoint definition. 
+    """ The model to attach to the resource endpoint definition.
     It must extend or implement the Django ORM model interface as required.
     """
 
