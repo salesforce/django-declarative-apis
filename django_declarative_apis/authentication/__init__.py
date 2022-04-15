@@ -21,9 +21,10 @@ class AuthenticatorHint(typing.NamedTuple):
 class Authenticator(metaclass=abc.ABCMeta):
     """The base class for constructing an authenticator.
 
-    The Authenticator class has two methods: :code:`is_authenticated` and :code:`challenge`.
-    Both of these need to be overridden by the authenticator implementation that inherits from :code:`Authenticator` class.
-    Otherwise, it will throw a :code:`NotImplementedError`.
+    The Authenticator class has two methods: :code:`is_authenticated` and
+    :code:`challenge`. Both of these need to be overridden by the authenticator
+    implementation that inherits from :code:`Authenticator` class. Otherwise,
+    it will throw a :code:`NotImplementedError`.
 
     **Example**
 
@@ -41,21 +42,26 @@ class Authenticator(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def is_authenticated(self, request):
-        """Takes in the request as an argument and identifies whether the requester is valid."""
+        """Takes in the request as an argument and identifies whether the
+        requester is valid.
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
     def challenge(self, error):
         """Results in the challenge response sent to the user
 
-        This should result in a django.http.HttpResponse that should include information through the
-        WWW-Authenticate header around expectations.
+        This should result in a django.http.HttpResponse that should include
+        information through the WWW-Authenticate header around expectations.
         """
         raise NotImplementedError
 
 
+
 class AuthenticationResult:
-    """A class definition that take in and stores the authentication header and detail of the result."""
+    """A class definition that takes in and stores the authentication header
+    and details of the result.
+    """
 
     def __init__(self, detail=None, auth_header=None):
         self.detail = detail
@@ -64,13 +70,13 @@ class AuthenticationResult:
 
 class NoAuthentication(AuthenticationResult, Authenticator):
     """
-    Authentication handler that always returns
-    True, so no authentication is needed, nor
-    initiated.
+    Authentication handler that always returns True, so no authentication is
+    needed, nor initiated.
 
     .. note::
-        **Important:** In this implementation the :code:`challenge` method is missing and must be implemented by the user.
-        Otherwise, it will raise :code:`NotImplementedError`.
+        **Important:** In this implementation the :code:`challenge` method is
+        missing and must be implemented by the user. Otherwise, it will raise
+        :code:`NotImplementedError`.
     """
 
     def is_authenticated(self, request):
@@ -78,15 +84,18 @@ class NoAuthentication(AuthenticationResult, Authenticator):
 
 
 class AuthenticationSuccess(AuthenticationResult):
-    """It is an instance of :code:`AuthenticationResult` and returns :code:`True`.
-    It can be used as a return response in an authenticator implementation."""
+    """An instance of :code:`AuthenticationResult` that returns :code:`True`.
+
+    It can be used as a return response in an authenticator implementation.
+    """
 
     def __bool__(self):
         return True
 
 
 class AuthenticationFailure(AuthenticationResult):
-    """It is an instance of :code:`AuthenticationResult` returns :code:`False`.
+    """An instance of :code:`AuthenticationResult` that returns :code:`False`.
+
     It can be used as a return response in an authenticator implementation.
     """
 
@@ -104,22 +113,26 @@ def validate_authentication_config(config):
         <AuthenticatorHint>: [<Authenticator>, <Authenticator>...],
     }
 
-    AuthenticatorHints allow us to match Authorization headers for quick handler lookup. For example,
-    if we want to use OAuth 1.0a, we could use an AuthenticatorHint.header value of 'OAuth ' as a key
-    and a value of [django_declarative_apis.authentication.oauthilib.oauth1.TwoLeggedOauth1()]. This will
-    ensure that any time an `Authorization: OAuth ...` header is seen, the appropriate authenticator is used.
+    AuthenticatorHints allow us to match Authorization headers for quick
+    handler lookup. For example, if we want to use OAuth 1.0a, we could use an
+    AuthenticatorHint.header value of 'OAuth ' as a key and a value of
+    [django_declarative_apis.authentication.oauthilib.oauth1.TwoLeggedOauth1()].
+    This will ensure that any time an `Authorization: OAuth ...` header is
+    seen, the appropriate authenticator is used.
 
-    If there are more complexities to the authenticator (i.e. OAuth 1.0a allows for the transport of credentials
-    through header, request body or query parameters, catch-alls are allowed by using a key of `None`:
+    If there are more complexities to the authenticator (i.e. OAuth 1.0a allows
+    for the transport of credentials through header, request body or query
+    parameters, catch-alls are allowed by using a key of `None`:
 
     {
         None: [<Authenticator>],
     }
 
-    The catch-all authenticators are always executed after matched authenticators.
+    The catch-all authenticators are always executed after matched
+    authenticators.
 
-    Note: This may need to get smarter in the future but was kept simple intentionally as it's executed on
-          every request.
+    Note: This may need to get smarter in the future but was kept simple
+          intentionally as it's executed on every request.
     """
     assert isinstance(config, typing.Mapping)
     for hint, authenticators in config.items():

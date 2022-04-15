@@ -194,7 +194,8 @@ class Resource:
         # XXX: this might be a little weird as it'll contain information about the last executed authenticator
         return actor, anonymous, error
 
-    @vary_on_headers("Authorization")
+    # TODO: make this method less complex and remove the `noqa`
+    @vary_on_headers("Authorization")  # noqa: C901
     def __call__(self, request, *args, **kwargs):
         """
         NB: Sends a `Vary` header so we don't cache requests
@@ -254,7 +255,7 @@ class Resource:
         request = _DESERIALIZERS[request.content_type](self.cleanup_request(request))
 
         try:
-            data = request.POST if request.method == "POST" else request.GET
+            _ = request.POST if request.method == "POST" else request.GET
             status_code, result = meth(request, *args, **kwargs)
         except Exception as e:
             status_code = http.client.BAD_REQUEST

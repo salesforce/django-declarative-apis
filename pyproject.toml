@@ -1,0 +1,27 @@
+[tool.black]
+line-length = 88
+target_version = ['py37']
+exclude = '''
+^/(
+  (
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | \.heroku
+)
+'''
+
+[tool.coverage.run]
+omit = ["*/tests/*", "*/management/*", "*/migrations/*"]
+
+[tool.coverage.report]
+fail_under = 88
+exclude_lines = ["raise NotImplementedError"]

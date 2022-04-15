@@ -23,7 +23,7 @@ format:
 .PHONY: format
 
 docs:
-	pushd docs && DJANGO_SETTINGS_MODULE=tests.settings make html && popd
+	DJANGO_SETTINGS_MODULE=tests.settings $(MAKE) -C docs html SPHINXOPTS="-W"
 .PHONY: docs
 
 readme:
@@ -34,8 +34,7 @@ readme:
 
 # Test targets
 
-# requires install and example-install
-test-all: coverage vuln-static formatcheck example-coverage
+test-all: coverage static vuln-static formatcheck docs
 .PHONY: test-all
 
 test:

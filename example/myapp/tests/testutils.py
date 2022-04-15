@@ -33,7 +33,6 @@ class OAuthClientHandler(ClientHandler):
                 "oauth_timestamp", int(time.time())
             )
 
-            rsa_key = request.META.get("rsa_key", None)
             oauth_signature_method = oauthlib.oauth1.SIGNATURE_HMAC
 
             oauth_signature_data = {
