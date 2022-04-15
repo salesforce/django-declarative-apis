@@ -5,9 +5,6 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-import json
-
-import django.http
 
 from django_declarative_apis import machinery, models
 from django_declarative_apis.machinery import filtering

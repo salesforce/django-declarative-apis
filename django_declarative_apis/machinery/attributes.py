@@ -83,7 +83,8 @@ class RequestProperty(EndpointAttribute):
 
         self.property_getter = property_getter
 
-        # Capture the hidden attribute name within each RequestProperty instance, so lookups work through being pickled
+        # Capture the hidden attribute name within each RequestProperty
+        # instance, so lookups work through being pickled
         self.__hidden_request_attribute_name = (
             RequestProperty.__hidden_request_attribute_name
         )
@@ -140,9 +141,11 @@ class TypedEndpointAttributeMixin(object):
 
 
 class RequestUrlField(TypedEndpointAttributeMixin, EndpointAttribute):
-    """It is a specialized form of field that takes any parameter that directly appears in the URL path.
+    """A specialized type of field that takes any parameter that directly appears in the
+    URL path.
 
-    :param name: Allows the name of the field in HTTP API to be different from its name defined on the EndpointDefinition. Defaults to :code:`None`
+    :param name: Allows the name of the field in HTTP API to be different from its name
+        defined on the EndpointDefinition. Defaults to :code:`None`
     :type name: optional
 
     **Example:**
@@ -157,13 +160,17 @@ class RequestUrlField(TypedEndpointAttributeMixin, EndpointAttribute):
                 )
         ]
 
-    :code:`url_field` is used to extract the id of a single task from the above URL for deleting that task.
+    :code:`url_field` is used to extract the id of a single task from the above URL for
+    deleting that task.
 
     .. code-block:: python
 
         from django-declarative-apis.machinery import url_field
 
-        class TodoDeleteSingleTaskDefinition(TodoResourceMixin, machinery.ResourceEndpointDefinition):
+        class TodoDeleteSingleTaskDefinition(
+            TodoResourceMixin,
+            machinery.ResourceEndpointDefinition,
+        ):
             resource_id = url_field(name='id')
 
             @endpoint_resource(type=Todo)
@@ -191,9 +198,11 @@ class RequestAdhocQuerySet(RequestUrlField):
 
 
 class RequestField(TypedEndpointAttributeMixin, RequestProperty):
-    """Endpoint properties are called fields. Fields can be simple types such as int , or they can be used as a decorator on a function.
+    """Endpoint properties are called fields. Fields can be simple types such as int,
+    or they can be used as a decorator on a function.
 
-    **Valid field types:** :code:`int`, :code:`bool`, :code:`float`, :code:`str`, :code:`dict`, :code:`complex`
+    **Valid field types:** :code:`int`, :code:`bool`, :code:`float`, :code:`str`,
+    :code:`dict`, :code:`complex`
 
     **Example**
 
@@ -204,13 +213,16 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
         task = field(required=True, type=str)
 
 
-    :param required: Determines whether the field is required for the EndpointDefinition. Defaults to :code:`True`.
+    :param required: Determines whether the field is required for the
+        EndpointDefinition. Defaults to :code:`True`.
     :type required: optional
 
-    :param name: Allows the name of the field in HTTP API to be different from its name defined on the EndpointDefinition. Defaults to :code:`None`.
+    :param name: Allows the name of the field in HTTP API to be different from its name
+        defined on the EndpointDefinition. Defaults to :code:`None`.
     :type name: optional
 
-    :param type: Determines the type of the field. Type needs to be on of the *valid field types* listed above. Defaults to :code:`String`
+    :param type: Determines the type of the field. Type needs to be on of the *valid
+        field types* listed above. Defaults to :code:`String`
     :type type: optional
 
     :param default: Sets the default value for the field. Defaults to :code:`None`.
@@ -219,7 +231,9 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
     :param description: Describes the purpose of the field. Defaults to :code:`None`.
     :type description: optional
 
-    :param multivalued: Allows a field to to be specified multiple times in the request. With multivalued set to True, the EndpointHandler will receive a list of values instead of a single value. Defaults to :code:`False`.
+    :param multivalued: Allows a field to to be specified multiple times in the request.
+        With multivalued set to True, the EndpointHandler will receive a list of values
+        instead of a single value. Defaults to :code:`False`.
     :type multivalued: optional
 
     **Example**
@@ -239,7 +253,8 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
         class FooDefinition(EndpointDefinition):
             foo = field(multivalued=True)
 
-    In the :code:`EndpointDefintion`, :code:`self.foo` would be equal to ['bar1', 'bar2']
+    In the :code:`EndpointDefintion`, :code:`self.foo` would be equal to ['bar1',
+    'bar2']
 
     """
 
@@ -300,7 +315,7 @@ class ResourceField(RequestField):
 
 
 class RequestAttribute(RequestProperty):
-    """It can be used to initialize a consumer object for an endpoint definition.
+    """Used to initialize a consumer object for an endpoint definition.
 
     **Example**
 
@@ -411,12 +426,14 @@ class RawRequestObjectProperty(RequestAttribute):
 
 
 class EndpointTask(EndpointAttribute):
-    """:code:`task` is used as a decorator on a function. It encapsulate the side-effect operations of an endpoint.
-    For instance, if hitting an endpoint causes an operation to happen in another resource or it causes an operation
-    to be queued and run as a background task.
+    """:code:`task` is used as a decorator on a function. It encapsulate the side-effect
+    operations of an endpoint. For instance, if hitting an endpoint causes an operation
+    to happen in another resource or it causes an operation to be queued and run as a
+    background task.
 
-    :code:`task` runs **synchronously**, which means it will be executed before the response is returned to the user.
-    It can also affect the response by making changes to the :code:`EndpointDefinition.resource()`.
+    :code:`task` runs **synchronously**, which means it will be executed before the
+    response is returned to the user. It can also affect the response by making changes
+    to the :code:`EndpointDefinition.resource()`.
 
 
     **Example**
@@ -434,13 +451,17 @@ class EndpointTask(EndpointAttribute):
 
 
 
-    :param task_runner: It is a callable that dictates how the task is executed. Defaults to :code:`None`.
+    :param task_runner: A callable that dictates how the task is executed. Defaults to
+        :code:`None`.
     :type task_runner: optional
 
-    :param depends_on: It is a reference to another task that should be run before this one.  Overrides :code:`priority`. Defaults to :code:`None`. It is important to note that :code:`deferrable_task` cannot be used as a :code:`depends_on` argument.
+    :param depends_on: A reference to another task that should be run before this one.
+        Overrides :code:`priority`. Defaults to :code:`None`. It is important to note
+        that :code:`deferrable_task` cannot be used as a :code:`depends_on` argument.
     :type depends_on: optional
 
-    :param priority: Specifies the priority of the task. Tasks with lower priority are executed first. Defaults to :code:`0`.
+    :param priority: Specifies the priority of the task. Tasks with lower priority are
+        executed first. Defaults to :code:`0`.
     :type priority: optional
 
     **Example**
@@ -465,9 +486,9 @@ class EndpointTask(EndpointAttribute):
     def __init__(
         self,
         task_runner=None,
-        depends_on=None,  # Reference to another task that should be run before this one.  Overrides priority
+        depends_on=None,  # Reference to another task that should be run before this one. Overrides priority
         priority=0,  # lower priority gets executed first
-        **kwargs
+        **kwargs,
     ):
         super(EndpointTask, self).__init__(**kwargs)
         self.task_runner = task_runner
@@ -509,15 +530,22 @@ class EndpointTask(EndpointAttribute):
 
 
 class DeferrableEndpointTask(EndpointTask):
-    """:code:`deferrable_task` is used as a decorator on a function. It is similar to :code:`task` in that it encapsulates side-effects, but can be automatically executed in a deferred queue outside of the request-response cycle.
+    """:code:`deferrable_task` is used as a decorator on a function. It is similar to
+    :code:`task` in that it encapsulates side-effects, but can be automatically executed
+    in a deferred queue outside of the request-response cycle.
 
-    :code:`deferrable_task` runs **asynchronously** and because of that it is used for operations that take time and when we want to avoid delaying the response to the user.
+    :code:`deferrable_task` runs **asynchronously** and because of that it is used for
+    operations that take time and when we want to avoid delaying the response to the
+    user.
 
     **Deferrable Task Rules**:
 
-    * Deferrable task methods must always be a :code:`staticmethod`. Therefore, anything a deferrable task needs to know should be saved in the :code:`EndpointDefinition.resource()`.
+    * Deferrable task methods must always be a :code:`staticmethod`. Therefore, anything
+      a deferrable task needs to know should be saved in the
+      :code:`EndpointDefinition.resource()`.
 
-    * The :code:`staticmethod` decorator should come after :code:`deferrable_task` decorator.
+    * The :code:`staticmethod` decorator should come after :code:`deferrable_task`
+      decorator.
 
         .. code-block:: python
 
@@ -534,33 +562,43 @@ class DeferrableEndpointTask(EndpointTask):
     * Works only with a Django Model instance as the resource
 
 
-    .. note:: Depending on the parameters used, a deferrable task can be run in different time intervals. In some cases, it can be made to run synchronously.
+    .. note:: Depending on the parameters used, a deferrable task can be run in
+        different time intervals. In some cases, it can be made to run synchronously.
 
-    :param task_runner: It is a callable that dictates how the task is executed. Defaults to :code:`None`.
+    :param task_runner: A callable that dictates how the task is executed. Defaults to
+        :code:`None`.
     :type task_runner: optional
 
-    :param delay: Sets the delay in seconds before running the task. Requires :code:`always_defer=True.` Defaults to :code:`None`.
+    :param delay: Sets the delay in seconds before running the task. Requires
+        :code:`always_defer=True.` Defaults to :code:`None`.
     :type delay: optional
 
-    :param always_defer: Runs task in deferred queue even when :code:`delay=0.` Defaults to :code:`False`.
+    :param always_defer: Runs task in deferred queue even when :code:`delay=0.` Defaults
+        to :code:`False`.
     :type always_defer: optional
 
-    :param task_args_factory: Stores task args and kwargs. :code:`task_args_factory` must be a **callable**. Defaults to :code:`None`.
+    :param task_args_factory: Stores task args and kwargs. :code:`task_args_factory`
+        must be a **callable**. Defaults to :code:`None`.
     :type task_args_factory: optional
 
-    :param queue: Sets the celery queue that will be used for storing the tasks. Defaults to :code:`None`.
+    :param queue: Sets the celery queue that will be used for storing the tasks.
+        Defaults to :code:`None`.
     :type queue: optional
 
-    :param routing_key: It is used to determine which queue the task should be routed to. Defaults to :code:`None`.
+    :param routing_key: It is used to determine which queue the task should be routed
+        to. Defaults to :code:`None`.
     :type routing_key: optional
 
-    :param retries: Specifies the number of times the current task has been retried. Defaults to :code:`0`
+    :param retries: Specifies the number of times the current task has been retried.
+        Defaults to :code:`0`
     :type retries: optional
 
-    :param retry_exception_filter: It is used to store retry exception information that is used in logs. Defaults to :code:`()` - empty tuple.
+    :param retry_exception_filter: It is used to store retry exception information that
+        is used in logs. Defaults to :code:`()` - empty tuple.
     :type retry_exception_filter: optional
 
-    :param execute_unless: Execute the task unless a condition is met.It must be a **callable**. Defaults to  :code:`None`.
+    :param execute_unless: Execute the task unless a condition is met.It must be a
+        **callable**. Defaults to  :code:`None`.
     :type execute_unless: optional
 
     **Example**
@@ -599,7 +637,7 @@ class DeferrableEndpointTask(EndpointTask):
         retries=0,
         retry_exception_filter=(),
         execute_unless=None,
-        **kwargs
+        **kwargs,
     ):
         super(DeferrableEndpointTask, self).__init__(**kwargs)
         if task_runner:
@@ -711,7 +749,6 @@ class RequestFieldGroup(RequestProperty):
 
     def _get_missing_component_fields(self, owner_instance, request):
         self.component_field_names = map(lambda x: x.name, self.component_field_getters)
-        request_dict = self._get_request_dict(request)
         missing_fields = []
         for getter in self.component_field_getters:
             result = getter.get_without_default(owner_instance, request)
@@ -784,10 +821,11 @@ class RequireAllIfAnyAttribute(RequestFieldGroup):
 
 
 class Aggregate(EndpointAttribute):
-    """DDA uses aggregates to perform memoization to avoid repeated calculations, querying, or any task that can
-    be performed once and the result cached.
-    Aggregates retrieve or create a related object based on one or more field that is in use in the EndpointDefinition.
-    An aggregate is calculated only once and then the data is cached for future retrieval.
+    """DDA uses aggregates to perform memoization to avoid repeated calculations,
+    querying, or any task that can be performed once and the result cached. Aggregates
+    retrieve or create a related object based on one or more field that is in use in the
+    EndpointDefinition. An aggregate is calculated only once and then the data is cached
+    for future retrieval.
 
     **Aggregates are used as decorators on functions.**
 
@@ -802,10 +840,12 @@ class Aggregate(EndpointAttribute):
             def sample_function():
                 # code
 
-    :param required: Defines whether the aggregate is required or not. Defaults to :code:`False`.
+    :param required: Defines whether the aggregate is required or not. Defaults to
+        :code:`False`.
     :type required: optional
 
-    :param depends_on: Reference to another aggregate that should be run before this aggregate. Defaults to :code:`None`.
+    :param depends_on: Reference to another aggregate that should be run before this
+        aggregate. Defaults to :code:`None`.
     :type depends_on: optional
 
     **Example:**
