@@ -10,7 +10,7 @@ from django_declarative_apis.models import OauthConsumer
 
 class OAuthClientHandler(ClientHandler):
     def __init__(self, *args, **kwargs):
-        super(OAuthClientHandler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_response(self, request):
         consumer = OauthConsumer.objects.get(name="smith")
@@ -94,7 +94,7 @@ class OAuthClient(test.Client):
         self.handler = OAuthClientHandler()
 
     def request(self, **kwargs):
-        response = super(OAuthClient, self).request(**kwargs)
+        response = super().request(**kwargs)
 
         return response
 
@@ -106,4 +106,4 @@ class OAuthClient(test.Client):
             data_qd.update(data)
             data = data_qd.urlencode()
 
-        return super(OAuthClient, self).post(path, data, **kwargs)
+        return super().post(path, data, **kwargs)

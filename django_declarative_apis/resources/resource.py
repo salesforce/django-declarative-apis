@@ -45,10 +45,10 @@ _DESERIALIZERS = collections.defaultdict(
 class HttpResponseServerError(HttpResponse):
     def __init__(self, *args, **kwargs):
         self.error = kwargs.pop("error", None)
-        super(HttpResponseServerError, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
-class Resource(object):
+class Resource:
     """
     Resource. Create one for your URL mappings, just
     like you would with Django. Takes one argument,

@@ -24,18 +24,18 @@ except ImportError as e:  # noqa
     Resource = object
 
 
-class BaseHandler(object):
+class BaseHandler:
     defined_methods = {"get", "put", "patch", "post", "delete"}
 
 
-class EndpointHandler(object):
+class EndpointHandler:
     """
     Glue for combining the new-style endpoint definitions into the old-style piston handler
 
     """
 
     def __init__(self, **kwargs):
-        super(EndpointHandler, self).__init__()
+        super().__init__()
 
         self.method_handlers = {}
         for method, handler in kwargs.items():
@@ -78,7 +78,7 @@ class EndpointResource(Resource):
     different handlers based on request attributes."""
 
     def __init__(self, authentication=None, **kwargs):
-        super(EndpointResource, self).__init__(EndpointHandler(**kwargs))
+        super().__init__(EndpointHandler(**kwargs))
 
         if authentication is not None:
             django_declarative_apis.authentication.validate_authentication_config(

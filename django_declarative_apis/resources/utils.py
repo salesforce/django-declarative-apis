@@ -21,7 +21,7 @@ def format_error(error):
     )
 
 
-class rc_factory(object):
+class rc_factory:
     """
     Status codes.
     """
@@ -164,7 +164,7 @@ class MimerDataException(Exception):
     pass
 
 
-class Mimer(object):
+class Mimer:
     TYPES = dict()
 
     def __init__(self, request):

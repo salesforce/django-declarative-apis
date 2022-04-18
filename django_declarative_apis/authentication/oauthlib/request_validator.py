@@ -22,7 +22,7 @@ class DjangoRequestValidator(RequestValidator):
     TIMESTAMP_THRESHOLD = 300
 
     def __init__(self, request, *args, **kwargs):
-        super(DjangoRequestValidator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.request = request
         self.consumer = None
         self.validation_error_message = ""
@@ -89,7 +89,7 @@ class DjangoRequestValidator(RequestValidator):
 
     @property
     def dummy_client(self):
-        class DummyClient(object):
+        class DummyClient:
             def __init__(self, *args, **kwargs):
                 self.secret = ""
                 self.key = ""

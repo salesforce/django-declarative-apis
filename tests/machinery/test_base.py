@@ -311,7 +311,7 @@ class EndpointBinderTestCase(django.test.TestCase):
 class EndpointFilteringTestCase(testutils.RequestCreatorMixin, django.test.TestCase):
     from django_declarative_apis.machinery.filtering import ALWAYS, NEVER
 
-    class DummyClassOne(object):
+    class DummyClassOne:
         def __init__(self):
             self.foo = "foo" * 100
             self.bar = "bar" * 100
@@ -726,7 +726,7 @@ class MySpecialException(Exception):
 
 class _TestEndpoint(machinery.EndpointDefinition):
     def __init__(self, expected_response, *args, **kwargs):
-        super(_TestEndpoint, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.expected_response = expected_response
 
     def __call__(self):

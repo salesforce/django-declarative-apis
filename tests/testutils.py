@@ -37,9 +37,7 @@ class NoLoggingTestRunner(DiscoverRunner):
 
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
         logging.disable(logging.CRITICAL)
-        return super(NoLoggingTestRunner, self).run_tests(
-            test_labels, extra_tests, **kwargs
-        )
+        return super().run_tests(test_labels, extra_tests, **kwargs)
 
 
 class RequestCreatorMixin:
@@ -194,11 +192,11 @@ class OAuthClientHandler(ClientHandler):
 
 class DeclarativeApisOAuthClient(Client):
     def __init__(self, *args, **kwargs):
-        super(DeclarativeApisOAuthClient, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.handler = OAuthClientHandler()
 
     def request(self, expected_status_code=None, **kwargs):
-        response = super(DeclarativeApisOAuthClient, self).request(**kwargs)
+        response = super().request(**kwargs)
         if expected_status_code is not None:
             if response.status_code != expected_status_code:
                 print(response.content.decode("utf-8"))
@@ -217,6 +215,6 @@ class DeclarativeApisOAuthClient(Client):
             data_qd.update(data)
             data = data_qd.urlencode()
 
-        return super(DeclarativeApisOAuthClient, self).put(
+        return super().put(
             path, data, expected_status_code=expected_status_code, **kwargs
         )
