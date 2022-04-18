@@ -202,19 +202,8 @@ class EndpointBinder:
 
             if hasattr(resource, "is_dirty"):
                 if resource and resource.is_dirty(check_relationship=True):
-                    type(resource).objects.update_or_create(pk=resource.pk, defaults=current_dirty_dict(resource))
-                    #type(resource).objects.update_or_create(pk=resource.pk, defaults=resource.to_dict())
-                    #type(resource).objects.filter(pk=resource.pk).update(**resource.get_dirty_fields())
-                    #resource.save_dirty_fields()
-                    #if resource._state.adding:  # new model object
-                    #if "id" in resource.get_dirty_fields():  # new model object
-                    #    resource.save()
-                    #else:
-                    #    resource.save_dirty_fields()
-                    #try:
-                    #    resource.save_dirty_fields()
-                    #except Exception as e:  # noqa
-                    #    resource.save()
+                    resource, created = type(resource).objects.update_or_create(pk=resource.pk, defaults=current_dirty_dict(resource))
+                    self.bound_endpoint.resource = resource
 
             endpoint_tasks = sorted(
                 self.manager.endpoint_tasks, key=lambda t: t.priority
@@ -231,37 +220,14 @@ class EndpointBinder:
 
             except errors.ClientError as ce:
                 if ce.save_changes and resource and hasattr(resource, "is_dirty") and resource.is_dirty():
-                    type(resource).objects.update_or_create(pk=resource.pk, defaults=current_dirty_dict(resource))
-                    #type(resource).objects.update_or_create(pk=resource.pk, defaults=resource.get_dirty_fields)
-                    #type(resource).objects.update_or_create(pk=resource.pk, defaults=resource.to_dict())
-                    #type(resource).objects.filter(pk=resource.pk).update(**resource.get_dirty_fields())
-                    #resource.save_dirty_fields()
-                    #if resource._state.adding:  # new model object
-                    #if "id" in resource.get_dirty_fields():  # new model object
-                    #    resource.save()
-                    #else:
-                    #    resource.save_dirty_fields()
-                    #try:
-                    #    resource.save_dirty_fields()
-                    #except Exception as e:  # noqa
-                    #    resource.save()
+                    resource, created = type(resource).objects.update_or_create(pk=resource.pk, defaults=current_dirty_dict(resource))
+                    self.bound_endpoint.resource = resource
                 raise
 
             if hasattr(resource, "is_dirty"):
                 if resource and resource.is_dirty(check_relationship=True):
-                    type(resource).objects.update_or_create(pk=resource.pk, defaults=current_dirty_dict(resource))
-                    #type(resource).objects.update_or_create(pk=resource.pk, defaults=resource.get_dirty_fields)
-                    #type(resource).objects.update_or_create(pk=resource.pk, defaults=resource.to_dict())
-                    #type(resource).objects.filter(pk=resource.pk).update(**resource.get_dirty_fields())
-                    #if resource._state.adding:  # new model object
-                    #if "id" in resource.get_dirty_fields():  # new model object
-                    #    resource.save()
-                    #else:
-                    #    resource.save_dirty_fields()
-                    #try:
-                    #    resource.save_dirty_fields()
-                    #except Exception as e:  # noqa
-                    #    resource.save()
+                    resource, created = type(resource).objects.update_or_create(pk=resource.pk, defaults=current_dirty_dict(resource))
+                    self.bound_endpoint.resource = resource
 
             for deferred_task in deferred_tasks:
                 deferred_task.run(self.bound_endpoint)
