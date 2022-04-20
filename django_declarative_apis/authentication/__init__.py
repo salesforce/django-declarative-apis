@@ -57,7 +57,6 @@ class Authenticator(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
 
-
 class AuthenticationResult:
     """A class definition that takes in and stores the authentication header
     and details of the result.
