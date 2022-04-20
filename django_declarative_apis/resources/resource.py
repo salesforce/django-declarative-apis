@@ -196,7 +196,7 @@ class Resource:
 
     # TODO: make this method less complex and remove the `noqa`
     @vary_on_headers("Authorization")  # noqa: C901
-    def __call__(self, request, *args, **kwargs):
+    def __call__(self, request, *args, **kwargs):  # noqa: C901
         """
         NB: Sends a `Vary` header so we don't cache requests
         that are different (OAuth stuff in `Authorization` header.)
