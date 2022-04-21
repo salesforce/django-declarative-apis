@@ -84,7 +84,7 @@ class EndpointResourceAttribute(EndpointAttribute):
                 return Todo.objects.get(id=self.resource_id)
     """
 
-    def __init__(self, type, filter=None, returns_list=False, **kwargs):
+    def __init__(self, type=None, filter=None, returns_list=False, **kwargs):
         super().__init__(**kwargs)
         self.type = type
         self.filter = filter
@@ -926,7 +926,7 @@ class ResourceEndpointDefinition(EndpointDefinition):
         super().__init__()
         self._cached_resource = None
 
-    @property
+    @EndpointResourceAttribute()
     def resource(self):
         """Queries the object manager of `self.resource_model` for the given id
         (`self.resource_id`).
