@@ -170,10 +170,11 @@ class EndpointBinderTestCase(django.test.TestCase):
             def task(self):
                 self.resource.field = "zyxwv"
 
-        for test_name, endpoint_cls, expected_call_count in \
-                (("No Task", _TestEndpoint1, 1),
-                 ("No-op Task", _TestEndpoint2, 1),
-                 ("With Task", _TestEndpoint3, 2)):
+        for test_name, endpoint_cls, expected_call_count in (
+            ("No Task", _TestEndpoint1, 1),
+            ("No-op Task", _TestEndpoint2, 1),
+            ("With Task", _TestEndpoint3, 2),
+        ):
             with self.subTest(test_name):
                 endpoint = endpoint_cls()
                 manager = machinery.EndpointBinder.BoundEndpointManager(
@@ -185,9 +186,11 @@ class EndpointBinderTestCase(django.test.TestCase):
 
                 manager.bound_endpoint.request = _FakeRequest()
 
-                with mock.patch.object(models.DirtyFieldsModel.objects,
-                                       "update_or_create",
-                                       wraps=models.DirtyFieldsModel.objects.update_or_create) as mock_uoc:
+                with mock.patch.object(
+                    models.DirtyFieldsModel.objects,
+                    "update_or_create",
+                    wraps=models.DirtyFieldsModel.objects.update_or_create,
+                ) as mock_uoc:
                     manager.get_response()
                     self.assertEqual(mock_uoc.call_count, expected_call_count)
 
@@ -208,8 +211,11 @@ class EndpointBinderTestCase(django.test.TestCase):
 
         for error_should_save_changes in (True, False):
             with self.subTest(f"error_should_save_changes={error_should_save_changes}"):
-                with mock.patch.object(models.DirtyFieldsModel.objects, "update_or_create",
-                                       wraps=models.DirtyFieldsModel.objects.update_or_create) as mock_uoc:
+                with mock.patch.object(
+                    models.DirtyFieldsModel.objects,
+                    "update_or_create",
+                    wraps=models.DirtyFieldsModel.objects.update_or_create,
+                ) as mock_uoc:
                     endpoint = _TestEndpoint()
                     manager = machinery.EndpointBinder.BoundEndpointManager(
                         machinery._EndpointRequestLifecycleManager(endpoint), endpoint
