@@ -907,11 +907,6 @@ class ResourceEndpointDefinition(EndpointDefinition):
     :code:`ResourceEndpointDefinition` is mainly used for :code:`GET`.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if not self.resource.type:
-            self.resource.type = self.resource_model
-
     consumer = RequestAttribute()
     """Initialize consumer using :code:`request_attribute()`. It can also be set to
     :code:`None`.
@@ -928,7 +923,9 @@ class ResourceEndpointDefinition(EndpointDefinition):
     """
 
     def __init__(self, *args, **kwargs):
-        super().__init__()
+        super().__init__(*args, **kwargs)
+        if not self.resource.type:
+            self.resource.type = self.resource_model
         self._cached_resource = None
 
     @EndpointResourceAttribute()
