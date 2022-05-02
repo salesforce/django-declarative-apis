@@ -36,7 +36,7 @@ from .attributes import (
     ResourceField,
 )
 
-# these imports are unusued in this file but may be used in other projects
+# these imports are unused in this file but may be used in other projects
 # that use `machinery` as an interface
 from .attributes import TypedEndpointAttributeMixin, RequestFieldGroup  # noqa
 from .utils import locate_object, rate_limit_exceeded
