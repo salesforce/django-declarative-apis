@@ -924,8 +924,6 @@ class ResourceEndpointDefinition(EndpointDefinition):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not self.resource.type:
-            self.resource.type = self.resource_model
         self._cached_resource = None
 
     @EndpointResourceAttribute()
