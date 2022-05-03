@@ -178,6 +178,16 @@ def current_dirty_dict(resource):
     return {key: values["current"] for key, values in new_data.items()}
 
 
+def update_dirty(resource):
+    resource_next, created = type(resource).objects.update_or_create(
+        pk=resource.pk, defaults=current_dirty_dict(resource)
+    )
+    # update fields in memory that changed on save to the database
+    for k, v in resource_next._as_dict(check_relationship=True).items():
+        if getattr(resource, k) != v:
+            setattr(resource, k, v)
+
+
 class EndpointBinder:
     class BoundEndpointManager:
         def __init__(self, manager, bound_endpoint):
@@ -202,10 +212,7 @@ class EndpointBinder:
 
             if hasattr(resource, "is_dirty"):
                 if resource and resource.is_dirty(check_relationship=True):
-                    resource, created = type(resource).objects.update_or_create(
-                        pk=resource.pk, defaults=current_dirty_dict(resource)
-                    )
-                    self.bound_endpoint.resource = resource
+                    update_dirty(resource)
 
             endpoint_tasks = sorted(
                 self.manager.endpoint_tasks, key=lambda t: t.priority
@@ -227,18 +234,12 @@ class EndpointBinder:
                     and hasattr(resource, "is_dirty")
                     and resource.is_dirty()
                 ):
-                    resource, created = type(resource).objects.update_or_create(
-                        pk=resource.pk, defaults=current_dirty_dict(resource)
-                    )
-                    self.bound_endpoint.resource = resource
+                    update_dirty(resource)
                 raise
 
             if hasattr(resource, "is_dirty"):
                 if resource and resource.is_dirty(check_relationship=True):
-                    resource, created = type(resource).objects.update_or_create(
-                        pk=resource.pk, defaults=current_dirty_dict(resource)
-                    )
-                    self.bound_endpoint.resource = resource
+                    update_dirty(resource)
 
             for deferred_task in deferred_tasks:
                 deferred_task.run(self.bound_endpoint)
