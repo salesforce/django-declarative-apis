@@ -188,6 +188,9 @@ def update_dirty(resource):
     for k, v in resource_next._as_dict(check_relationship=True).items():
         if getattr(resource, k, None) != v:
             setattr(resource, k, v)
+    resource._state.adding = False
+    resource._state.db = resource_next._state.db
+    resource._state.fields_cache = {}
     reset_state(type(resource), resource)
 
 
