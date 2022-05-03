@@ -58,6 +58,7 @@ try:
 
     class DirtyFieldsModel(dirtyfields.DirtyFieldsMixin, models.Model):
         field = models.CharField(max_length=100)
+        fk_field = models.ForeignKey(TestModel, null=False, on_delete=models.CASCADE)
 
 except Exception:
     pass

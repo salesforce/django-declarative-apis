@@ -150,12 +150,16 @@ class EndpointBinderTestCase(django.test.TestCase):
         class _TestEndpoint1(machinery.EndpointDefinition):
             @machinery.endpoint_resource(type=models.DirtyFieldsModel)
             def resource(self):
-                return models.DirtyFieldsModel(field="abcde")
+                result = models.DirtyFieldsModel(field="abcde")
+                result.fk_field = models.TestModel.objects.create(int_field=1)
+                return result
 
         class _TestEndpoint2(machinery.EndpointDefinition):
             @machinery.endpoint_resource(type=models.DirtyFieldsModel)
             def resource(self):
-                return models.DirtyFieldsModel(field="abcde")
+                result = models.DirtyFieldsModel(field="abcde")
+                result.fk_field = models.TestModel.objects.create(int_field=1)
+                return result
 
             @machinery.task
             def null_task(self):
@@ -164,7 +168,9 @@ class EndpointBinderTestCase(django.test.TestCase):
         class _TestEndpoint3(machinery.EndpointDefinition):
             @machinery.endpoint_resource(type=models.DirtyFieldsModel)
             def resource(self):
-                return models.DirtyFieldsModel(field="abcde")
+                result = models.DirtyFieldsModel(field="abcde")
+                result.fk_field = models.TestModel.objects.create(int_field=1)
+                return result
 
             @machinery.task
             def task(self):
@@ -198,7 +204,9 @@ class EndpointBinderTestCase(django.test.TestCase):
         class _TestEndpoint(machinery.EndpointDefinition):
             @machinery.endpoint_resource(type=models.DirtyFieldsModel)
             def resource(self):
-                return models.DirtyFieldsModel(id=1, field="abcde")
+                result = models.DirtyFieldsModel(id=1, field="abcde")
+                result.fk_field = models.TestModel.objects.create(int_field=1)
+                return result
 
             @machinery.task
             def raise_an_exception(self):

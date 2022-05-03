@@ -176,18 +176,26 @@ class EndpointDefinitionMeta(abc.ABCMeta, metaclass=abc.ABCMeta):
 
 
 def current_dirty_dict(resource):
-    new_data = resource.get_dirty_fields(verbose=True)
-    return {key: values["current"] for key, values in new_data.items()}
+    new_data = resource.get_dirty_fields(check_relationship=True, verbose=True)
+    field_name_to_att_name = {f.name: f.attname for f in resource._meta.concrete_fields}
+    return {
+        field_name_to_att_name[key]: values["current"]
+        for key, values in new_data.items()
+    }
 
 
 def update_dirty(resource):
+    dirty_dict = current_dirty_dict(resource)
     resource_next, created = type(resource).objects.update_or_create(
-        pk=resource.pk, defaults=current_dirty_dict(resource)
+        pk=resource.pk, defaults=dirty_dict
     )
     # update fields in memory that changed on save to the database
-    for k, v in resource_next._as_dict(check_relationship=False).items():
-        if getattr(resource, k, None) != v:
-            setattr(resource, k, v)
+
+    field_name_to_att_name = {f.name: f.attname for f in resource._meta.concrete_fields}
+    for k, v in resource_next._as_dict(check_relationship=True).items():
+        att_key = field_name_to_att_name[k]
+        if getattr(resource, att_key, None) != v:
+            setattr(resource, att_key, v)
     resource._state.adding = False
     resource._state.db = resource_next._state.db
     resource._state.fields_cache = {}
