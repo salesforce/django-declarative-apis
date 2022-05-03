@@ -14,6 +14,8 @@ import django
 from django.conf import settings
 from django.http import HttpResponse
 
+from dirtyfields.dirtyfields import reset_state
+
 from django_declarative_apis.machinery.filtering import apply_filters_to_object
 from django_declarative_apis.models import BaseConsumer
 from django_declarative_apis.resources.utils import HttpStatusCode
@@ -186,6 +188,7 @@ def update_dirty(resource):
     for k, v in resource_next._as_dict(check_relationship=True).items():
         if getattr(resource, k, None) != v:
             setattr(resource, k, v)
+    reset_state(type(resource), resource)
 
 
 class EndpointBinder:
