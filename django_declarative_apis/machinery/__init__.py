@@ -185,7 +185,7 @@ def update_dirty(resource):
         pk=resource.pk, defaults=current_dirty_dict(resource)
     )
     # update fields in memory that changed on save to the database
-    for k, v in resource_next._as_dict(check_relationship=True).items():
+    for k, v in resource_next._as_dict(check_relationship=False).items():
         if getattr(resource, k, None) != v:
             setattr(resource, k, v)
     resource._state.adding = False
