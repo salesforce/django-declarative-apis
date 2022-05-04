@@ -178,6 +178,7 @@ class EndpointDefinitionMeta(abc.ABCMeta, metaclass=abc.ABCMeta):
 
 
 def current_dirty_dict(resource):
+    """Get the `current` (in-memory) values for fields that have not yet been written to the database."""
     new_data = resource.get_dirty_fields(check_relationship=True, verbose=True)
     field_name_to_att_name = {f.name: f.attname for f in resource._meta.concrete_fields}
     return {
@@ -187,12 +188,13 @@ def current_dirty_dict(resource):
 
 
 def update_dirty(resource):
+    """Write dirty fields to the database."""
     dirty_dict = current_dirty_dict(resource)
     resource_next, created = type(resource).objects.update_or_create(
         pk=resource.pk, defaults=dirty_dict
     )
-    # update fields in memory that changed on save to the database
 
+    # update fields in memory that changed on save to the database
     field_name_to_att_name = {f.name: f.attname for f in resource._meta.concrete_fields}
     for k, v in resource_next._as_dict(check_relationship=True).items():
         att_key = field_name_to_att_name[k]
