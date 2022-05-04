@@ -1,4 +1,4 @@
-name: unit tests and static analysis
+name: unit-tests-and-static-analysis
 
 on: [push, pull_request]
 

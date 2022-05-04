@@ -17,6 +17,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - [PR 90](https://github.com/salesforce/django-declarative-apis/pull/90) Fix `BoundEndpointManager` `get_response` saves
 
 ### Changed
+- [PR 93](https://github.com/salesforce/django-declarative-apis/pull/93) Remove spaces in name of `test` GitHub Action
 - [PR 91](https://github.com/salesforce/django-declarative-apis/pull/91) Update black, flake8, and coverage and include flake8 in make test-all
 - [PR 86](https://github.com/salesforce/django-declarative-apis/pull/86) Don't drop support for Django 2.2 until consumers catch up
 - [PR 85](https://github.com/salesforce/django-declarative-apis/pull/85) Update easy dev requirements (black, coverage, flake8, pyyaml)
