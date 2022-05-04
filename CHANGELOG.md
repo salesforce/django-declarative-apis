@@ -6,6 +6,8 @@ and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [unreleased] - YYYY-MM-DD
+### Changed
+- [PR 93](https://github.com/salesforce/django-declarative-apis/pull/93) Remove spaces in name of `test` GitHub Action
 
 # [0.22.3] - 2021-11-18
 ### Added 
