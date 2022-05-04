@@ -9,6 +9,11 @@ from collections import defaultdict
 import inspect
 import types
 
+try:
+    from django.core.exceptions import FieldDoesNotExist
+except AttributeError:
+    from django.db.models.fields import FieldDoesNotExist
+
 from django.db import models
 from django.db.models import ManyToOneRel
 
@@ -80,7 +85,7 @@ def _get_filtered_field_value(
     else:
         try:
             val = getattr(inst, field_name)
-        except (AttributeError, models.fields.FieldDoesNotExist) as e:  # noqa
+        except (AttributeError, FieldDoesNotExist) as e:  # noqa
             return None
 
     if isinstance(val, models.Manager):
