@@ -12,6 +12,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - [PR 82](https://github.com/salesforce/django-declarative-apis/pull/82) Allow Celery 5 by using `shared_task`
 
 ### Fixed
+- [PR 95](https://github.com/salesforce/django-declarative-apis/pull/95) Fill in missing CHANGELOG entries
 - [PR 90](https://github.com/salesforce/django-declarative-apis/pull/90) Fix `BoundEndpointManager` `get_response` saves
 
 ### Changed
