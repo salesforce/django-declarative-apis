@@ -6,22 +6,8 @@ and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [unreleased] - YYYY-MM-DD
-### Added
-- [PR 92](https://github.com/salesforce/django-declarative-apis/pull/92) Run tests and static analysis as a PR check using GitHub actions
-- [PR 83](https://github.com/salesforce/django-declarative-apis/pull/83) Allow Django 3
-- [PR 82](https://github.com/salesforce/django-declarative-apis/pull/82) Allow Celery 5 by using `shared_task`
-
 ### Fixed
-- [PR 90](https://github.com/salesforce/django-declarative-apis/pull/90) Fix `BoundEndpointManager` `get_response` saves
-
-### Changed
-- [PR 91](https://github.com/salesforce/django-declarative-apis/pull/91) Update black, flake8, and coverage and include flake8 in make test-all
 - [PR 89](https://github.com/salesforce/django-declarative-apis/pull/89) Fix save behavior for Django 3
-- [PR 86](https://github.com/salesforce/django-declarative-apis/pull/86) Don't drop support for Django 2.2 until consumers catch up
-- [PR 85](https://github.com/salesforce/django-declarative-apis/pull/85) Update easy dev requirements (black, coverage, flake8, pyyaml)
-- [PR 84](https://github.com/salesforce/django-declarative-apis/pull/84) Tweak Makefiles for use with `example` directory
-- [PR 81](https://github.com/salesforce/django-declarative-apis/pull/81) Upgrade pip as part of `make install`
-- [PR 69](https://github.com/salesforce/django-declarative-apis/pull/69), [PR 70](https://github.com/salesforce/django-declarative-apis/pull/70), [PR 71](https://github.com/salesforce/django-declarative-apis/pull/71), [PR 73](https://github.com/salesforce/django-declarative-apis/pull/73), [PR 76](https://github.com/salesforce/django-declarative-apis/pull/76), [PR 77](https://github.com/salesforce/django-declarative-apis/pull/77), [PR 78](https://github.com/salesforce/django-declarative-apis/pull/78), [PR 79](https://github.com/salesforce/django-declarative-apis/pull/79) Work on GitHub actions
 
 # [0.22.3] - 2021-11-18
 ### Added 
