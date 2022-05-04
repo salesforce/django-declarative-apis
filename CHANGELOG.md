@@ -21,14 +21,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 - [PR 85](https://github.com/salesforce/django-declarative-apis/pull/85) Update easy dev requirements (black, coverage, flake8, pyyaml)
 - [PR 84](https://github.com/salesforce/django-declarative-apis/pull/84) Tweak Makefiles for use with `example` directory
 - [PR 81](https://github.com/salesforce/django-declarative-apis/pull/81) Upgrade pip as part of `make install`
-- [PR 69](https://github.com/salesforce/django-declarative-apis/pull/69),
-  [PR 70](https://github.com/salesforce/django-declarative-apis/pull/70),
-  [PR 71](https://github.com/salesforce/django-declarative-apis/pull/71),
-  [PR 73](https://github.com/salesforce/django-declarative-apis/pull/73),
-  [PR 76](https://github.com/salesforce/django-declarative-apis/pull/76),
-  [PR 77](https://github.com/salesforce/django-declarative-apis/pull/77),
-  [PR 78](https://github.com/salesforce/django-declarative-apis/pull/78),
-  [PR 79](https://github.com/salesforce/django-declarative-apis/pull/79) Work on GitHub actions
+- [PR 69](https://github.com/salesforce/django-declarative-apis/pull/69), [PR 70](https://github.com/salesforce/django-declarative-apis/pull/70), [PR 71](https://github.com/salesforce/django-declarative-apis/pull/71), [PR 73](https://github.com/salesforce/django-declarative-apis/pull/73), [PR 76](https://github.com/salesforce/django-declarative-apis/pull/76), [PR 77](https://github.com/salesforce/django-declarative-apis/pull/77), [PR 78](https://github.com/salesforce/django-declarative-apis/pull/78), [PR 79](https://github.com/salesforce/django-declarative-apis/pull/79) Work on GitHub actions
 
 # [0.22.3] - 2021-11-18
 ### Added 
