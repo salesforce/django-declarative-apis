@@ -306,7 +306,11 @@ class EndpointBinderTestCase(django.test.TestCase):
         data = _QuerySet([_TestResource("foo", "bar"), _TestResource("bar", "baz")])
 
         filter_def = {
-            _TestResource: {"name": filtering.ALWAYS, "secret": filtering.NEVER}
+            _TestResource: {
+                "name": filtering.ALWAYS,
+                "secret": filtering.NEVER,
+                "foo": filtering.ALWAYS,
+            }
         }
 
         class _TestEndpoint(machinery.EndpointDefinition):
