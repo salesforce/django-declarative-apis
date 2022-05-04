@@ -6,7 +6,6 @@ and this project adheres to [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [unreleased] - YYYY-MM-DD
-
 ### Added
 - [PR 94](https://github.com/salesforce/django-declarative-apis/pull/94) Add a Pull Request template/checklist to the repo
 - [PR 92](https://github.com/salesforce/django-declarative-apis/pull/92) Run tests and static analysis as a PR check using GitHub actions
