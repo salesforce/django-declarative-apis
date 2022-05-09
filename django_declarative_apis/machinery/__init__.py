@@ -102,10 +102,10 @@ class EndpointResourceAttribute(EndpointAttribute):
             return self
         try:
             value = self.func(owner_instance)
-        except django.core.exceptions.ObjectDoesNotExist:
-            if hasattr(self.type, "__name__"):
-                message = "{0} instance not found".format(self.type.__name__)
-            else:
+        except django.core.exceptions.ObjectDoesNotExist as e:  # noqa: F841
+            try:
+                message = f"{self.type.__name__} instance not found"
+            except AttributeError as e:  # noqa: F841
                 message = "Resource instance not found"
             raise errors.ClientErrorNotFound(message)
 
