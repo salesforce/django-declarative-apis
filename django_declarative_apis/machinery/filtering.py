@@ -9,13 +9,9 @@ from collections import defaultdict
 import inspect
 import types
 
-try:
-    from django.core.exceptions import FieldDoesNotExist
-except AttributeError:
-    from django.db.models.fields import FieldDoesNotExist
-
 from django.db import models
 from django.db.models import ManyToOneRel
+from django.core.exceptions import FieldDoesNotExist
 
 NEVER = 0
 ALWAYS = 1
