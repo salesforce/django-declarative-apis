@@ -1,3 +1,6 @@
+[![Documentation Status](https://readthedocs.org/projects/django-declarative-apis/badge/?version=stable)](https://django-declarative-apis.readthedocs.io/en/stable/?badge=stable)
+
+
 Overview
 ========
 
@@ -9,8 +12,6 @@ django-declarative-apis is a framework built on top of Django aimed at teams imp
 -   Define resource and endpoint-bound tasks, promoting modularity
     \* Define synchronous and asynchronous tasks (asynchronous tasks implemented with Celery)
 -   Separation of concerns between request body processing and business logic
-
-
 
 
 Quick start
