@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [0.23.1] - 2022-05-17
 ### Fixed
-- [PR XX](https://github.com/salesforce/django-declarative-apis/pull/XX) Fix GitHub publish action
+- [PR 98](https://github.com/salesforce/django-declarative-apis/pull/98) Fix GitHub publish action
 
 # [0.23.0] - 2022-05-17
 ### Added
