@@ -11,6 +11,7 @@ import types
 
 from django.db import models
 from django.db.models import ManyToOneRel
+from django.core.exceptions import FieldDoesNotExist
 
 NEVER = 0
 ALWAYS = 1
@@ -80,7 +81,7 @@ def _get_filtered_field_value(
     else:
         try:
             val = getattr(inst, field_name)
-        except (AttributeError, models.fields.FieldDoesNotExist) as e:  # noqa
+        except (AttributeError, FieldDoesNotExist) as e:  # noqa
             return None
 
     if isinstance(val, models.Manager):

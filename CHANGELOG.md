@@ -16,6 +16,7 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 - [PR 95](https://github.com/salesforce/django-declarative-apis/pull/95) Fill in missing CHANGELOG entries
 - [PR 90](https://github.com/salesforce/django-declarative-apis/pull/90) Fix `BoundEndpointManager` `get_response` saves
+- [PR 89](https://github.com/salesforce/django-declarative-apis/pull/89) Fix save behavior for Django 3 and drop Django 2 support
 
 ### Changed
 - [PR 93](https://github.com/salesforce/django-declarative-apis/pull/93) Remove spaces in name of `test` GitHub Action

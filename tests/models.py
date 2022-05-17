@@ -51,3 +51,14 @@ class ParentModel(models.Model):
 class RootNode(models.Model):
     id = models.IntegerField(primary_key=True)
     parent_field = models.ForeignKey(ParentModel, on_delete=models.CASCADE)
+
+
+try:
+    import dirtyfields
+
+    class DirtyFieldsModel(dirtyfields.DirtyFieldsMixin, models.Model):
+        field = models.CharField(max_length=100)
+        fk_field = models.ForeignKey(TestModel, null=False, on_delete=models.CASCADE)
+
+except Exception:
+    pass

@@ -21,7 +21,7 @@ from django_declarative_apis import machinery, models as dda_models
 from django_declarative_apis.machinery import errors, filtering, tasks
 from django_declarative_apis.machinery.tasks import future_task_runner
 from django_declarative_apis.resources.utils import HttpStatusCode
-from tests import testutils
+from tests import testutils, models
 
 _TEST_RESOURCE = {"foo": "bar"}
 
@@ -147,49 +147,70 @@ class EndpointBinderTestCase(django.test.TestCase):
         mock_logging.error.assert_called_with("('something bad happened',)\nNone")
 
     def test_get_response_with_dirty_resource(self):
-        class _TestResource:
-            def is_dirty(self, check_relationship=False):
-                return True
+        class _TestEndpoint1(machinery.EndpointDefinition):
+            @machinery.endpoint_resource(type=models.DirtyFieldsModel)
+            def resource(self):
+                result = models.DirtyFieldsModel(field="abcde")
+                result.fk_field = models.TestModel.objects.create(int_field=1)
+                return result
 
-            def save(self):
+        class _TestEndpoint2(machinery.EndpointDefinition):
+            @machinery.endpoint_resource(type=models.DirtyFieldsModel)
+            def resource(self):
+                result = models.DirtyFieldsModel(field="abcde")
+                result.fk_field = models.TestModel.objects.create(int_field=1)
+                return result
+
+            @machinery.task
+            def null_task(self):
                 pass
 
-        class _TestEndpoint(machinery.EndpointDefinition):
-            @machinery.endpoint_resource(type=_TestResource)
+        class _TestEndpoint3(machinery.EndpointDefinition):
+            @machinery.endpoint_resource(type=models.DirtyFieldsModel)
             def resource(self):
-                return _TestResource()
+                result = models.DirtyFieldsModel(field="abcde")
+                result.fk_field = models.TestModel.objects.create(int_field=1)
+                return result
 
-        endpoint = _TestEndpoint()
-        manager = machinery.EndpointBinder.BoundEndpointManager(
-            machinery._EndpointRequestLifecycleManager(endpoint), endpoint
-        )
+            @machinery.task
+            def task(self):
+                self.resource.field = "zyxwv"
 
-        class _FakeRequest:
-            META = {}
+        for test_name, endpoint_cls, expected_call_count in (
+            ("No Task", _TestEndpoint1, 1),
+            ("No-op Task", _TestEndpoint2, 1),
+            ("With Task", _TestEndpoint3, 2),
+        ):
+            with self.subTest(test_name):
+                endpoint = endpoint_cls()
+                manager = machinery.EndpointBinder.BoundEndpointManager(
+                    machinery._EndpointRequestLifecycleManager(endpoint), endpoint
+                )
 
-        manager.bound_endpoint.request = _FakeRequest()
+                class _FakeRequest:
+                    META = {}
 
-        with mock.patch.object(_TestResource, "save", return_value=None) as mock_save:
-            manager.get_response()
-            # save is called before and after tasks. since we've hardcoded _TestResource.is_dirty to return True,
-            # both of them should fire
-            self.assertEqual(mock_save.call_count, 2)
+                manager.bound_endpoint.request = _FakeRequest()
+
+                with mock.patch.object(
+                    models.DirtyFieldsModel.objects,
+                    "update_or_create",
+                    wraps=models.DirtyFieldsModel.objects.update_or_create,
+                ) as mock_uoc:
+                    manager.get_response()
+                    self.assertEqual(mock_uoc.call_count, expected_call_count)
 
     def test_get_response_with_client_error_while_executing_tasks(self):
-        class _TestResource:
-            def is_dirty(self, check_relationship=False):
-                return True
-
-            def save(self):
-                pass
-
         class _TestEndpoint(machinery.EndpointDefinition):
-            @machinery.endpoint_resource(type=_TestResource)
+            @machinery.endpoint_resource(type=models.DirtyFieldsModel)
             def resource(self):
-                return _TestResource()
+                result = models.DirtyFieldsModel(id=1, field="abcde")
+                result.fk_field = models.TestModel.objects.create(int_field=1)
+                return result
 
             @machinery.task
             def raise_an_exception(self):
+                self.resource.field = "zyxwv"
                 raise errors.ClientError(
                     code=http.HTTPStatus.BAD_REQUEST,
                     message="something bad happened",
@@ -197,20 +218,25 @@ class EndpointBinderTestCase(django.test.TestCase):
                 )
 
         for error_should_save_changes in (True, False):
-            with mock.patch.object(_TestResource, "save") as mock_save:
-                endpoint = _TestEndpoint()
-                manager = machinery.EndpointBinder.BoundEndpointManager(
-                    machinery._EndpointRequestLifecycleManager(endpoint), endpoint
-                )
-                try:
-                    manager.get_response()
-                    self.fail("This should have failed")
-                except errors.ClientError:
-                    # save should be called twice if the exception says the resource should be saved: once before
-                    # tasks are executed and once during exception handling.
-                    self.assertEqual(
-                        mock_save.call_count, 2 if error_should_save_changes else 1
+            with self.subTest(f"error_should_save_changes={error_should_save_changes}"):
+                with mock.patch.object(
+                    models.DirtyFieldsModel.objects,
+                    "update_or_create",
+                    wraps=models.DirtyFieldsModel.objects.update_or_create,
+                ) as mock_uoc:
+                    endpoint = _TestEndpoint()
+                    manager = machinery.EndpointBinder.BoundEndpointManager(
+                        machinery._EndpointRequestLifecycleManager(endpoint), endpoint
                     )
+                    try:
+                        manager.get_response()
+                        self.fail("This should have failed")
+                    except errors.ClientError:
+                        # save should be called twice if the exception says the resource should be saved: once before
+                        # tasks are executed and once during exception handling.
+                        self.assertEqual(
+                            mock_uoc.call_count, 2 if error_should_save_changes else 1
+                        )
 
     def test_get_response_custom_http_response(self):
         expected_data = {"foo": "bar"}
@@ -280,7 +306,11 @@ class EndpointBinderTestCase(django.test.TestCase):
         data = _QuerySet([_TestResource("foo", "bar"), _TestResource("bar", "baz")])
 
         filter_def = {
-            _TestResource: {"name": filtering.ALWAYS, "secret": filtering.NEVER}
+            _TestResource: {
+                "name": filtering.ALWAYS,
+                "secret": filtering.NEVER,
+                "foo": filtering.ALWAYS,
+            }
         }
 
         class _TestEndpoint(machinery.EndpointDefinition):

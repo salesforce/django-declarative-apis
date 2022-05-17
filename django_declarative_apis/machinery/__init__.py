@@ -14,6 +14,8 @@ import django
 from django.conf import settings
 from django.http import HttpResponse
 
+from dirtyfields.dirtyfields import reset_state
+
 from django_declarative_apis.machinery.filtering import apply_filters_to_object
 from django_declarative_apis.models import BaseConsumer
 from django_declarative_apis.resources.utils import HttpStatusCode
@@ -36,7 +38,7 @@ from .attributes import (
     ResourceField,
 )
 
-# these imports are unusued in this file but may be used in other projects
+# these imports are unused in this file but may be used in other projects
 # that use `machinery` as an interface
 from .attributes import TypedEndpointAttributeMixin, RequestFieldGroup  # noqa
 from .utils import locate_object, rate_limit_exceeded
@@ -84,7 +86,7 @@ class EndpointResourceAttribute(EndpointAttribute):
                 return Todo.objects.get(id=self.resource_id)
     """
 
-    def __init__(self, type, filter=None, returns_list=False, **kwargs):
+    def __init__(self, type=None, filter=None, returns_list=False, **kwargs):
         super().__init__(**kwargs)
         self.type = type
         self.filter = filter
@@ -100,10 +102,12 @@ class EndpointResourceAttribute(EndpointAttribute):
             return self
         try:
             value = self.func(owner_instance)
-        except django.core.exceptions.ObjectDoesNotExist:
-            raise errors.ClientErrorNotFound(
-                "{0} instance not found".format(self.type.__name__)
-            )
+        except django.core.exceptions.ObjectDoesNotExist as e:  # noqa: F841
+            try:
+                message = f"{self.type.__name__} instance not found"
+            except AttributeError as e:  # noqa: F841
+                message = "Resource instance not found"
+            raise errors.ClientErrorNotFound(message)
 
         if value.__class__ == dict:
             return value
@@ -173,6 +177,35 @@ class EndpointDefinitionMeta(abc.ABCMeta, metaclass=abc.ABCMeta):
                 pass
 
 
+def current_dirty_dict(resource):
+    """Get the `current` (in-memory) values for fields that have not yet been written to the database."""
+    new_data = resource.get_dirty_fields(check_relationship=True, verbose=True)
+    field_name_to_att_name = {f.name: f.attname for f in resource._meta.concrete_fields}
+    return {
+        field_name_to_att_name[key]: values["current"]
+        for key, values in new_data.items()
+    }
+
+
+def update_dirty(resource):
+    """Write dirty fields to the database."""
+    dirty_dict = current_dirty_dict(resource)
+    resource_next, created = type(resource).objects.update_or_create(
+        pk=resource.pk, defaults=dirty_dict
+    )
+
+    # update fields in memory that changed on save to the database
+    field_name_to_att_name = {f.name: f.attname for f in resource._meta.concrete_fields}
+    for k, v in resource_next._as_dict(check_relationship=True).items():
+        att_key = field_name_to_att_name[k]
+        if getattr(resource, att_key, None) != v:
+            setattr(resource, att_key, v)
+    resource._state.adding = False
+    resource._state.db = resource_next._state.db
+    resource._state.fields_cache = {}
+    reset_state(type(resource), resource)
+
+
 class EndpointBinder:
     class BoundEndpointManager:
         def __init__(self, manager, bound_endpoint):
@@ -197,7 +230,7 @@ class EndpointBinder:
 
             if hasattr(resource, "is_dirty"):
                 if resource and resource.is_dirty(check_relationship=True):
-                    resource.save()
+                    update_dirty(resource)
 
             endpoint_tasks = sorted(
                 self.manager.endpoint_tasks, key=lambda t: t.priority
@@ -213,13 +246,18 @@ class EndpointBinder:
                     immediate_task.run(self.bound_endpoint)
 
             except errors.ClientError as ce:
-                if ce.save_changes and resource and resource.is_dirty():
-                    resource.save()
+                if (
+                    ce.save_changes
+                    and resource
+                    and hasattr(resource, "is_dirty")
+                    and resource.is_dirty()
+                ):
+                    update_dirty(resource)
                 raise
 
             if hasattr(resource, "is_dirty"):
                 if resource and resource.is_dirty(check_relationship=True):
-                    resource.save()
+                    update_dirty(resource)
 
             for deferred_task in deferred_tasks:
                 deferred_task.run(self.bound_endpoint)
@@ -904,10 +942,10 @@ class ResourceEndpointDefinition(EndpointDefinition):
     """
 
     def __init__(self, *args, **kwargs):
-        super().__init__()
+        super().__init__(*args, **kwargs)
         self._cached_resource = None
 
-    @property
+    @EndpointResourceAttribute()
     def resource(self):
         """Queries the object manager of `self.resource_model` for the given id
         (`self.resource_id`).
