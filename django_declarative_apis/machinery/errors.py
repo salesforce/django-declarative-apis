@@ -75,9 +75,7 @@ class ApiError(Exception):
             return self.__dict__["error_code"]
         except KeyError:
             raise AttributeError(
-                "'{}' object has no attribute '{}'".format(
-                    ApiError.__name__, "error_code"
-                )
+                f"'{ApiError.__name__}' object has no attribute 'error_code'"
             )
 
     @error_code.setter
@@ -113,7 +111,7 @@ class ClientErrorNotFound(ClientError):
             http.client.responses.get(http.client.NOT_FOUND),
         )
         if additional_info:
-            error_message += " : " + additional_info
+            error_message += f" : {additional_info}"
         super().__init__(
             error_code, error_message, http_status_code=http.client.NOT_FOUND
         )
@@ -123,7 +121,7 @@ class ClientErrorForbidden(ClientError):
     def __init__(self, additional_info=None, **kwargs):
         error_code, error_message = FORBIDDEN
         if additional_info:
-            error_message += ": %s" % additional_info
+            error_message += f": {additional_info}"
         super().__init__(
             error_code, error_message, http_status_code=http.client.FORBIDDEN, **kwargs
         )
@@ -147,7 +145,7 @@ class ClientErrorExternalServiceFailure(ClientError):
     def __init__(self, additional_info=None):
         error_code, error_message = EXTERNAL_REQUEST_FAILURE
         if additional_info:
-            error_message += ": {0}".format(additional_info)
+            error_message += f": {additional_info}"
         super().__init__(error_code, error_message)
 
 
@@ -161,7 +159,7 @@ class ClientErrorTimedOut(ClientError):
     def __init__(self, additional_info=None):
         error_code, error_message = TIMED_OUT
         if additional_info:
-            error_message += ": %s" % additional_info
+            error_message += f": {additional_info}"
         super().__init__(
             error_code, error_message, http_status_code=http.client.REQUEST_TIMEOUT
         )
@@ -179,7 +177,7 @@ class ClientErrorExtraFields(ClientError):
     def __init__(self, extra_fields=None):
         error_code, error_message = EXTRA_FIELDS
         if extra_fields:
-            error_message += ": %s" % ", ".join(extra_fields)
+            error_message += f": {', '.join(extra_fields)}"
         super().__init__(error_code, error_message)
 
 
@@ -187,7 +185,7 @@ class ClientErrorReadOnlyFields(ClientError):
     def __init__(self, read_only_fields=None):
         error_code, error_message = READ_ONLY_FIELDS
         if read_only_fields:
-            error_message += ": %s" % ", ".join(read_only_fields)
+            error_message += f": {', '.join(read_only_fields)}"
         super().__init__(error_code, error_message)
 
 
@@ -195,9 +193,9 @@ class ClientErrorMissingFields(ClientError):
     def __init__(self, missing_fields=None, extra_message=None):
         error_code, error_message = MISSING_FIELDS
         if missing_fields:
-            error_message += ": %s" % ", ".join(missing_fields)
+            error_message += f": {', '.join(missing_fields)}"
         if extra_message:
-            error_message += ": {0}".format(extra_message)
+            error_message += f": {extra_message}"
         super().__init__(error_code, error_message)
 
 
@@ -205,9 +203,9 @@ class ClientErrorInvalidFieldValues(ClientError):
     def __init__(self, invalid_fields=None, extra_message=None):
         error_code, error_message = INVALID_FIELD_VALUES
         if invalid_fields:
-            error_message += ": %s" % ", ".join(invalid_fields)
+            error_message += f": {', '.join(invalid_fields)}"
         if extra_message:
-            error_message += ": {0}".format(extra_message)
+            error_message += f": {extra_message}"
         super().__init__(error_code, error_message)
 
 
