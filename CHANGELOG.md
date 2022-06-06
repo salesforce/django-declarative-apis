@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [unreleased] - XXXX-XX-XX
+### Added
+- [PR 100](https://github.com/salesforce/django-declarative-apis/pull/100) Let ServerError take an `extra_message` argument
+
 # [0.23.1] - 2022-05-17
 ### Fixed
 - [PR 98](https://github.com/salesforce/django-declarative-apis/pull/98) Fix GitHub publish action
