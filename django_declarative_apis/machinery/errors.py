@@ -212,9 +212,11 @@ class ClientErrorInvalidFieldValues(ClientError):
 
 
 class ServerError(ApiError):
-    def __init__(self):
+    def __init__(self, extra_message=None):
         error_code, error_message = LOGGED_SERVER_ERROR
         error_message = error_message.format(uuid.uuid4())
+        if extra_message:
+            error_message += f": {extra_message}"
         logger.exception(error_message)
 
         self._cause = None
