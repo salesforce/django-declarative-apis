@@ -152,7 +152,11 @@ class ClientErrorExternalServiceFailure(ClientError):
 class ClientErrorRequestThrottled(ClientError):
     def __init__(self):
         error_code, error_message = REQUEST_THROTTLED
-        super().__init__(error_code, error_message, http_status_code=429)
+        super().__init__(
+            error_code,
+            error_message,
+            http_status_code=http.HTTPStatus.TOO_MANY_REQUESTS,
+        )
 
 
 class ClientErrorTimedOut(ClientError):
