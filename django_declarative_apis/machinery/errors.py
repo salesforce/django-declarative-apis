@@ -12,7 +12,8 @@ import warnings
 
 import http.client
 
-# Start Toopher-specific codes at 600 to avoid conflict/confusion with HTTP status codes
+
+# Start DDA-specific codes at 600 to avoid conflict/confusion with HTTP status codes
 import sys
 
 logger = logging.getLogger(__name__)
