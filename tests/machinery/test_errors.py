@@ -43,6 +43,23 @@ class ErrorTestCast(django.test.TestCase):
             err.as_dict(),
         )
 
+    def test_apierror_deprecated_error_code(self):
+        test_err = (999, "This is a fake error code.")
+        try:
+            errors.DEPRECATED_ERROR_CODES[test_err[0]] = test_err[1]
+            with self.assertRaises(ValueError):
+                with self.assertWarns(DeprecationWarning):
+                    errors.ApiError(error_tuple=test_err)
+        finally:
+            del errors.DEPRECATED_ERROR_CODES[test_err[0]]
+
+    def test_apierror_error_code_attributeerror(self):
+        test_error_tuple = (999, "This is a fake error code.")
+        err = errors.ApiError(error_tuple=test_error_tuple)
+        del err.__dict__["error_code"]
+        with self.assertRaises(AttributeError):
+            err.error_code
+
     def test_additional_info(self):
         test_classes = [
             errors.ClientErrorUnprocessableEntity,

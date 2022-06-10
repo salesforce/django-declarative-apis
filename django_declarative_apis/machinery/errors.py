@@ -77,7 +77,7 @@ class ApiError(Exception):
         except KeyError:
             raise AttributeError(
                 f"'{ApiError.__name__}' object has no attribute 'error_code'"
-            )
+            ) from None  # suppress reporting the KeyError
 
     @error_code.setter
     def error_code(self, value):
