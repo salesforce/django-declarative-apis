@@ -1,4 +1,5 @@
 import django.test
+from django import http
 
 from django_declarative_apis.machinery import errors
 
@@ -88,3 +89,17 @@ class ErrorTestCast(django.test.TestCase):
         self.assertIn("foo", err.error_message)
         self.assertIn("bar", err.error_message)
         self.assertIn("baz", err.error_message)
+
+    def test_clienterrorreadonlyfields(self):
+        err = errors.ClientErrorReadOnlyFields(read_only_fields=["foo", "bar", "baz"])
+        self.assertIn("foo", err.error_message)
+        self.assertIn("bar", err.error_message)
+        self.assertIn("baz", err.error_message)
+
+    def test_clienterrormissingfields(self):
+        extra_message = "Test extra message."
+        err = errors.ClientErrorMissingFields(missing_fields=["foo", "bar", "baz"], extra_message=extra_message)
+        self.assertIn("foo", err.error_message)
+        self.assertIn("bar", err.error_message)
+        self.assertIn("baz", err.error_message)
+        self.assertIn(extra_message, err.error_message)
