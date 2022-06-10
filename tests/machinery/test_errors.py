@@ -76,6 +76,13 @@ class ErrorTestCast(django.test.TestCase):
                 err = cls(additional_info=test_message)
                 self.assertIn(test_message, err.error_message)
 
+    def test_clienterrorresponsewrapper(self):
+        message = "It's gone!"
+        response = http.HttpResponseGone(message)
+        err = errors.ClientErrorResponseWrapper(response)
+        self.assertEqual(response.status_code, err.error_code)
+        self.assertEqual(message, err.error_message)
+
     def test_clienterrorextrafields(self):
         err = errors.ClientErrorExtraFields(extra_fields=["foo", "bar", "baz"])
         self.assertIn("foo", err.error_message)

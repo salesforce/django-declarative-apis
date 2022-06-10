@@ -173,7 +173,7 @@ class ClientErrorTimedOut(ClientError):
 class ClientErrorResponseWrapper(ClientError):
     def __init__(self, response):
         error_code = response.status_code
-        error_message = response.content
+        error_message = response.content.decode()
         status_code = response.status_code
         super().__init__(error_code, error_message, http_status_code=status_code)
 
