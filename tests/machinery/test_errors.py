@@ -98,7 +98,9 @@ class ErrorTestCast(django.test.TestCase):
 
     def test_clienterrormissingfields(self):
         extra_message = "Test extra message."
-        err = errors.ClientErrorMissingFields(missing_fields=["foo", "bar", "baz"], extra_message=extra_message)
+        err = errors.ClientErrorMissingFields(
+            missing_fields=["foo", "bar", "baz"], extra_message=extra_message
+        )
         self.assertIn("foo", err.error_message)
         self.assertIn("bar", err.error_message)
         self.assertIn("baz", err.error_message)
