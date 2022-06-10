@@ -112,7 +112,7 @@ class ClientErrorNotFound(ClientError):
             http.client.responses.get(http.client.NOT_FOUND),
         )
         if additional_info:
-            error_message += f" : {additional_info}"
+            error_message += f": {additional_info}"
         super().__init__(
             error_code, error_message, http_status_code=http.client.NOT_FOUND
         )
