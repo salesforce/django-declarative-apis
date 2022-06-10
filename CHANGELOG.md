@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [unreleased] - XXXX-XX-XX
 ### Added
-- [PR 100](https://github.com/salesforce/django-declarative-apis/pull/100) Let ServerError take an `extra_message` argument
+- [PR 100](https://github.com/salesforce/django-declarative-apis/pull/100) Improve `errors.py`
 
 # [0.23.1] - 2022-05-17
 ### Fixed
