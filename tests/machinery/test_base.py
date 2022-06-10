@@ -78,7 +78,7 @@ class EndpointResourceAttributeTestCase(
             self.fail("This should have failed")
         except errors.ClientErrorNotFound as err:
             self.assertEqual(err.error_code, http.HTTPStatus.NOT_FOUND)
-            self.assertEqual(err.error_message, "Not Found : dict instance not found")
+            self.assertEqual(err.error_message, "Not Found: dict instance not found")
             self.assertEqual(err.status_code, http.HTTPStatus.NOT_FOUND)
             self.assertFalse(err.save_changes)
             self.assertEqual(err.extra_fields, {})
