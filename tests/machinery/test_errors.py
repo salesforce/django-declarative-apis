@@ -61,7 +61,7 @@ class ErrorTestCast(django.test.TestCase):
         with self.assertRaises(AttributeError):
             err.error_code
 
-    def test_additional_info(self):
+    def test_additional_info_in_error(self):
         test_classes = [
             errors.ClientErrorUnprocessableEntity,
             errors.ClientErrorNotFound,
@@ -69,13 +69,21 @@ class ErrorTestCast(django.test.TestCase):
             errors.ClientErrorUnauthorized,
             errors.ClientErrorExternalServiceFailure,
             errors.ClientErrorTimedOut,
-            errors.ServerError,
         ]
         test_message = "Test additional info."
         for cls in test_classes:
             with self.subTest(cls):
                 err = cls(additional_info=test_message)
                 self.assertIn(test_message, err.error_message)
+
+    def test_servererror(self):
+        test_additional_info = "Test additional info."
+        with self.assertLogs(logger="django_declarative_apis.machinery.errors") as logs:
+            err = errors.ServerError(additional_info=test_additional_info)
+        self.assertIn("Server Error", err.error_message)
+        self.assertNotIn(test_additional_info, err.error_message)
+        self.assertIn("Server Error", logs.output[0])
+        self.assertIn(test_additional_info, logs.output[0])
 
     def test_clienterrorresponsewrapper(self):
         message = "It's gone!"
