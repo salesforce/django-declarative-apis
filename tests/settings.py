@@ -21,8 +21,6 @@ INSTALLED_APPS = ["django_declarative_apis", "django.contrib.contenttypes", "tes
 
 ROOT_URLCONF = "tests.urls"
 
-TEST_RUNNER = "tests.testutils.NoLoggingTestRunner"
-
 MIDDLEWARE = []
 
 REQUIRE_HTTPS_FOR_OAUTH = False

@@ -12,7 +12,8 @@ import warnings
 
 import http.client
 
-# Start Toopher-specific codes at 600 to avoid conflict/confusion with HTTP status codes
+
+# Start DDA-specific codes at 600 to avoid conflict/confusion with HTTP status codes
 import sys
 
 logger = logging.getLogger(__name__)
@@ -75,10 +76,8 @@ class ApiError(Exception):
             return self.__dict__["error_code"]
         except KeyError:
             raise AttributeError(
-                "'{}' object has no attribute '{}'".format(
-                    ApiError.__name__, "error_code"
-                )
-            )
+                f"'{ApiError.__name__}' object has no attribute 'error_code'"
+            ) from None  # suppress reporting the KeyError
 
     @error_code.setter
     def error_code(self, value):
@@ -113,7 +112,7 @@ class ClientErrorNotFound(ClientError):
             http.client.responses.get(http.client.NOT_FOUND),
         )
         if additional_info:
-            error_message += " : " + additional_info
+            error_message += f": {additional_info}"
         super().__init__(
             error_code, error_message, http_status_code=http.client.NOT_FOUND
         )
@@ -123,7 +122,7 @@ class ClientErrorForbidden(ClientError):
     def __init__(self, additional_info=None, **kwargs):
         error_code, error_message = FORBIDDEN
         if additional_info:
-            error_message += ": %s" % additional_info
+            error_message += f": {additional_info}"
         super().__init__(
             error_code, error_message, http_status_code=http.client.FORBIDDEN, **kwargs
         )
@@ -147,21 +146,25 @@ class ClientErrorExternalServiceFailure(ClientError):
     def __init__(self, additional_info=None):
         error_code, error_message = EXTERNAL_REQUEST_FAILURE
         if additional_info:
-            error_message += ": {0}".format(additional_info)
+            error_message += f": {additional_info}"
         super().__init__(error_code, error_message)
 
 
 class ClientErrorRequestThrottled(ClientError):
     def __init__(self):
         error_code, error_message = REQUEST_THROTTLED
-        super().__init__(error_code, error_message, http_status_code=429)
+        super().__init__(
+            error_code,
+            error_message,
+            http_status_code=http.HTTPStatus.TOO_MANY_REQUESTS,
+        )
 
 
 class ClientErrorTimedOut(ClientError):
     def __init__(self, additional_info=None):
         error_code, error_message = TIMED_OUT
         if additional_info:
-            error_message += ": %s" % additional_info
+            error_message += f": {additional_info}"
         super().__init__(
             error_code, error_message, http_status_code=http.client.REQUEST_TIMEOUT
         )
@@ -170,7 +173,7 @@ class ClientErrorTimedOut(ClientError):
 class ClientErrorResponseWrapper(ClientError):
     def __init__(self, response):
         error_code = response.status_code
-        error_message = response.content
+        error_message = response.content.decode()
         status_code = response.status_code
         super().__init__(error_code, error_message, http_status_code=status_code)
 
@@ -179,7 +182,7 @@ class ClientErrorExtraFields(ClientError):
     def __init__(self, extra_fields=None):
         error_code, error_message = EXTRA_FIELDS
         if extra_fields:
-            error_message += ": %s" % ", ".join(extra_fields)
+            error_message += f": {', '.join(extra_fields)}"
         super().__init__(error_code, error_message)
 
 
@@ -187,7 +190,7 @@ class ClientErrorReadOnlyFields(ClientError):
     def __init__(self, read_only_fields=None):
         error_code, error_message = READ_ONLY_FIELDS
         if read_only_fields:
-            error_message += ": %s" % ", ".join(read_only_fields)
+            error_message += f": {', '.join(read_only_fields)}"
         super().__init__(error_code, error_message)
 
 
@@ -195,9 +198,9 @@ class ClientErrorMissingFields(ClientError):
     def __init__(self, missing_fields=None, extra_message=None):
         error_code, error_message = MISSING_FIELDS
         if missing_fields:
-            error_message += ": %s" % ", ".join(missing_fields)
+            error_message += f": {', '.join(missing_fields)}"
         if extra_message:
-            error_message += ": {0}".format(extra_message)
+            error_message += f": {extra_message}"
         super().__init__(error_code, error_message)
 
 
@@ -205,17 +208,19 @@ class ClientErrorInvalidFieldValues(ClientError):
     def __init__(self, invalid_fields=None, extra_message=None):
         error_code, error_message = INVALID_FIELD_VALUES
         if invalid_fields:
-            error_message += ": %s" % ", ".join(invalid_fields)
+            error_message += f": {', '.join(invalid_fields)}"
         if extra_message:
-            error_message += ": {0}".format(extra_message)
+            error_message += f": {extra_message}"
         super().__init__(error_code, error_message)
 
 
 class ServerError(ApiError):
-    def __init__(self):
+    def __init__(self, additional_info=None):
         error_code, error_message = LOGGED_SERVER_ERROR
-        error_message = error_message.format(uuid.uuid4())
-        logger.exception(error_message)
+        logged_error = error_message = error_message.format(uuid.uuid4())
+        if additional_info:
+            logged_error += f": {additional_info}"
+        logger.exception(logged_error)
 
         self._cause = None
 
