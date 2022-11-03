@@ -13,6 +13,7 @@ import string
 import time
 
 from django.db import models as django_models
+import pydantic
 
 from . import errors
 from . import tasks
@@ -112,7 +113,9 @@ class RequestProperty(EndpointAttribute):
 class TypedEndpointAttributeMixin:
     def __init__(self, *args, **kwargs):
         self.field_type = kwargs.pop("type", str)
-        if self.field_type not in RequestField.VALID_FIELD_TYPES:
+        if not any(
+            issubclass(self.field_type, t) for t in RequestField.VALID_FIELD_TYPES
+        ):
             raise NotImplementedError(
                 "Request fields of type {0} not supported".format(
                     self.field_type.__name__
@@ -124,6 +127,8 @@ class TypedEndpointAttributeMixin:
         try:
             if self.field_type == bool and not isinstance(raw_value, self.field_type):
                 return "rue" in raw_value
+            elif issubclass(self.field_type, pydantic.BaseModel):
+                return self.field_type.parse_obj(raw_value)
             else:
                 if isinstance(raw_value, collections.abc.Iterable) and not isinstance(
                     raw_value, (str, dict)
@@ -201,8 +206,8 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
     """Endpoint properties are called fields. Fields can be simple types such as int,
     or they can be used as a decorator on a function.
 
-    **Valid field types:** :code:`int`, :code:`bool`, :code:`float`, :code:`str`,
-    :code:`dict`, :code:`complex`
+    **Valid field types:** A subclass of :code:`int`, :code:`bool`, :code:`float`,
+    :code:`str`, :code:`dict`, :code:`complex`, :code:`pydantic.BaseModel`
 
     **Example**
 
@@ -258,7 +263,7 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
 
     """
 
-    VALID_FIELD_TYPES = (bool, int, float, complex, str, dict)
+    VALID_FIELD_TYPES = (bool, int, float, complex, str, dict, pydantic.BaseModel)
 
     def __init__(self, *args, **kwargs):
         self.default_value = kwargs.pop("default", None)
