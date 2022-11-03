@@ -20,4 +20,8 @@ urlpatterns = [
     re_path(
         r"^pydanticfield$", resource_adapter(post=views.PydanticFieldEndpointDefinition)
     ),
+    re_path(
+        r"^nestedpydanticfield$",
+        resource_adapter(post=views.NestedPydanticFieldEndpointDefinition),
+    ),
 ]

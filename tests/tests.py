@@ -144,3 +144,36 @@ class DeclarativeApisTestCase(TestCase):
                 )
                 if expected_status == HTTPStatus.OK:
                     self.assertDictEqual(json.loads(response.content), data)
+
+    def test_nested_pydantic_field_endpoint(self):
+        good_dict = {"b": "hello", "c": {"a": "world"}}
+        test_data = [
+            (good_dict, HTTPStatus.OK, "no errors"),
+            ({**good_dict, "b": list("abc")}, HTTPStatus.BAD_REQUEST, "bad b"),
+            ({**good_dict, "c": 11}, HTTPStatus.BAD_REQUEST, "bad c"),
+            ({**good_dict, "c": {"a": list("abc")}}, HTTPStatus.BAD_REQUEST, "bad a"),
+            ({**good_dict, "c": {}}, HTTPStatus.BAD_REQUEST, "missing a"),
+            (
+                {k: v for (k, v) in good_dict.items() if k != "b"},
+                HTTPStatus.BAD_REQUEST,
+                "missing b",
+            ),
+            (
+                {k: v for (k, v) in good_dict.items() if k != "c"},
+                HTTPStatus.BAD_REQUEST,
+                "missing c",
+            ),
+        ]
+
+        for dct, expected_status, message in test_data:
+            data = {"nested_pydantic_type_field": dct}
+            with self.subTest(message):
+                response = self.client.post(
+                    "/nestedpydanticfield",
+                    consumer=self.consumer,
+                    data=data,
+                    expected_status_code=expected_status,
+                    content_type="application/json",
+                )
+                if expected_status == HTTPStatus.OK:
+                    self.assertDictEqual(json.loads(response.content), data)

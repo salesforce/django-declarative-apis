@@ -82,3 +82,27 @@ class PydanticFieldEndpointDefinition(EndpointDefinition):
         return {
             "pydantic_type_field": json.loads(self.pydantic_type_field.json()),
         }
+
+
+class _ModelA(pydantic.BaseModel):
+    a: str
+
+
+class _ModelB(pydantic.BaseModel):
+    b: str
+    c: _ModelA
+
+
+class NestedPydanticFieldEndpointDefinition(EndpointDefinition):
+    def is_authorized(self):
+        return True
+
+    nested_pydantic_type_field = field(type=_ModelB, required=True)
+
+    @endpoint_resource(type=dict)
+    def resource(self):
+        return {
+            "nested_pydantic_type_field": json.loads(
+                self.nested_pydantic_type_field.json()
+            ),
+        }
