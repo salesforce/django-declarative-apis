@@ -122,7 +122,7 @@ class ResourceTestCase(testutils.RequestCreatorMixin, django.test.TestCase):
     def test_init_uncallable_handler(self):
         try:
             resource.Resource("not callable")
-            self.fail("should have faileid")
+            self.fail("should have failed")
         except AttributeError as err:
             self.assertEqual(str(err), "Handler not callable.")
 

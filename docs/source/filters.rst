@@ -81,7 +81,7 @@ Filters can be defined in four places:
 
 3. ``@endpoint_resource``
 
-    **Optional |** Defines filters for a class and can be used interchangeably with response filter. To implement, set :code:`filter=<filter>` in an argument to the :code:`@endpoint_resource` decorator.
+    **Optional |** Defines filters for a class and can be used interchangeably with :code:`response_filter`. To implement, set :code:`filter=<filter>` in an argument to the :code:`@endpoint_resource` decorator.
 
     **Default Value |** :code:`None`
 
