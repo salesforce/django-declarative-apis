@@ -236,7 +236,7 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
     :param description: Describes the purpose of the field. Defaults to :code:`None`.
     :type description: optional
 
-    :param multivalued: Allows a field to to be specified multiple times in the request.
+    :param multivalued: Allows a field to be specified multiple times in the request.
         With multivalued set to True, the EndpointHandler will receive a list of values
         instead of a single value. Defaults to :code:`False`.
     :type multivalued: optional
@@ -258,7 +258,7 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
         class FooDefinition(EndpointDefinition):
             foo = field(multivalued=True)
 
-    In the :code:`EndpointDefintion`, :code:`self.foo` would be equal to ['bar1',
+    In the :code:`EndpointDefinition`, :code:`self.foo` would be equal to ['bar1',
     'bar2']
 
     """

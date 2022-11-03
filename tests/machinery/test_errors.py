@@ -4,7 +4,7 @@ from django import http
 from django_declarative_apis.machinery import errors
 
 
-class ErrorTestCast(django.test.TestCase):
+class ErrorTestCase(django.test.TestCase):
     def test_apierror_tuple(self):
         test_code, test_message = test_tuple = errors.HTTPS_REQUIRED
         err = errors.ApiError(error_tuple=test_tuple)
