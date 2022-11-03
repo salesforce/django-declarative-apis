@@ -17,5 +17,7 @@ urlpatterns = [
     re_path(r"^simple$", resource_adapter(get=views.SimpleEndpointDefinition)),
     re_path(r"^dict$", resource_adapter(get=views.DictEndpointDefinition)),
     re_path(r"^dictfield$", resource_adapter(post=views.DictFieldEndpointDefinition)),
-    re_path(r"^pydanticfield$", resource_adapter(post=views.PydanticFieldEndpointDefinition)),
+    re_path(
+        r"^pydanticfield$", resource_adapter(post=views.PydanticFieldEndpointDefinition)
+    ),
 ]

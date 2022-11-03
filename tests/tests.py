@@ -96,8 +96,11 @@ class DeclarativeApisTestCase(TestCase):
             data = {"dict_type_field": dct}
             with self.subTest(message):
                 response = self.client.post(
-                    "/dictfield", consumer=self.consumer, data=data, expected_status_code=expected_status,
-                    content_type="application/json"
+                    "/dictfield",
+                    consumer=self.consumer,
+                    data=data,
+                    expected_status_code=expected_status,
+                    content_type="application/json",
                 )
                 if expected_status == HTTPStatus.OK:
                     self.assertDictEqual(json.loads(response.content), data)
@@ -112,17 +115,32 @@ class DeclarativeApisTestCase(TestCase):
         test_data = [
             (good_dict, HTTPStatus.OK, "no errors"),
             ({**good_dict, "length": "eleven"}, HTTPStatus.BAD_REQUEST, "bad length"),
-            ({**good_dict, "description": ['one', 'two']}, HTTPStatus.BAD_REQUEST, "bad description"),
-            ({**good_dict, "timestamp": "2022-10-24T99:99:99"}, HTTPStatus.BAD_REQUEST, "bad timestamp"),
-            ({**good_dict, "words": "foo bar baz quux"}, HTTPStatus.BAD_REQUEST, "bad words"),
+            (
+                {**good_dict, "description": ["one", "two"]},
+                HTTPStatus.BAD_REQUEST,
+                "bad description",
+            ),
+            (
+                {**good_dict, "timestamp": "2022-10-24T99:99:99"},
+                HTTPStatus.BAD_REQUEST,
+                "bad timestamp",
+            ),
+            (
+                {**good_dict, "words": "foo bar baz quux"},
+                HTTPStatus.BAD_REQUEST,
+                "bad words",
+            ),
         ]
 
         for dct, expected_status, message in test_data:
             data = {"pydantic_type_field": dct}
             with self.subTest(message):
                 response = self.client.post(
-                    "/pydanticfield", consumer=self.consumer, data=data, expected_status_code=expected_status,
-                    content_type="application/json"
+                    "/pydanticfield",
+                    consumer=self.consumer,
+                    data=data,
+                    expected_status_code=expected_status,
+                    content_type="application/json",
                 )
                 if expected_status == HTTPStatus.OK:
                     self.assertDictEqual(json.loads(response.content), data)

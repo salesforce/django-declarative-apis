@@ -113,7 +113,9 @@ class RequestProperty(EndpointAttribute):
 class TypedEndpointAttributeMixin:
     def __init__(self, *args, **kwargs):
         self.field_type = kwargs.pop("type", str)
-        if not any(issubclass(self.field_type, t) for t in RequestField.VALID_FIELD_TYPES):
+        if not any(
+            issubclass(self.field_type, t) for t in RequestField.VALID_FIELD_TYPES
+        ):
             raise NotImplementedError(
                 "Request fields of type {0} not supported".format(
                     self.field_type.__name__
