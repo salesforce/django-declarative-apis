@@ -206,8 +206,8 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
     """Endpoint properties are called fields. Fields can be simple types such as int,
     or they can be used as a decorator on a function.
 
-    **Valid field types:** :code:`int`, :code:`bool`, :code:`float`, :code:`str`,
-    :code:`dict`, :code:`complex`
+    **Valid field types:** A subclass of :code:`int`, :code:`bool`, :code:`float`,
+    :code:`str`, :code:`dict`, :code:`complex`, :code:`pydantic.BaseModel`
 
     **Example**
 
