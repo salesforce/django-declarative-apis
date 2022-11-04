@@ -6,9 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [0.24.0] - 2022-11-03
 ### Added
+- [PR 101](https://github.com/salesforce/django-declarative-apis/pull/101) Allow Pydantic models as field types
+
+### Fixed
 - [PR 103](https://github.com/salesforce/django-declarative-apis/pull/103) Update contributing doc
 - [PR 102](https://github.com/salesforce/django-declarative-apis/pull/102) Fix typos in docs and tests
-- [PR 101](https://github.com/salesforce/django-declarative-apis/pull/101) Allow Pydantic models as field types
+
+### Changed
 - [PR 100](https://github.com/salesforce/django-declarative-apis/pull/100) Improve `errors.py`
 
 # [0.23.1] - 2022-05-17
