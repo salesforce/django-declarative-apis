@@ -23,5 +23,5 @@ exclude = '''
 omit = ["*/tests/*", "*/management/*", "*/migrations/*"]
 
 [tool.coverage.report]
-fail_under = 91
+fail_under = 90
 exclude_lines = ["raise NotImplementedError"]
