@@ -15,7 +15,7 @@ FORMATCHECK_CMD = ${FORMAT_CMD} --check
 
 
 install:
-	pip install --upgrade pip -r requirements.txt -r requirements-dev.txt
+	pip install --upgrade pip install .[dev]
 .PHONY: install
 
 format:
