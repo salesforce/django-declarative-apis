@@ -1,6 +1,57 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-declarative-apis"
+version = "0.24.0"  # set by bumpversion
+description = "Simple, readable, declarative APIs for Django"
+dynamic = ["readme"]
+dependencies = [
+  "Django >=3.2, <4",
+  "celery>=4.0.2,!=4.1.0",
+  "cryptography>=2.0,<=3.4.8",
+  "decorator==4.0.11",
+  "django-dirtyfields>=1.2.1",
+  "oauthlib[signedtoken,rsa]>=2.0.6,<3.1.0",
+  "pydantic>=1.8"
+]
+keywords = [
+  "django",
+  "rest",
+  "declarative",
+  "api"
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Web Environment",
+  "Framework :: Django",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Topic :: Internet :: WWW/HTTP",
+]
+
+[project.optional-dependencies]
+dev = [
+  "bandit>=1.7.4",
+  "black==22.3.0",
+  "bumpversion~=0.5",
+  "coverage[toml]==6.3.2",
+  "flake8==4.0.1",
+  "ipython~=7.0",
+  "oauth2==1.9.0.post1",
+  "pyyaml~=6.0",
+  "sphinx_rtd_theme==0.5.2",
+  "tblib~=1.6.0",
+]
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"]}
+
 [tool.black]
 line-length = 88
-target_version = ['py37']
+target_version = ['py39']
 exclude = '''
 ^/(
   (
