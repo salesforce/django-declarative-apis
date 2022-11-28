@@ -51,7 +51,7 @@ readme = {file = ["README.md"]}
 
 [tool.black]
 line-length = 88
-target_version = ['py37']
+target_version = ['py39']
 exclude = '''
 ^/(
   (
