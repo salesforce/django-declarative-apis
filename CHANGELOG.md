@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR 106](https://github.com/salesforce/django-declarative-apis/pull/106) Test against Python 3.11 in PR checks
 
 ### Fixed
+- [PR 112](https://github.com/salesforce/django-declarative-apis/pull/112) Try again to use new ReadTheDocs config
+- [PR 111](https://github.com/salesforce/django-declarative-apis/pull/111) ReadTheDocs only supports up to Python 3.8
 - [PR 110](https://github.com/salesforce/django-declarative-apis/pull/110) Fix ReadTheDocs build by specifying python version differently
 - [PR 108](https://github.com/salesforce/django-declarative-apis/pull/107) Fix ReadTheDocs documentation build with pyproject.toml
 
