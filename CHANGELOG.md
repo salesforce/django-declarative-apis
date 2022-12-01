@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [unreleased] - XXXX-XX-XX
 ### Added
 - [PR 106](https://github.com/salesforce/django-declarative-apis/pull/106) Test against Python 3.11 in PR checks
-- [PR 107](https://github.com/salesforce/django-declarative-apis/pull/107) Update to use pyproject.toml
+
+### Fixed
+- [PR 110](https://github.com/salesforce/django-declarative-apis/pull/110) Fix ReadTheDocs build by specifying python version differently
 - [PR 108](https://github.com/salesforce/django-declarative-apis/pull/107) Fix ReadTheDocs documentation build with pyproject.toml
+
+### Changed
 - [PR 109](https://github.com/salesforce/django-declarative-apis/pull/109) Update Github actions
+- [PR 107](https://github.com/salesforce/django-declarative-apis/pull/107) Update to use pyproject.toml
 
 # [0.24.0] - 2022-11-03
 ### Added
