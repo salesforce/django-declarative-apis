@@ -1,6 +1,6 @@
 - [ ] Update CHANGELOG.md
 - [ ] Update README.md (as needed)
-- [ ] New dependencies were added to `requirements.txt` or `requirements-dev.txt`
+- [ ] New dependencies were added to `pyproject.toml`
 - [ ] `pip install` succeeds with a clean virtualenv
 - [ ] There are new or modified tests that cover changes
 - [ ] Test coverage is maintained or expanded
