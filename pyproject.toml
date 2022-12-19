@@ -10,7 +10,7 @@ dynamic = ["readme"]
 dependencies = [
   "Django >=3.2, <4",
   "celery>=4.0.2,!=4.1.0",
-  "cryptography>=2.0,<=3.4.8",
+  "cryptography>=2.0",
   "decorator==4.0.11",
   "django-dirtyfields>=1.2.1",
   "oauthlib[signedtoken,rsa]>=3.1.0",

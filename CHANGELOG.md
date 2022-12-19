@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR 108](https://github.com/salesforce/django-declarative-apis/pull/108) Fix ReadTheDocs documentation build with pyproject.toml
 
 ### Changed
+- [PR 114](https://github.com/salesforce/django-declarative-apis/pull/114) Allow cryptography > 3.4.8
 - [PR 113](https://github.com/salesforce/django-declarative-apis/pull/113) Require oauthlib >= 3.1.0
 - [PR 109](https://github.com/salesforce/django-declarative-apis/pull/109) Update Github actions
 - [PR 107](https://github.com/salesforce/django-declarative-apis/pull/107) Update to use pyproject.toml
