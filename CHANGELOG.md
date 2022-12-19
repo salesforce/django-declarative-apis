@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - [PR XXX](https://github.com/salesforce/django-declarative-apis/pull/XXX) Only run PR checks on `pull_request`
 
+# [0.25.1] - 2022-12-19
+### Fixed
+- [PR 117](https://github.com/salesforce/django-declarative-apis/pull/117) Fix README specification in pyproject.toml
+
 # [0.25.0] - 2022-12-19
 ### Added
 - [PR 106](https://github.com/salesforce/django-declarative-apis/pull/106) Test against Python 3.11 in PR checks
