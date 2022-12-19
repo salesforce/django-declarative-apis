@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "django-declarative-apis"
 version = "0.25.0"  # set by bumpversion
 description = "Simple, readable, declarative APIs for Django"
-dynamic = ["readme"]
+readme = "README.md"
 dependencies = [
   "Django >=3.2, <4",
   "celery>=4.0.2,!=4.1.0",
@@ -46,8 +46,6 @@ dev = [
   "sphinx_rtd_theme==0.5.2",
   "tblib~=1.6.0",
 ]
-[tool.setuptools.dynamic]
-readme = {file = ["README.md"]}
 
 [tool.black]
 line-length = 88
