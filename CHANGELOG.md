@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - [PR 109](https://github.com/salesforce/django-declarative-apis/pull/109) Update Github actions
 - [PR 107](https://github.com/salesforce/django-declarative-apis/pull/107) Update to use pyproject.toml
+- [PR XXX](https://github.com/salesforce/django-declarative-apis/pull/107) Require oauthlib >= 3.1.0
 
 # [0.24.0] - 2022-11-03
 ### Added
