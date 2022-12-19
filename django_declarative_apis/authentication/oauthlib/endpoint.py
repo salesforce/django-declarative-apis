@@ -85,8 +85,8 @@ class TweakedSignatureOnlyEndpoint(SignatureOnlyEndpoint):
 
         if valid_client and not valid_signature:  # TOOPHER
             norm_params = signature.normalize_parameters(request.params)  # TOOPHER
-            uri = signature.normalize_base_string_uri(request.uri)  # TOOPHER
-            base_signing_string = signature.construct_base_string(
+            uri = signature.base_string_uri(request.uri)  # TOOPHER
+            base_signing_string = signature.signature_base_string(
                 request.http_method, uri, norm_params
             )  # TOOPHER
             self.validation_error_message = (
