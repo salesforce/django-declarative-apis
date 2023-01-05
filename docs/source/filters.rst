@@ -57,7 +57,7 @@ Filters can be defined in four places:
 
 
 1. settings.py
-    **Required |** Set default filters for the entire application in settings.py by setting :code:`DECLARATIVE_ENDPOINT_DEFAULT_FITLERS` to your :code:`filters.py` file.
+    **Required |** Set default filters for the entire application in settings.py by setting :code:`DECLARATIVE_ENDPOINT_DEFAULT_FILTERS` to your :code:`filters.py` file.
 
     **Example:**
     Set the Todo filter as the default filter in :code:`settings.py`.
