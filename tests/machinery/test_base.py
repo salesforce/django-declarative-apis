@@ -820,6 +820,38 @@ class DeferrableTaskTestCase(django.test.TestCase):
             "filtered_retry_count_2": 0,
         }
 
+    def test_future_task_runner_sets_cid(self):
+        data = {"cid": None}
+
+        def set_correlation_id(cid):
+            data["cid"] = cid
+
+        conf = tasks.future_task_runner.app.conf
+        old_val = conf["task_always_eager"]
+        conf["task_always_eager"] = True
+
+        old_set_cid = tasks._set_correlation_id
+        old_get_cid = tasks._get_correlation_id
+        tasks._set_correlation_id = set_correlation_id
+        tasks._get_correlation_id = lambda: "cid-sentinel"
+        try:
+            expected_response = {"foo": "bar"}
+            endpoint = _TestEndpoint(expected_response)
+            manager = machinery.EndpointBinder.BoundEndpointManager(
+                machinery._EndpointRequestLifecycleManager(endpoint), endpoint
+            )
+            machinery.EndpointBinder(endpoint).create_bound_endpoint(
+                manager, HttpRequest()
+            )
+
+            manager.get_response()
+        finally:
+            tasks._set_correlation_id = old_set_cid
+            tasks._get_correlation_id = old_get_cid
+            conf["task_always_eager"] = old_val
+
+        self.assertEqual("cid-sentinel", data["cid"])
+
     def test_get_response_kombu_error_retried(self):
         expected_response = {"foo": "bar"}
         endpoint = _TestEndpoint(expected_response)

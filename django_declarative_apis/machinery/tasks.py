@@ -26,8 +26,10 @@ try:
     import cid.locals
 
     _get_correlation_id = cid.locals.get_cid
+    _set_correlation_id = cid.locals.set_cid
 except ImportError:
     _get_correlation_id = lambda: None  # noqa: E731
+    _set_correlation_id = lambda _: None  # noqa: E731
 
 JOB_COUNT_CACHE_KEY = "future_task_runner:job_id"
 QUEUE_LENGTH_CACHE_KEY = "future_task_runner:current_queue_length"
@@ -150,6 +152,8 @@ def future_task_runner(
     resource_class = locate(resource_class_name)
     resource_instance = resource_class.objects.get(pk=resource_instance_id)
     endpoint_task = getattr(endpoint_class, endpoint_method_name)
+
+    _set_correlation_id(correlation_id)
 
     _log_task_stats(
         endpoint_method_name,
@@ -290,6 +294,8 @@ def resource_task_runner(
     resource_class = locate(resource_class_name)
     resource_instance = resource_class.objects.get(pk=resource_instance_id)
     resource_method = getattr(resource_instance, resource_method_name)
+
+    _set_correlation_id(correlation_id)
 
     _log_task_stats(
         "{0}.{1}".format(resource_class_name, resource_method_name),
