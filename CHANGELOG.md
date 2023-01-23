@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - [PR 118](https://github.com/salesforce/django-declarative-apis/pull/118) Fix typo in docs
 
+### Changed
+- [PR 116](https://github.com/salesforce/django-declarative-apis/pull/XXX) Only run PR checks on `pull_request`
+
+# [0.25.2] - 2023-01-20
+### Fixed
+- [PR 120](https://github.com/salesforce/django-declarative-apis/pull/120) Fix correlation ID logging for deferred tasks
+
 # [0.25.1] - 2022-12-19
 ### Fixed
 - [PR 117](https://github.com/salesforce/django-declarative-apis/pull/117) Fix README specification in pyproject.toml
