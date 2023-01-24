@@ -4,16 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [unreleased] - XXXX-XX-XX
+# [0.25.2] - 2023-01-24
 ### Fixed
 - [PR 118](https://github.com/salesforce/django-declarative-apis/pull/118) Fix typo in docs
+- [PR 120](https://github.com/salesforce/django-declarative-apis/pull/120) Fix correlation ID logging for deferred tasks
 
 ### Changed
 - [PR 116](https://github.com/salesforce/django-declarative-apis/pull/XXX) Only run PR checks on `pull_request`
-
-# [0.25.2] - 2023-01-20
-### Fixed
-- [PR 120](https://github.com/salesforce/django-declarative-apis/pull/120) Fix correlation ID logging for deferred tasks
 
 # [0.25.1] - 2022-12-19
 ### Fixed
