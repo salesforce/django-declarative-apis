@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [unreleased] - XXXX-XX-XX
+### Fixed
+- [PR 118](https://github.com/salesforce/django-declarative-apis/pull/118) Fix typo in docs
+
 ### Changed
 - [PR 116](https://github.com/salesforce/django-declarative-apis/pull/XXX) Only run PR checks on `pull_request`
 
