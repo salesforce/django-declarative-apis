@@ -7,7 +7,6 @@
 
 import http
 import json
-import unittest
 
 import django.test
 import django.http
@@ -47,6 +46,7 @@ class TwoLeggedOauth1TestCase(django.test.TestCase):
             result.detail,
             "Parameters missing: oauth_consumer_key,oauth_nonce,oauth_signature,oauth_signature_method,oauth_timestamp",
         )
+
     def test_is_authenticated_django_header_sillyness_and_auth_failure(self):
         request = self.request_factory.get("/")
         request.META["HTTP_AUTHORIZATION"] = "OAuth foo=bar"
