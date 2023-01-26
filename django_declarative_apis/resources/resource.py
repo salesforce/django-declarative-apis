@@ -117,7 +117,7 @@ class Resource:
 
     def determine_emitter(self, request, *args, **kwargs):
         """
-        Function for determening which emitter to use
+        Function for determining which emitter to use
         for output. It lives here so you can easily subclass
         `Resource` in order to change how emission is detected.
 
