@@ -19,7 +19,7 @@ from django_declarative_apis.authentication.oauthlib import oauth1, oauth_errors
 from tests import testutils
 
 
-class TwoLeggedOauth1TestCase(unittest.TestCase):
+class TwoLeggedOauth1TestCase(django.test.TestCase):
     def setUp(self):
         self.request_factory = django.test.RequestFactory()
         self.consumer = models.OauthConsumer.objects.create(name="test")
@@ -35,6 +35,18 @@ class TwoLeggedOauth1TestCase(unittest.TestCase):
             "oauth_signature,oauth_signature_method,oauth_timestamp",
         )
 
+    def test_is_authenticated_malformed_auth_header(self):
+        request = self.request_factory.get("/")
+        request.META["Authorization"] = "Wrong"
+        testutils.OAuthClientHandler._build_request(request)
+
+        authenticator = oauth1.TwoLeggedOauth1()
+        result = authenticator.is_authenticated(request)
+        self.assertIsInstance(result, oauth_errors.OAuthMissingParameterError)
+        self.assertEqual(
+            result.detail,
+            "Parameters missing: oauth_consumer_key,oauth_nonce,oauth_signature,oauth_signature_method,oauth_timestamp",
+        )
     def test_is_authenticated_django_header_sillyness_and_auth_failure(self):
         request = self.request_factory.get("/")
         request.META["HTTP_AUTHORIZATION"] = "OAuth foo=bar"

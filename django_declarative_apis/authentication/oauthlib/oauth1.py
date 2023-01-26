@@ -48,15 +48,15 @@ class TwoLeggedOauth1(Authenticator):
 
         params.extend(parameters)
 
-        collected_request_parameters = dict(
-            signature.collect_parameters(
-                uri_query=request.GET.urlencode(),
-                body=request.POST.dict(),
-                headers=request.META,
-                exclude_oauth_signature=False,
-            )
-        )
         try:
+            collected_request_parameters = dict(
+                signature.collect_parameters(
+                    uri_query=request.GET.urlencode(),
+                    body=request.POST.dict(),
+                    headers=request.META,
+                    exclude_oauth_signature=False,
+                )
+            )
             missing = list(
                 param for param in params if param not in collected_request_parameters
             )
