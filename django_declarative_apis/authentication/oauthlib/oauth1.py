@@ -60,6 +60,12 @@ class TwoLeggedOauth1(Authenticator):
             missing = list(
                 param for param in params if param not in collected_request_parameters
             )
+        except ValueError as e:
+            error_message = str(e)
+            logger.error(error_message)
+            oauth_error = oauth_errors.build_error(error_message)
+            request.auth_header = getattr(oauth_error, "auth_header", None)
+            return oauth_error
         except Exception:  # pragma: nocover
             missing = params
 

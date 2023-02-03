@@ -49,6 +49,12 @@ class OAuthInvalidVersionError(OAuthError):
         self.auth_header = 'OAuth realm="API",oauth_problem=version_rejected&oauth_acceptable_versions=1.0-1.0'
 
 
+class OAuthParameterRejectedError(OAuthError):
+    def __init__(self, detail):
+        self.detail = "{0}.".format(detail)
+        self.auth_header = 'OAuth realm="API",oauth_problem=parameters_rejected'
+
+
 """
 Map internal OAuth errors to those specified in the OAuth Problem Reporting proposal
 http://wiki.oauth.net/w/page/12238543/ProblemReporting
@@ -62,6 +68,8 @@ error_to_human_readable_message = {
 
 
 def build_error(error_message):
+    if "Malformed authorization header" in error_message:
+        return OAuthParameterRejectedError(error_message)
     if ("Timestamp given is invalid" in error_message) or (
         "Invalid timestamp" in error_message
     ):

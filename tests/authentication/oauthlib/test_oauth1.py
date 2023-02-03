@@ -41,10 +41,14 @@ class TwoLeggedOauth1TestCase(django.test.TestCase):
 
         authenticator = oauth1.TwoLeggedOauth1()
         result = authenticator.is_authenticated(request)
-        self.assertIsInstance(result, oauth_errors.OAuthMissingParameterError)
+        self.assertIsInstance(result, oauth_errors.OAuthError)
         self.assertEqual(
             result.detail,
-            "Parameters missing: oauth_consumer_key,oauth_nonce,oauth_signature,oauth_signature_method,oauth_timestamp",
+            "Malformed authorization header.",
+        )
+        self.assertEqual(
+            request.auth_header,
+            'OAuth realm="API",oauth_problem=parameters_rejected',
         )
 
     def test_is_authenticated_django_header_sillyness_and_auth_failure(self):
