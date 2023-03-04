@@ -64,7 +64,7 @@ def _get_unexpanded_field_value(inst, field_name, field_type):
 
 
 def _get_filtered_field_value(
-    inst, field_name, field_type, filter_def, expand_this, expand_children
+    inst, field_name, field_type, filter_def, expand_this, expand_children, filter_cache
 ):
     # get the value from inst
     if field_type == NEVER:
@@ -93,7 +93,11 @@ def _get_filtered_field_value(
         val, (list, tuple, models.Model, models.query.QuerySet)
     ):
         val = _apply_filters_to_object(
-            val, filter_def, expand_children=expand_children, klass=val.__class__
+            val,
+            filter_def,
+            expand_children=expand_children,
+            klass=val.__class__,
+            filter_cache=filter_cache,
         )
 
     if (
@@ -109,20 +113,38 @@ def _get_filtered_field_value(
 
 # TODO: make this method less complex and remove the `noqa`
 def _apply_filters_to_object(  # noqa: C901
-    inst, filter_def, expand_children=None, klass=None
+    inst, filter_def, expand_children=None, klass=None, filter_cache=None
 ):
+    if filter_cache is None:
+        filter_cache = {}
+
+    is_cacheable = False
+    if isinstance(inst, models.Model):
+        is_cacheable = True
+        pk = str(getattr(inst, "pk"))
+        if pk in filter_cache:
+            return filter_cache[pk]
+
     if isinstance(inst, (list, tuple, models.query.QuerySet)):
         # if it's a tuple or list, iterate over the collection and call _apply_filters_to_object on each item
         return [
             _apply_filters_to_object(
-                item, filter_def, expand_children=expand_children, klass=item.__class__
+                item,
+                filter_def,
+                expand_children=expand_children,
+                klass=item.__class__,
+                filter_cache=filter_cache,
             )
             for item in inst
         ]
     elif isinstance(inst, (dict,)):
         return {
             k: _apply_filters_to_object(
-                v, filter_def, expand_children=expand_children, klass=v.__class__
+                v,
+                filter_def,
+                expand_children=expand_children,
+                klass=v.__class__,
+                filter_cache=filter_cache,
             )
             for k, v in inst.items()
         }
@@ -134,7 +156,11 @@ def _apply_filters_to_object(  # noqa: C901
         for base_class in inspect.getmro(klass):
             if base_class in filter_def:
                 result = _apply_filters_to_object(
-                    inst, filter_def, expand_children=expand_children, klass=base_class
+                    inst,
+                    filter_def,
+                    expand_children=expand_children,
+                    klass=base_class,
+                    filter_cache=filter_cache,
                 )
                 break
         return result
@@ -143,7 +169,11 @@ def _apply_filters_to_object(  # noqa: C901
         result = defaultdict(list)
         for base in klass.__bases__:
             filtered_ancestor = _apply_filters_to_object(
-                inst, filter_def, expand_children=expand_children, klass=base
+                inst,
+                filter_def,
+                expand_children=expand_children,
+                klass=base,
+                filter_cache=filter_cache,
             )
             if filtered_ancestor:
                 result.update(filtered_ancestor)
@@ -166,6 +196,7 @@ def _apply_filters_to_object(  # noqa: C901
                     filter_def,
                     expand_this=field_name in expand_children,
                     expand_children=expand_children.get(field_name, {}),
+                    filter_cache=filter_cache,
                 )
 
                 if value is not None and value != DEFAULT_UNEXPANDED_VALUE:
@@ -175,6 +206,9 @@ def _apply_filters_to_object(  # noqa: C901
 
         if expandables:
             result[EXPANDABLE_FIELD_KEY] += expandables
+
+        if is_cacheable:
+            filter_cache[pk] = result
 
         return result
 
