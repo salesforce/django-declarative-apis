@@ -75,10 +75,7 @@ def _get_filtered_field_value(  # noqa: C901
     expand_this,
     expand_children,
     filter_cache,
-    indent,
 ):
-    debug_log = getattr(settings, "DDA_FILTER_CACHE_DEBUG_LOG", False)
-
     # get the value from inst
     if field_type == NEVER:
         return None
@@ -104,11 +101,9 @@ def _get_filtered_field_value(  # noqa: C901
                             val_expand_children, val_cls, val_pk
                         )
                         if cache_key in filter_cache:
-                            if debug_log:
-                                logger.info(
-                                    "ev=filter_cache, status=hit, key=%s", cache_key
-                                )
-
+                            logger.debug(
+                                "ev=filter_cache, status=hit, key=%s", cache_key
+                            )
                             return filter_cache[cache_key]
                 except FieldDoesNotExist:
                     # this happens when you reference the special field "pk" in filters
@@ -132,7 +127,6 @@ def _get_filtered_field_value(  # noqa: C901
             expand_children=expand_children,
             klass=val.__class__,
             filter_cache=filter_cache,
-            debug_indent=indent,
         )
 
     if (
@@ -157,11 +151,8 @@ def _apply_filters_to_object(  # noqa: C901
     expand_children=None,
     klass=None,
     filter_cache=None,
-    debug_indent="",
 ):
-    debug_indent += "  "
     is_cacheable = False
-    debug_log = getattr(settings, "DDA_FILTER_CACHE_DEBUG_LOG", False)
     caching_enabled = getattr(settings, "DDA_FILTER_MODEL_CACHING_ENABLED", False)
     if (
         caching_enabled
@@ -172,12 +163,10 @@ def _apply_filters_to_object(  # noqa: C901
         pk = getattr(inst, "pk")
         cache_key = _make_filter_cache_key(expand_children, klass, pk)
         if cache_key in filter_cache:
-            if debug_log:
-                logger.info("ev=filter_cache, status=hit, key=%s", cache_key)
+            logger.debug("ev=filter_cache, status=hit, key=%s", cache_key)
             return filter_cache[cache_key]
         else:
-            if debug_log:
-                logger.info("ev=filter_cache, status=miss, key=%s", cache_key)
+            logger.debug("ev=filter_cache, status=miss, key=%s", cache_key)
     if isinstance(inst, (list, tuple, models.query.QuerySet)):
         # if it's a tuple or list, iterate over the collection and call _apply_filters_to_object on each item
         return [
@@ -187,7 +176,6 @@ def _apply_filters_to_object(  # noqa: C901
                 expand_children=expand_children,
                 klass=item.__class__,
                 filter_cache=filter_cache,
-                debug_indent=debug_indent,
             )
             for item in inst
         ]
@@ -199,7 +187,6 @@ def _apply_filters_to_object(  # noqa: C901
                 expand_children=expand_children,
                 klass=v.__class__,
                 filter_cache=filter_cache,
-                debug_indent=debug_indent,
             )
             for k, v in inst.items()
         }
@@ -216,7 +203,6 @@ def _apply_filters_to_object(  # noqa: C901
                     expand_children=expand_children,
                     klass=base_class,
                     filter_cache=filter_cache,
-                    debug_indent=debug_indent,
                 )
                 break
 
@@ -234,7 +220,6 @@ def _apply_filters_to_object(  # noqa: C901
                 expand_children=expand_children,
                 klass=base,
                 filter_cache=filter_cache,
-                debug_indent=debug_indent,
             )
             if filtered_ancestor:
                 result.update(filtered_ancestor)
@@ -258,7 +243,6 @@ def _apply_filters_to_object(  # noqa: C901
                     expand_this=field_name in expand_children,
                     expand_children=expand_children.get(field_name, {}),
                     filter_cache=filter_cache,
-                    indent=debug_indent,
                 )
 
                 if value is not None and value != DEFAULT_UNEXPANDED_VALUE:
