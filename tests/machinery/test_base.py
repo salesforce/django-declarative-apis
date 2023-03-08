@@ -11,6 +11,7 @@ import unittest
 
 import django.core.exceptions
 import django.test
+from django.test.utils import override_settings
 import kombu.exceptions
 from unittest import mock
 from django.core.cache import cache
@@ -21,7 +22,7 @@ from django_declarative_apis import machinery, models as dda_models
 from django_declarative_apis.machinery import errors, filtering, tasks
 from django_declarative_apis.machinery.tasks import future_task_runner
 from django_declarative_apis.resources.utils import HttpStatusCode
-from tests import testutils, models
+from tests import testutils, models, filters
 
 _TEST_RESOURCE = {"foo": "bar"}
 
@@ -701,6 +702,36 @@ class EndpointDefinitionTestCase(testutils.RequestCreatorMixin, unittest.TestCas
         req = self.create_request(method="POST")
         bound_endpoint = _bind_endpoint(_TestEndpoint, req)
         self.assertRaises(errors.ClientErrorForbidden, bound_endpoint.get_response)
+
+
+class FilterCachingTestCase(django.test.TestCase):
+    def setUp(self):
+        super().setUp()
+        leaf = models.InefficientLeaf.objects.create(id=1)
+        branch_a = models.InefficientBranchA.objects.create(id=1, leaf=leaf)
+        branch_b = models.InefficientBranchB.objects.create(id=1, leaf=leaf)
+        root = models.InefficientRoot.objects.create(
+            id=4, branch_a=branch_a, branch_b=branch_b
+        )
+        self.root_id = root.id
+
+    def test_filter_query_cache_reduces_queries(self):
+        root = models.InefficientRoot.objects.get(id=self.root_id)
+        with self.assertNumQueries(4):
+            filtering.apply_filters_to_object(
+                root,
+                filters.DEFAULT_FILTERS,
+            )
+
+        root = models.InefficientRoot.objects.get(id=self.root_id)
+        with self.assertNumQueries(3):
+            with override_settings(
+                DDA_FILTER_MODEL_CACHING_ENABLED=True, DDA_FILTER_CACHE_DEBUG_LOG=True
+            ):
+                filtering.apply_filters_to_object(
+                    root,
+                    filters.DEFAULT_FILTERS,
+                )
 
 
 class ResourceUpdateEndpointDefinitionTestCase(
