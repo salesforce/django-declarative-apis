@@ -67,7 +67,7 @@ def _get_unexpanded_field_value(inst, field_name, field_type):
         return {display_key: getattr(obj, display_key)}
 
 
-def _get_filtered_field_value(
+def _get_filtered_field_value(  # noqa: C901
     inst,
     field_name,
     field_type,
@@ -91,6 +91,22 @@ def _get_filtered_field_value(
             val = _get_unexpanded_field_value(inst, field_name, field_type)
     else:
         try:
+            if isinstance(inst, (models.Model)):
+                try:
+                    field_meta = inst._meta.get_field(field_name)
+                    if field_meta.is_relation:
+                        val_pk = getattr(inst, field_meta.attname)
+                        val_cls = field_meta.related_model
+                        val_expand_children = expand_children.get(field_name, {})
+                        cache_key = _make_filter_cache_key(
+                            val_expand_children, val_cls, val_pk
+                        )
+                        if cache_key in filter_cache:
+                            return filter_cache[cache_key]
+                except FieldDoesNotExist:
+                    # this happens when you reference the special field "pk" in filters
+                    pass
+
             val = getattr(inst, field_name)
         except (AttributeError, FieldDoesNotExist) as e:  # noqa
             return None
@@ -123,6 +139,10 @@ def _get_filtered_field_value(
         return None
 
 
+def _make_filter_cache_key(expand_children, klass, pk):
+    return (str(expand_children), klass, str(pk))
+
+
 # TODO: make this method less complex and remove the `noqa`
 def _apply_filters_to_object(  # noqa: C901
     inst,
@@ -142,16 +162,15 @@ def _apply_filters_to_object(  # noqa: C901
         and filter_cache is not None
     ):
         is_cacheable = True
-        pk = str(getattr(inst, "pk"))
-        cache_key = (str(expand_children), klass, pk)
+        pk = getattr(inst, "pk")
+        cache_key = _make_filter_cache_key(expand_children, klass, pk)
         if cache_key in filter_cache:
             if debug_log:
-                logger.info(debug_indent + "cache hit: %s", cache_key)
+                logger.info(debug_indent + f"cache hit: {cache_key}")
             return filter_cache[cache_key]
         else:
             if debug_log:
-                logger.info(debug_indent + "cache miss: %s", cache_key)
-
+                logger.info(debug_indent + f"cache miss: {cache_key}")
     if isinstance(inst, (list, tuple, models.query.QuerySet)):
         # if it's a tuple or list, iterate over the collection and call _apply_filters_to_object on each item
         return [
