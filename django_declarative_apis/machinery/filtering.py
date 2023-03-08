@@ -77,6 +77,8 @@ def _get_filtered_field_value(  # noqa: C901
     filter_cache,
     indent,
 ):
+    debug_log = getattr(settings, "DDA_FILTER_CACHE_DEBUG_LOG", False)
+
     # get the value from inst
     if field_type == NEVER:
         return None
@@ -102,6 +104,11 @@ def _get_filtered_field_value(  # noqa: C901
                             val_expand_children, val_cls, val_pk
                         )
                         if cache_key in filter_cache:
+                            if debug_log:
+                                logger.info(
+                                    "ev=filter_cache, status=hit, key=%s", cache_key
+                                )
+
                             return filter_cache[cache_key]
                 except FieldDoesNotExist:
                     # this happens when you reference the special field "pk" in filters
@@ -166,11 +173,11 @@ def _apply_filters_to_object(  # noqa: C901
         cache_key = _make_filter_cache_key(expand_children, klass, pk)
         if cache_key in filter_cache:
             if debug_log:
-                logger.info(debug_indent + f"cache hit: {cache_key}")
+                logger.info("ev=filter_cache, status=hit, key=%s", cache_key)
             return filter_cache[cache_key]
         else:
             if debug_log:
-                logger.info(debug_indent + f"cache miss: {cache_key}")
+                logger.info("ev=filter_cache, status=miss, key=%s", cache_key)
     if isinstance(inst, (list, tuple, models.query.QuerySet)):
         # if it's a tuple or list, iterate over the collection and call _apply_filters_to_object on each item
         return [
