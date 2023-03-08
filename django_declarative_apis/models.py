@@ -76,8 +76,8 @@ class OauthConsumerManager(django_models.Manager):
 
 
 class OauthConsumer(BaseConsumer):
-    """:code:`OAuthConsumer` inherits from :code:`BaseConsumer` and it based on :code:`OAuth1.0a`. It adds the additional
-    properties of key, secret, and rsa_public_key_pem.
+    """:code:`OAuthConsumer` inherits from :code:`BaseConsumer` and it based on :code:`OAuth1.0a`.
+    It adds the additional properties of key, secret, and rsa_public_key_pem.
 
     **Example**
 

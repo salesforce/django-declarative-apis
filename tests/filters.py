@@ -36,6 +36,10 @@ DEFAULT_FILTERS = {
         "parent_field": expandable(model_class=models.ParentModel),
         "parents": expandable(model_class=models.ParentModel),
     },
+    models.InefficientLeaf: {"id": ALWAYS},
+    models.InefficientBranchA: {"leaf": ALWAYS},
+    models.InefficientBranchB: {"leaf": ALWAYS},
+    models.InefficientRoot: {"branch_a": ALWAYS, "branch_b": ALWAYS},
 }
 
 RENAMED_EXPANDABLE_MODEL_FIELDS = {

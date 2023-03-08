@@ -53,6 +53,26 @@ class RootNode(models.Model):
     parent_field = models.ForeignKey(ParentModel, on_delete=models.CASCADE)
 
 
+class InefficientLeaf(models.Model):
+    id = models.IntegerField(primary_key=True)
+
+
+class InefficientBranchA(models.Model):
+    id = models.IntegerField(primary_key=True)
+    leaf = models.ForeignKey(InefficientLeaf, on_delete=models.CASCADE)
+
+
+class InefficientBranchB(models.Model):
+    id = models.IntegerField(primary_key=True)
+    leaf = models.ForeignKey(InefficientLeaf, on_delete=models.CASCADE)
+
+
+class InefficientRoot(models.Model):
+    id = models.IntegerField(primary_key=True)
+    branch_a = models.ForeignKey(InefficientBranchA, on_delete=models.CASCADE)
+    branch_b = models.ForeignKey(InefficientBranchB, on_delete=models.CASCADE)
+
+
 try:
     import dirtyfields
 

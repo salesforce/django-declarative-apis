@@ -7,11 +7,15 @@
 
 from collections import defaultdict
 import inspect
+import logging
 import types
 
+from django.conf import settings
 from django.db import models
 from django.db.models import ManyToOneRel
 from django.core.exceptions import FieldDoesNotExist
+
+logger = logging.getLogger()
 
 NEVER = 0
 ALWAYS = 1
@@ -63,8 +67,14 @@ def _get_unexpanded_field_value(inst, field_name, field_type):
         return {display_key: getattr(obj, display_key)}
 
 
-def _get_filtered_field_value(
-    inst, field_name, field_type, filter_def, expand_this, expand_children
+def _get_filtered_field_value(  # noqa: C901
+    inst,
+    field_name,
+    field_type,
+    filter_def,
+    expand_this,
+    expand_children,
+    filter_cache,
 ):
     # get the value from inst
     if field_type == NEVER:
@@ -80,6 +90,25 @@ def _get_filtered_field_value(
             val = _get_unexpanded_field_value(inst, field_name, field_type)
     else:
         try:
+            if isinstance(inst, (models.Model)):
+                try:
+                    field_meta = inst._meta.get_field(field_name)
+                    if field_meta.is_relation:
+                        val_pk = getattr(inst, field_meta.attname)
+                        val_cls = field_meta.related_model
+                        val_expand_children = expand_children.get(field_name, {})
+                        cache_key = _make_filter_cache_key(
+                            val_expand_children, val_cls, val_pk
+                        )
+                        if cache_key in filter_cache:
+                            logger.debug(
+                                "ev=filter_cache, status=hit, key=%s", cache_key
+                            )
+                            return filter_cache[cache_key]
+                except FieldDoesNotExist:
+                    # this happens when you reference the special field "pk" in filters
+                    pass
+
             val = getattr(inst, field_name)
         except (AttributeError, FieldDoesNotExist) as e:  # noqa
             return None
@@ -93,7 +122,11 @@ def _get_filtered_field_value(
         val, (list, tuple, models.Model, models.query.QuerySet)
     ):
         val = _apply_filters_to_object(
-            val, filter_def, expand_children=expand_children, klass=val.__class__
+            val,
+            filter_def,
+            expand_children=expand_children,
+            klass=val.__class__,
+            filter_cache=filter_cache,
         )
 
     if (
@@ -107,22 +140,53 @@ def _get_filtered_field_value(
         return None
 
 
+def _make_filter_cache_key(expand_children, klass, pk):
+    return (str(expand_children), klass, str(pk))
+
+
 # TODO: make this method less complex and remove the `noqa`
 def _apply_filters_to_object(  # noqa: C901
-    inst, filter_def, expand_children=None, klass=None
+    inst,
+    filter_def,
+    expand_children=None,
+    klass=None,
+    filter_cache=None,
 ):
+    is_cacheable = False
+    caching_enabled = getattr(settings, "DDA_FILTER_MODEL_CACHING_ENABLED", False)
+    if (
+        caching_enabled
+        and isinstance(inst, (models.Model,))
+        and filter_cache is not None
+    ):
+        is_cacheable = True
+        pk = getattr(inst, "pk")
+        cache_key = _make_filter_cache_key(expand_children, klass, pk)
+        if cache_key in filter_cache:
+            logger.debug("ev=filter_cache, status=hit, key=%s", cache_key)
+            return filter_cache[cache_key]
+        else:
+            logger.debug("ev=filter_cache, status=miss, key=%s", cache_key)
     if isinstance(inst, (list, tuple, models.query.QuerySet)):
         # if it's a tuple or list, iterate over the collection and call _apply_filters_to_object on each item
         return [
             _apply_filters_to_object(
-                item, filter_def, expand_children=expand_children, klass=item.__class__
+                item,
+                filter_def,
+                expand_children=expand_children,
+                klass=item.__class__,
+                filter_cache=filter_cache,
             )
             for item in inst
         ]
     elif isinstance(inst, (dict,)):
         return {
             k: _apply_filters_to_object(
-                v, filter_def, expand_children=expand_children, klass=v.__class__
+                v,
+                filter_def,
+                expand_children=expand_children,
+                klass=v.__class__,
+                filter_cache=filter_cache,
             )
             for k, v in inst.items()
         }
@@ -134,16 +198,28 @@ def _apply_filters_to_object(  # noqa: C901
         for base_class in inspect.getmro(klass):
             if base_class in filter_def:
                 result = _apply_filters_to_object(
-                    inst, filter_def, expand_children=expand_children, klass=base_class
+                    inst,
+                    filter_def,
+                    expand_children=expand_children,
+                    klass=base_class,
+                    filter_cache=filter_cache,
                 )
                 break
+
+        if is_cacheable:
+            filter_cache[cache_key] = result
+
         return result
     else:
         # first, recursively populate from any ancestor classes in the inheritance hierarchy
         result = defaultdict(list)
         for base in klass.__bases__:
             filtered_ancestor = _apply_filters_to_object(
-                inst, filter_def, expand_children=expand_children, klass=base
+                inst,
+                filter_def,
+                expand_children=expand_children,
+                klass=base,
+                filter_cache=filter_cache,
             )
             if filtered_ancestor:
                 result.update(filtered_ancestor)
@@ -166,6 +242,7 @@ def _apply_filters_to_object(  # noqa: C901
                     filter_def,
                     expand_this=field_name in expand_children,
                     expand_children=expand_children.get(field_name, {}),
+                    filter_cache=filter_cache,
                 )
 
                 if value is not None and value != DEFAULT_UNEXPANDED_VALUE:
@@ -175,6 +252,9 @@ def _apply_filters_to_object(  # noqa: C901
 
         if expandables:
             result[EXPANDABLE_FIELD_KEY] += expandables
+
+        if is_cacheable:
+            filter_cache[cache_key] = result
 
         return result
 
@@ -195,5 +275,9 @@ def apply_filters_to_object(inst, filter_def, expand_header=""):
     else:
         expand_dict = {}
     return _apply_filters_to_object(
-        inst, filter_def, expand_children=expand_dict, klass=inst.__class__
+        inst,
+        filter_def,
+        expand_children=expand_dict,
+        klass=inst.__class__,
+        filter_cache={},
     )
