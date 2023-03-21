@@ -11,6 +11,7 @@ import logging
 import sys
 
 import django
+import django.db.models
 from django.conf import settings
 from django.http import HttpResponse
 
@@ -24,6 +25,7 @@ from .attributes import (
     Aggregate,
     ConsumerAttribute,
     DeferrableEndpointTask,
+    DeferrableGenericEndpointTask,
     EndpointAttribute,
     EndpointTask,
     RawRequestObjectProperty,
@@ -228,7 +230,9 @@ class EndpointBinder:
 
             resource = self.bound_endpoint.resource
 
-            if hasattr(resource, "is_dirty"):
+            if isinstance(resource, django.db.models.Model) and hasattr(
+                resource, "is_dirty"
+            ):
                 if resource and resource.is_dirty(check_relationship=True):
                     update_dirty(resource)
 
@@ -255,7 +259,9 @@ class EndpointBinder:
                     update_dirty(resource)
                 raise
 
-            if hasattr(resource, "is_dirty"):
+            if isinstance(resource, django.db.models.Model) and hasattr(
+                resource, "is_dirty"
+            ):
                 if resource and resource.is_dirty(check_relationship=True):
                     update_dirty(resource)
 
@@ -989,6 +995,7 @@ class ResourceUpdateEndpointDefinition(ResourceEndpointDefinition):
 
 task = EndpointTask
 deferrable_task = DeferrableEndpointTask
+deferrable_generic_task = DeferrableGenericEndpointTask
 request_attribute = RequestAttribute
 consumer_attribute = ConsumerAttribute
 field = RequestField

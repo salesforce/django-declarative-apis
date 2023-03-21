@@ -730,6 +730,60 @@ class DeferrableEndpointTask(EndpointTask):
             )
 
 
+class DeferrableGenericEndpointTask(DeferrableEndpointTask):
+    # very similar to DeferrableEndpointTask, but doesn't assume that the resource is a Django model instance
+
+    def __init__(
+        self,
+        task_args_packer=None,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        assert (
+            task_args_packer is not None
+        ), "task_args_packer required for DeferrableGenericEndpointTask"
+        self.task_args_packer = task_args_packer
+
+    def _run_task(self, owner_instance):
+        if self.execute_unless and self.execute_unless(owner_instance):
+            return
+
+        delay = self._resolve_maybe_callable(owner_instance, self.delay) or 0
+        always_defer = self._resolve_maybe_callable(owner_instance, self.always_defer)
+        packed_args = self.task_args_packer.pack(owner_instance)
+
+        if delay == 0 and not always_defer:
+            unpacked_args, unpacked_kwargs = self.task_args_packer.unpack(packed_args)
+            self.task_runner(*unpacked_args, **unpacked_kwargs)
+        else:
+            packer_name = "{0}.{1}".format(
+                self.task_args_packer.__module__, self.task_args_packer.__name__
+            )
+
+            endpoint_class_name = "{0}.{1}".format(
+                owner_instance.__module__, owner_instance.__class__.__name__
+            )
+            task_runner_args = (
+                endpoint_class_name,
+                self.task_runner.__name__,
+                packed_args,
+                packer_name,
+            )
+            task_runner_kwargs = {
+                "task_creation_time": time.time(),
+                "scheduled_execution_delay": delay,
+            }
+            tasks.schedule_generic_future_task_runner(
+                task_runner_args,
+                task_runner_kwargs,
+                retries=self.retries,
+                retry_exception_filter=self.retry_exception_filter,
+                delay=delay,
+                queue=self.queue,
+                routing_key=self.routing_key,
+            )
+
+
 class RequestFieldGroup(RequestProperty):
     def __init__(self, *component_field_getters, **kwargs):
         super().__init__(property_getter=self.get_value, **kwargs)
