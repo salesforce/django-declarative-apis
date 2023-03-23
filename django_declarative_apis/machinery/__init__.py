@@ -448,8 +448,9 @@ class BehavioralEndpointDefinitionRouter:
                 "Processing request with handler %s",
                 bound_endpoint.bound_endpoint.__class__.__name__,
             )
-            return bound_endpoint.get_response()
-
+            result = bound_endpoint.get_response()
+            bound_endpoint.bound_endpoint.finalize()
+            return result
         except errors.ApiError:
             raise
         except Exception as e:  # pragma: nocover
@@ -612,6 +613,9 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
         By default it returns :code:`self.resource` unless it is overridden.
         """
         return self.resource
+
+    def finalize(self):
+        pass
 
     @classmethod
     def get_endpoint_attributes(cls):
