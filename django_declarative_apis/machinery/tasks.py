@@ -193,10 +193,8 @@ def future_task_runner(
 
         retry_params = RetryParams(*retry_params)
         if retry_params.retry_exception_filter and not any(
-            [
-                f"{e.__class__.__module__}.{e.__class__.__name__}" == ex_type
-                for ex_type in retry_params.retry_exception_filter
-            ]
+            f"{e.__class__.__module__}.{e.__class__.__name__}" == ex_type
+            for ex_type in retry_params.retry_exception_filter
         ):
             # this exception is not retryable
             raise
@@ -273,10 +271,8 @@ def generic_future_task_runner(
 
         retry_params = RetryParams(*retry_params)
         if retry_params.retry_exception_filter and not any(
-            [
-                f"{e.__class__.__module__}.{e.__class__.__name__}" == ex_type
-                for ex_type in retry_params.retry_exception_filter
-            ]
+            f"{e.__class__.__module__}.{e.__class__.__name__}" == ex_type
+            for ex_type in retry_params.retry_exception_filter
         ):
             # this exception is not retryable
             raise
