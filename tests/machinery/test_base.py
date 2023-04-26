@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
-
 import http
 import json
 import unittest
@@ -20,7 +19,10 @@ from django.http import HttpRequest
 import tests.models
 from django_declarative_apis import machinery, models as dda_models
 from django_declarative_apis.machinery import errors, filtering, tasks
-from django_declarative_apis.machinery.tasks import future_task_runner
+from django_declarative_apis.machinery.tasks import (
+    future_task_runner,
+    generic_future_task_runner,
+)
 from django_declarative_apis.resources.utils import HttpStatusCode
 from tests import testutils, models, filters
 
@@ -842,9 +844,106 @@ class _TestEndpoint(machinery.EndpointDefinition):
             raise Exception("failing so task will retry")
 
 
+class GenericResource:
+    def __init__(self, *args, **kwargs):
+        self.id = 1
+        self.int_field = 1
+
+
+class GenericResourcePacker:
+    @staticmethod
+    def pack(endpoint):
+        d = {"id": endpoint.resource.id, "int_field": endpoint.resource.int_field}
+        return json.dumps(d)
+
+    @staticmethod
+    def unpack(packed):
+        obj = json.loads(packed)
+        result = GenericResource()
+        result.id = obj["id"]
+        result.int_field = obj["int_field"]
+        return (result,), {}
+
+
+class _TestEndpointGenericResource(machinery.EndpointDefinition):
+    def __init__(self, expected_response, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.expected_response = expected_response
+
+    def __call__(self):
+        return self
+
+    @machinery.endpoint_resource(type=GenericResource, filter={str: filtering.ALWAYS})
+    def resource(self):
+        return GenericResource()
+
+    @property
+    def response(self):
+        return self.expected_response
+
+    @machinery.deferrable_generic_task(
+        always_defer=True, task_args_packer=GenericResourcePacker
+    )
+    @staticmethod
+    def deferred_task(inst):
+        assert inst is not None
+        _TestEndpointGenericResource.semaphore["status"] = "deferred task executed"
+
+    @machinery.deferrable_generic_task(
+        always_defer=True, retries=2, task_args_packer=GenericResourcePacker
+    )
+    @staticmethod
+    def deferred_task_with_retry(inst):
+        assert inst is not None
+        retry_key = "retry_count"
+        _TestEndpointGenericResource.semaphore[retry_key] += 1
+        if _TestEndpointGenericResource.semaphore[retry_key] < 3:
+            raise Exception("failing so task will retry")
+
+    @machinery.deferrable_generic_task(
+        always_defer=True,
+        retries=2,
+        retry_exception_filter=(MySpecialException,),
+        task_args_packer=GenericResourcePacker,
+    )
+    @staticmethod
+    def deferred_task_with_retry_and_filtered_exceptions(inst):
+        assert inst is not None
+        retry_key = "filtered_retry_count_1"
+        _TestEndpointGenericResource.semaphore[retry_key] += 1
+        if _TestEndpointGenericResource.semaphore[retry_key] < 3:
+            raise MySpecialException("failing so task will retry")
+
+    @machinery.deferrable_generic_task(
+        always_defer=True,
+        retries=2,
+        retry_exception_filter=(MySpecialException,),
+        task_args_packer=GenericResourcePacker,
+    )
+    @staticmethod
+    def deferred_task_with_retry_and_filtered_exceptions_fail(inst):
+        # this task specifies an exception filter list, but throws the wrong exception, so should not retry
+        assert inst is not None
+        retry_key = "filtered_retry_count_2"
+        _TestEndpointGenericResource.semaphore[retry_key] += 1
+        if _TestEndpointGenericResource.semaphore[retry_key] < 3:
+            raise Exception("failing so task will retry")
+
+
 class DeferrableTaskTestCase(django.test.TestCase):
+    def __init__(self, *args, use_generic_endpoint=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        if use_generic_endpoint:
+            self.test_endpoint = _TestEndpointGenericResource
+            self.patch_target = "django_declarative_apis.machinery.tasks.generic_future_task_runner.apply_async"
+        else:
+            self.test_endpoint = _TestEndpoint
+            self.patch_target = (
+                "django_declarative_apis.machinery.tasks.future_task_runner.apply_async"
+            )
+
     def setUp(self):
-        _TestEndpoint.semaphore = {
+        self.test_endpoint.semaphore = {
             "status": None,
             "retry_count": 0,
             "filtered_retry_count_1": 0,
@@ -867,7 +966,7 @@ class DeferrableTaskTestCase(django.test.TestCase):
         tasks._get_correlation_id = lambda: "cid-sentinel"
         try:
             expected_response = {"foo": "bar"}
-            endpoint = _TestEndpoint(expected_response)
+            endpoint = self.test_endpoint(expected_response)
             manager = machinery.EndpointBinder.BoundEndpointManager(
                 machinery._EndpointRequestLifecycleManager(endpoint), endpoint
             )
@@ -885,7 +984,7 @@ class DeferrableTaskTestCase(django.test.TestCase):
 
     def test_get_response_kombu_error_retried(self):
         expected_response = {"foo": "bar"}
-        endpoint = _TestEndpoint(expected_response)
+        endpoint = self.test_endpoint(expected_response)
         manager = machinery.EndpointBinder.BoundEndpointManager(
             machinery._EndpointRequestLifecycleManager(endpoint), endpoint
         )
@@ -897,9 +996,7 @@ class DeferrableTaskTestCase(django.test.TestCase):
 
         cache.set(tasks.JOB_COUNT_CACHE_KEY, 0)
 
-        with mock.patch(
-            "django_declarative_apis.machinery.tasks.future_task_runner.apply_async"
-        ) as mock_apply:
+        with mock.patch(self.patch_target) as mock_apply:
             exceptions = iter(
                 [kombu.exceptions.OperationalError, kombu.exceptions.OperationalError]
             )
@@ -908,7 +1005,10 @@ class DeferrableTaskTestCase(django.test.TestCase):
                 try:
                     raise next(exceptions)
                 except StopIteration:
-                    return future_task_runner.apply(*args, **kwargs)
+                    if self.test_endpoint is _TestEndpointGenericResource:
+                        return generic_future_task_runner.apply(*args, **kwargs)
+                    else:
+                        return future_task_runner.apply(*args, **kwargs)
 
             mock_apply.side_effect = _side_effect
 
@@ -920,12 +1020,14 @@ class DeferrableTaskTestCase(django.test.TestCase):
         self.assertEqual(resp, (http.HTTPStatus.OK, expected_response))
         self.assertTrue(cache.get(tasks.JOB_COUNT_CACHE_KEY) != 0)
 
-        self.assertEqual("deferred task executed", _TestEndpoint.semaphore["status"])
+        self.assertEqual(
+            "deferred task executed", self.test_endpoint.semaphore["status"]
+        )
 
     def test_async_task_falls_back_to_synchronous_when_configured(self):
         expected_response = {"foo": "bar"}
 
-        endpoint = _TestEndpoint(expected_response)
+        endpoint = self.test_endpoint(expected_response)
         manager = machinery.EndpointBinder.BoundEndpointManager(
             machinery._EndpointRequestLifecycleManager(endpoint), endpoint
         )
@@ -935,9 +1037,7 @@ class DeferrableTaskTestCase(django.test.TestCase):
         old_val = conf["task_always_eager"]
         conf["task_always_eager"] = True
 
-        with mock.patch(
-            "django_declarative_apis.machinery.tasks.future_task_runner.apply_async"
-        ) as mock_apply_async:
+        with mock.patch(self.patch_target) as mock_apply_async:
             mock_apply_async.side_effect = kombu.exceptions.OperationalError
 
             cache.set(tasks.JOB_COUNT_CACHE_KEY, 0)
@@ -950,11 +1050,13 @@ class DeferrableTaskTestCase(django.test.TestCase):
                 finally:
                     conf["task_always_eager"] = old_val
 
-        self.assertEqual("deferred task executed", _TestEndpoint.semaphore["status"])
+        self.assertEqual(
+            "deferred task executed", self.test_endpoint.semaphore["status"]
+        )
 
     def test_force_synchronous_tasks(self):
         expected_response = {"foo": "bar"}
-        endpoint = _TestEndpoint(expected_response)
+        endpoint = self.test_endpoint(expected_response)
         manager = machinery.EndpointBinder.BoundEndpointManager(
             machinery._EndpointRequestLifecycleManager(endpoint), endpoint
         )
@@ -966,9 +1068,7 @@ class DeferrableTaskTestCase(django.test.TestCase):
 
         cache.set(tasks.JOB_COUNT_CACHE_KEY, 0)
 
-        with mock.patch(
-            "django_declarative_apis.machinery.tasks.future_task_runner.apply_async"
-        ) as mock_apply:
+        with mock.patch(self.patch_target) as mock_apply:
             mock_apply.side_effect = kombu.exceptions.OperationalError
 
             with self.settings(DECLARATIVE_ENDPOINT_TASKS_FORCE_SYNCHRONOUS=True):
@@ -980,11 +1080,13 @@ class DeferrableTaskTestCase(django.test.TestCase):
                     conf["task_always_eager"] = old_val
 
         self.assertEqual(0, mock_apply.call_count)
-        self.assertEqual("deferred task executed", _TestEndpoint.semaphore["status"])
+        self.assertEqual(
+            "deferred task executed", self.test_endpoint.semaphore["status"]
+        )
 
     def test_get_response_kombu_error_attempts_exceeded(self):
         expected_response = {"foo": "bar"}
-        endpoint = _TestEndpoint(expected_response)
+        endpoint = self.test_endpoint(expected_response)
         manager = machinery.EndpointBinder.BoundEndpointManager(
             machinery._EndpointRequestLifecycleManager(endpoint), endpoint
         )
@@ -996,9 +1098,7 @@ class DeferrableTaskTestCase(django.test.TestCase):
 
         cache.set(tasks.JOB_COUNT_CACHE_KEY, 0)
 
-        with mock.patch(
-            "django_declarative_apis.machinery.tasks.future_task_runner.apply_async"
-        ) as mock_apply:
+        with mock.patch(self.patch_target) as mock_apply:
             exceptions = iter(
                 [
                     kombu.exceptions.OperationalError,
@@ -1023,12 +1123,12 @@ class DeferrableTaskTestCase(django.test.TestCase):
             finally:
                 conf["task_always_eager"] = old_val
 
-        self.assertIsNone(_TestEndpoint.semaphore["status"])
+        self.assertIsNone(self.test_endpoint.semaphore["status"])
 
     def test_get_response_success(self):
         expected_response = {"foo": "bar"}
 
-        endpoint = _TestEndpoint(expected_response)
+        endpoint = self.test_endpoint(expected_response)
         manager = machinery.EndpointBinder.BoundEndpointManager(
             machinery._EndpointRequestLifecycleManager(endpoint), endpoint
         )
@@ -1049,12 +1149,14 @@ class DeferrableTaskTestCase(django.test.TestCase):
         self.assertEqual(resp, (http.HTTPStatus.OK, expected_response))
         self.assertTrue(cache.get(tasks.JOB_COUNT_CACHE_KEY) != 0)
 
-        self.assertEqual("deferred task executed", _TestEndpoint.semaphore["status"])
-        self.assertEqual(3, _TestEndpoint.semaphore["retry_count"])
-        self.assertEqual(3, _TestEndpoint.semaphore["filtered_retry_count_1"])
-        self.assertEqual(1, _TestEndpoint.semaphore["filtered_retry_count_2"])
+        self.assertEqual(
+            "deferred task executed", self.test_endpoint.semaphore["status"]
+        )
+        self.assertEqual(3, self.test_endpoint.semaphore["retry_count"])
+        self.assertEqual(3, self.test_endpoint.semaphore["filtered_retry_count_1"])
+        self.assertEqual(1, self.test_endpoint.semaphore["filtered_retry_count_2"])
 
-        _TestEndpoint.semaphore = {
+        self.test_endpoint.semaphore = {
             "status": None,
             "retry_count": 0,
             "filtered_retry_count_1": 0,
@@ -1071,6 +1173,11 @@ class DeferrableTaskTestCase(django.test.TestCase):
             self.assertTrue("Deferrable task methods MUST be staticmethods" in str(err))
         except Exception:
             self.fail("should have raised assertionerror")
+
+
+class GenericDeferrableTaskTestCase(DeferrableTaskTestCase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, use_generic_endpoint=True, **kwargs)
 
 
 class ResourceAsyncJobTestCase(django.test.TestCase):

@@ -291,7 +291,6 @@ def generic_future_task_runner(
         task_runner_kwargs = {
             "task_creation_time": time.time(),
             "scheduled_execution_delay": scheduled_execution_delay,
-            "task_args": (args, kwargs),
         }
         schedule_generic_future_task_runner(
             task_runner_args,
