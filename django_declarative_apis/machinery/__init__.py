@@ -615,6 +615,10 @@ class BaseEndpointDefinition(metaclass=EndpointDefinitionMeta):
         return self.resource
 
     def finalize(self):
+        """
+        Called immediately before a response is returned.  Override this method in an
+        Endpoint Definition to perform any clean-up not handled automatically by the framework.
+        """
         pass
 
     @classmethod

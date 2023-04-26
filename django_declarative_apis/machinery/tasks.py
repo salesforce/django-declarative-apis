@@ -227,65 +227,6 @@ def future_task_runner(
         )
 
 
-def schedule_future_task_runner(
-    task_runner_args,
-    task_runner_kwargs,
-    retries=0,
-    retry_exception_filter=(),
-    queue=None,
-    routing_key=None,
-    countdown=0,
-    delay=0,
-):
-    task_runner_kwargs["task_job_count"] = _get_task_job_count()
-    task_runner_kwargs["retry_params"] = RetryParams(
-        retries_remaining=retries,
-        retry_exception_filter=tuple(
-            f"{exc.__module__}.{exc.__name__}" for exc in retry_exception_filter
-        ),
-        queue=queue,
-        routing_key=routing_key,
-        countdown=countdown,
-    )
-    task_runner_kwargs["correlation_id"] = _get_correlation_id()
-
-    if getattr(settings, "DECLARATIVE_ENDPOINT_TASKS_FORCE_SYNCHRONOUS", False):
-        logger.info("Processing tasks synchronously")
-        future_task_runner.apply(task_runner_args, task_runner_kwargs)
-    else:
-        MAX_ATTEMPTS = 3
-        for attempt in range(MAX_ATTEMPTS):
-            # XXX: This is an attempt to skirt around an unsolved, low repro
-            # issue somewhere in the celery/kombu/redis-py stack.  Once in a
-            # while, a connection in the pool will timeout prior to a health
-            # check being called in redis-py and will result in an error being
-            # raised here. This should be removed once the issue has been
-            # sorted out.  Note: This is around the use of redis-py in celery
-            # where celery's event loop is not running
-            # https://github.com/celery/kombu/issues/1019
-            try:
-                future_task_runner.apply_async(
-                    task_runner_args,
-                    task_runner_kwargs,
-                    queue=queue,
-                    routing_key=routing_key,
-                    countdown=countdown + delay,
-                )
-                return
-            except kombu.exceptions.OperationalError as err:
-                logger.warning(
-                    "kombu.exceptions.OperationalError (attempt: %s)", attempt
-                )
-                if attempt >= MAX_ATTEMPTS - 1:
-                    if getattr(
-                        settings, "DECLARATIVE_ENDPOINT_TASKS_SYNCHRONOUS_FALLBACK"
-                    ):
-                        logger.warning("Falling back to executing task synchronously")
-                        future_task_runner.apply(task_runner_args, task_runner_kwargs)
-                        return
-                    raise err
-
-
 @celery_task(
     ignore_results=True,
     time_limit=getattr(settings, "DDA_DEFERRED_TASK_TIME_LIMIT", 999999),
@@ -319,7 +260,7 @@ def generic_future_task_runner(
     )
 
     logger.info(
-        "future_task_runner: method=%s, resource_id=%s",
+        "generic_future_task_runner: method=%s, resource_id=%s",
         endpoint_method_name,
         None,
     )
@@ -344,7 +285,7 @@ def generic_future_task_runner(
             # out of chances
             raise
 
-        _log_retry_stats(endpoint_method_name, resource_instance_id, correlation_id)
+        _log_retry_stats(endpoint_method_name, None, correlation_id)
         task_runner_args = (
             endpoint_class_name,
             endpoint_method_name,
@@ -366,7 +307,7 @@ def generic_future_task_runner(
         )
 
 
-def schedule_generic_future_task_runner(
+def _schedule_task_runner(
     task_runner_args,
     task_runner_kwargs,
     retries=0,
@@ -375,6 +316,7 @@ def schedule_generic_future_task_runner(
     routing_key=None,
     countdown=0,
     delay=0,
+    runner_fn=None,
 ):
     task_runner_kwargs["task_job_count"] = _get_task_job_count()
     task_runner_kwargs["retry_params"] = RetryParams(
@@ -390,7 +332,7 @@ def schedule_generic_future_task_runner(
 
     if getattr(settings, "DECLARATIVE_ENDPOINT_TASKS_FORCE_SYNCHRONOUS", False):
         logger.info("Processing tasks synchronously")
-        future_task_runner.apply(task_runner_args, task_runner_kwargs)
+        runner_fn.apply(task_runner_args, task_runner_kwargs)
     else:
         MAX_ATTEMPTS = 3
         for attempt in range(MAX_ATTEMPTS):
@@ -403,7 +345,7 @@ def schedule_generic_future_task_runner(
             # where celery's event loop is not running
             # https://github.com/celery/kombu/issues/1019
             try:
-                generic_future_task_runner.apply_async(
+                runner_fn.apply_async(
                     task_runner_args,
                     task_runner_kwargs,
                     queue=queue,
@@ -420,9 +362,55 @@ def schedule_generic_future_task_runner(
                         settings, "DECLARATIVE_ENDPOINT_TASKS_SYNCHRONOUS_FALLBACK"
                     ):
                         logger.warning("Falling back to executing task synchronously")
-                        future_task_runner.apply(task_runner_args, task_runner_kwargs)
+                        runner_fn.apply(task_runner_args, task_runner_kwargs)
                         return
                     raise err
+
+
+def schedule_future_task_runner(
+    task_runner_args,
+    task_runner_kwargs,
+    retries=0,
+    retry_exception_filter=(),
+    queue=None,
+    routing_key=None,
+    countdown=0,
+    delay=0,
+):
+    _schedule_task_runner(
+        task_runner_args=task_runner_args,
+        task_runner_kwargs=task_runner_kwargs,
+        retries=retries,
+        retry_exception_filter=retry_exception_filter,
+        queue=queue,
+        routing_key=routing_key,
+        countdown=countdown,
+        delay=delay,
+        runner_fn=future_task_runner,
+    )
+
+
+def schedule_generic_future_task_runner(
+    task_runner_args,
+    task_runner_kwargs,
+    retries=0,
+    retry_exception_filter=(),
+    queue=None,
+    routing_key=None,
+    countdown=0,
+    delay=0,
+):
+    _schedule_task_runner(
+        task_runner_args=task_runner_args,
+        task_runner_kwargs=task_runner_kwargs,
+        retries=retries,
+        retry_exception_filter=retry_exception_filter,
+        queue=queue,
+        routing_key=routing_key,
+        countdown=countdown,
+        delay=delay,
+        runner_fn=generic_future_task_runner,
+    )
 
 
 @celery_task(
