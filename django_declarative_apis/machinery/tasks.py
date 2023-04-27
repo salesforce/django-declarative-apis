@@ -149,9 +149,16 @@ def future_task_runner(
     correlation_id=None,
 ):
     endpoint_class = locate(endpoint_class_name)
-    resource_class = locate(resource_class_name)
-    resource_instance = resource_class.objects.get(pk=resource_instance_id)
     endpoint_task = getattr(endpoint_class, endpoint_method_name)
+
+    provide_resource = (
+        resource_class_name is not None and resource_instance_id is not None
+    )
+    if provide_resource:
+        resource_class = locate(resource_class_name)
+        resource_instance = resource_class.objects.get(pk=resource_instance_id)
+    else:
+        resource_instance = None
 
     _set_correlation_id(correlation_id)
 
@@ -176,17 +183,18 @@ def future_task_runner(
         args, kwargs = [], {}
 
     try:
-        endpoint_task.task_runner(resource_instance, *args, **kwargs)
+        if provide_resource:
+            endpoint_task.task_runner(resource_instance, *args, **kwargs)
+        else:
+            endpoint_task.task_runner(*args, **kwargs)
     except Exception as e:
         if retry_params is None:
             raise
 
         retry_params = RetryParams(*retry_params)
         if retry_params.retry_exception_filter and not any(
-            [
-                f"{e.__class__.__module__}.{e.__class__.__name__}" == ex_type
-                for ex_type in retry_params.retry_exception_filter
-            ]
+            f"{e.__class__.__module__}.{e.__class__.__name__}" == ex_type
+            for ex_type in retry_params.retry_exception_filter
         ):
             # this exception is not retryable
             raise
@@ -217,7 +225,84 @@ def future_task_runner(
         )
 
 
-def schedule_future_task_runner(
+@celery_task(
+    ignore_results=True,
+    time_limit=getattr(settings, "DDA_DEFERRED_TASK_TIME_LIMIT", 999999),
+    soft_time_limit=getattr(settings, "DDA_DEFERRED_TASK_SOFT_TIME_LIMIT", 999999),
+)
+def generic_future_task_runner(
+    endpoint_class_name,
+    endpoint_method_name,
+    packed_args,
+    packer_class_name,
+    task_job_count=0,
+    task_creation_time=None,
+    scheduled_execution_delay=0,
+    retry_params=None,
+    correlation_id=None,
+):
+    endpoint_class = locate(endpoint_class_name)
+    endpoint_task = getattr(endpoint_class, endpoint_method_name)
+    packer_class = locate(packer_class_name)
+    args, kwargs = packer_class.unpack(packed_args)
+
+    _set_correlation_id(correlation_id)
+
+    _log_task_stats(
+        endpoint_method_name,
+        None,
+        scheduled_execution_delay,
+        task_creation_time,
+        task_job_count,
+        correlation_id,
+    )
+
+    logger.info(
+        "generic_future_task_runner: method=%s, resource_id=%s",
+        endpoint_method_name,
+        None,
+    )
+
+    try:
+        endpoint_task.task_runner(*args, **kwargs)
+    except Exception as e:
+        if retry_params is None:
+            raise
+
+        retry_params = RetryParams(*retry_params)
+        if retry_params.retry_exception_filter and not any(
+            f"{e.__class__.__module__}.{e.__class__.__name__}" == ex_type
+            for ex_type in retry_params.retry_exception_filter
+        ):
+            # this exception is not retryable
+            raise
+
+        if retry_params.retries_remaining == 0:
+            # out of chances
+            raise
+
+        _log_retry_stats(endpoint_method_name, None, correlation_id)
+        task_runner_args = (
+            endpoint_class_name,
+            endpoint_method_name,
+            packed_args,
+            packer_class_name,
+        )
+        task_runner_kwargs = {
+            "task_creation_time": time.time(),
+            "scheduled_execution_delay": scheduled_execution_delay,
+        }
+        schedule_generic_future_task_runner(
+            task_runner_args,
+            task_runner_kwargs,
+            retries=retry_params.retries_remaining - 1,
+            countdown=retry_params.countdown * 2 or 1,
+            queue=retry_params.queue,
+            routing_key=retry_params.routing_key,
+        )
+
+
+def _schedule_task_runner(
     task_runner_args,
     task_runner_kwargs,
     retries=0,
@@ -226,6 +311,7 @@ def schedule_future_task_runner(
     routing_key=None,
     countdown=0,
     delay=0,
+    runner_fn=None,
 ):
     task_runner_kwargs["task_job_count"] = _get_task_job_count()
     task_runner_kwargs["retry_params"] = RetryParams(
@@ -241,7 +327,7 @@ def schedule_future_task_runner(
 
     if getattr(settings, "DECLARATIVE_ENDPOINT_TASKS_FORCE_SYNCHRONOUS", False):
         logger.info("Processing tasks synchronously")
-        future_task_runner.apply(task_runner_args, task_runner_kwargs)
+        runner_fn.apply(task_runner_args, task_runner_kwargs)
     else:
         MAX_ATTEMPTS = 3
         for attempt in range(MAX_ATTEMPTS):
@@ -254,7 +340,7 @@ def schedule_future_task_runner(
             # where celery's event loop is not running
             # https://github.com/celery/kombu/issues/1019
             try:
-                future_task_runner.apply_async(
+                runner_fn.apply_async(
                     task_runner_args,
                     task_runner_kwargs,
                     queue=queue,
@@ -271,9 +357,55 @@ def schedule_future_task_runner(
                         settings, "DECLARATIVE_ENDPOINT_TASKS_SYNCHRONOUS_FALLBACK"
                     ):
                         logger.warning("Falling back to executing task synchronously")
-                        future_task_runner.apply(task_runner_args, task_runner_kwargs)
+                        runner_fn.apply(task_runner_args, task_runner_kwargs)
                         return
                     raise err
+
+
+def schedule_future_task_runner(
+    task_runner_args,
+    task_runner_kwargs,
+    retries=0,
+    retry_exception_filter=(),
+    queue=None,
+    routing_key=None,
+    countdown=0,
+    delay=0,
+):
+    _schedule_task_runner(
+        task_runner_args=task_runner_args,
+        task_runner_kwargs=task_runner_kwargs,
+        retries=retries,
+        retry_exception_filter=retry_exception_filter,
+        queue=queue,
+        routing_key=routing_key,
+        countdown=countdown,
+        delay=delay,
+        runner_fn=future_task_runner,
+    )
+
+
+def schedule_generic_future_task_runner(
+    task_runner_args,
+    task_runner_kwargs,
+    retries=0,
+    retry_exception_filter=(),
+    queue=None,
+    routing_key=None,
+    countdown=0,
+    delay=0,
+):
+    _schedule_task_runner(
+        task_runner_args=task_runner_args,
+        task_runner_kwargs=task_runner_kwargs,
+        retries=retries,
+        retry_exception_filter=retry_exception_filter,
+        queue=queue,
+        routing_key=routing_key,
+        countdown=countdown,
+        delay=delay,
+        runner_fn=generic_future_task_runner,
+    )
 
 
 @celery_task(
