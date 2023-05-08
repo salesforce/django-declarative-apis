@@ -15,7 +15,7 @@ from django.db import models
 from django.db.models import ManyToOneRel
 from django.core.exceptions import FieldDoesNotExist
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 NEVER = 0
 ALWAYS = 1
