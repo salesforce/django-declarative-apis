@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-declarative-apis"
-version = "0.27.0"  # set by bumpversion
+version = "0.28.0"  # set by bumpversion
 description = "Simple, readable, declarative APIs for Django"
 readme = "README.md"
 dependencies = [
