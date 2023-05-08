@@ -36,9 +36,19 @@ DEFAULT_FILTERS = {
         "parent_field": expandable(model_class=models.ParentModel),
         "parents": expandable(model_class=models.ParentModel),
     },
+}
+
+INEFFICIENT_FILTERS = {
     models.InefficientLeaf: {"id": ALWAYS},
     models.InefficientBranchA: {"leaf": ALWAYS},
     models.InefficientBranchB: {"leaf": ALWAYS},
+    models.InefficientRoot: {"branch_a": ALWAYS, "branch_b": ALWAYS},
+}
+
+INEFFICIENT_FUNCTION_FILTERS = {
+    models.InefficientLeaf: {"id": ALWAYS},
+    models.InefficientBranchA: {"leaf": lambda inst: inst.leaf},
+    models.InefficientBranchB: {"leaf": lambda inst: inst.leaf},
     models.InefficientRoot: {"branch_a": ALWAYS, "branch_b": ALWAYS},
 }
 

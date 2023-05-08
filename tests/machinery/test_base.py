@@ -717,23 +717,31 @@ class FilterCachingTestCase(django.test.TestCase):
         )
         self.root_id = root.id
 
-    def test_filter_query_cache_reduces_queries(self):
+    def test_filter_cache_reduces_queries(self):
+        root = models.InefficientRoot.objects.get(id=self.root_id)
+        with self.assertNumQueries(4):
+            filtering.apply_filters_to_object(root, filters.INEFFICIENT_FILTERS)
+
+        root = models.InefficientRoot.objects.get(id=self.root_id)
+        with self.assertNumQueries(3), override_settings(
+            DDA_FILTER_MODEL_CACHING_ENABLED=True, DDA_FILTER_CACHE_DEBUG_LOG=True
+        ):
+            filtering.apply_filters_to_object(root, filters.INEFFICIENT_FILTERS)
+
+    def test_model_cache_reduces_queries(self):
         root = models.InefficientRoot.objects.get(id=self.root_id)
         with self.assertNumQueries(4):
             filtering.apply_filters_to_object(
-                root,
-                filters.DEFAULT_FILTERS,
+                root, filters.INEFFICIENT_FUNCTION_FILTERS
             )
 
         root = models.InefficientRoot.objects.get(id=self.root_id)
-        with self.assertNumQueries(3):
-            with override_settings(
-                DDA_FILTER_MODEL_CACHING_ENABLED=True, DDA_FILTER_CACHE_DEBUG_LOG=True
-            ):
-                filtering.apply_filters_to_object(
-                    root,
-                    filters.DEFAULT_FILTERS,
-                )
+        with self.assertNumQueries(3), override_settings(
+            DDA_FILTER_MODEL_CACHING_ENABLED=True, DDA_FILTER_CACHE_DEBUG_LOG=True
+        ):
+            filtering.apply_filters_to_object(
+                root, filters.INEFFICIENT_FUNCTION_FILTERS
+            )
 
 
 class FilterCachingFakeRelationTestCase(FilterCachingTestCase):
