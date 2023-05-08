@@ -736,6 +736,23 @@ class FilterCachingTestCase(django.test.TestCase):
                 )
 
 
+class FilterCachingFakeRelationTestCase(FilterCachingTestCase):
+    def setUp(self):
+        leaf = models.InefficientLeaf.objects.create(id=1)
+        branch_a = models.InefficientBranchA.objects.create(id=1, leaf=leaf)
+        branch_b = models.InefficientBranchB.objects.create(id=1, leaf=leaf)
+        root = models.InefficientRoot.objects.create(
+            id=4, branch_a=branch_a, branch_b=branch_b
+        )
+        self.root_id = root.id
+        self._mark_as_fake_relation(branch_a._meta.get_field("leaf"))
+        self._mark_as_fake_relation(branch_b._meta.get_field("leaf"))
+
+    def _mark_as_fake_relation(self, field):
+        field.is_relation = False
+        field.is_fake_relation = True
+
+
 class ResourceUpdateEndpointDefinitionTestCase(
     testutils.RequestCreatorMixin, django.test.TestCase
 ):

@@ -67,6 +67,10 @@ def _get_unexpanded_field_value(inst, field_name, field_type):
         return {display_key: getattr(obj, display_key)}
 
 
+def _is_relation(field):
+    return field.is_relation or getattr(field, "is_fake_relation", False)
+
+
 def _get_filtered_field_value(  # noqa: C901
     inst,
     field_name,
@@ -93,7 +97,7 @@ def _get_filtered_field_value(  # noqa: C901
             if isinstance(inst, (models.Model)):
                 try:
                     field_meta = inst._meta.get_field(field_name)
-                    if field_meta.is_relation:
+                    if _is_relation(field_meta):
                         val_pk = getattr(inst, field_meta.attname)
                         val_cls = field_meta.related_model
                         val_expand_children = expand_children.get(field_name, {})
