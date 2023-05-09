@@ -92,6 +92,8 @@ def _cache_related_instance(inst, field_name, model_cache):
     else:
         logger.debug("ev=model_cache, status=miss, key=%s", cache_key)
         related_instance = getattr(inst, field_name)
+        if not isinstance(related_instance, models.Model):
+            return
         model_cache[cache_key] = related_instance
     setattr(inst, field_name, related_instance)
 
