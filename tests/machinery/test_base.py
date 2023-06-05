@@ -717,23 +717,48 @@ class FilterCachingTestCase(django.test.TestCase):
         )
         self.root_id = root.id
 
-    def test_filter_query_cache_reduces_queries(self):
+    def test_filter_cache_reduces_queries(self):
+        root = models.InefficientRoot.objects.get(id=self.root_id)
+        with self.assertNumQueries(4):
+            filtering.apply_filters_to_object(root, filters.INEFFICIENT_FILTERS)
+
+        root = models.InefficientRoot.objects.get(id=self.root_id)
+        with self.assertNumQueries(3), override_settings(
+            DDA_FILTER_MODEL_CACHING_ENABLED=True, DDA_FILTER_CACHE_DEBUG_LOG=True
+        ):
+            filtering.apply_filters_to_object(root, filters.INEFFICIENT_FILTERS)
+
+    def test_model_cache_reduces_queries(self):
         root = models.InefficientRoot.objects.get(id=self.root_id)
         with self.assertNumQueries(4):
             filtering.apply_filters_to_object(
-                root,
-                filters.DEFAULT_FILTERS,
+                root, filters.INEFFICIENT_FUNCTION_FILTERS
             )
 
         root = models.InefficientRoot.objects.get(id=self.root_id)
-        with self.assertNumQueries(3):
-            with override_settings(
-                DDA_FILTER_MODEL_CACHING_ENABLED=True, DDA_FILTER_CACHE_DEBUG_LOG=True
-            ):
-                filtering.apply_filters_to_object(
-                    root,
-                    filters.DEFAULT_FILTERS,
-                )
+        with self.assertNumQueries(3), override_settings(
+            DDA_FILTER_MODEL_CACHING_ENABLED=True, DDA_FILTER_CACHE_DEBUG_LOG=True
+        ):
+            filtering.apply_filters_to_object(
+                root, filters.INEFFICIENT_FUNCTION_FILTERS
+            )
+
+
+class FilterCachingFakeRelationTestCase(FilterCachingTestCase):
+    def setUp(self):
+        leaf = models.InefficientLeaf.objects.create(id=1)
+        branch_a = models.InefficientBranchA.objects.create(id=1, leaf=leaf)
+        branch_b = models.InefficientBranchB.objects.create(id=1, leaf=leaf)
+        root = models.InefficientRoot.objects.create(
+            id=4, branch_a=branch_a, branch_b=branch_b
+        )
+        self.root_id = root.id
+        self._mark_as_fake_relation(branch_a._meta.get_field("leaf"))
+        self._mark_as_fake_relation(branch_b._meta.get_field("leaf"))
+
+    def _mark_as_fake_relation(self, field):
+        field.is_relation = False
+        field.is_fake_relation = True
 
 
 class ResourceUpdateEndpointDefinitionTestCase(

@@ -11,11 +11,12 @@ import logging
 import types
 
 from django.conf import settings
+from django.core.exceptions import FieldDoesNotExist
 from django.db import models
 from django.db.models import ManyToOneRel
-from django.core.exceptions import FieldDoesNotExist
+from django.db.models.fields.reverse_related import ForeignObjectRel
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 NEVER = 0
 ALWAYS = 1
@@ -38,7 +39,7 @@ def expandable(model_class=None, display_key=None, inst_field_name=None):
     if model_class and display_key:
         try:
             model_class._meta.get_field(display_key)
-        except models.FieldDoesNotExist as e:  # noqa
+        except FieldDoesNotExist:
             raise ValueError(f"{display_key} is not a field on {model_class.__name__}")
     return _ExpandableForeignKey(display_key, model_class, inst_field_name)
 
@@ -67,6 +68,36 @@ def _get_unexpanded_field_value(inst, field_name, field_type):
         return {display_key: getattr(obj, display_key)}
 
 
+def _is_relation(field):
+    return field.is_relation or getattr(field, "is_fake_relation", False)
+
+
+def _is_reverse_relation(field):
+    return isinstance(field, ForeignObjectRel)
+
+
+def _cache_related_instance(inst, field_name, model_cache):
+    try:
+        field_meta = inst._meta.get_field(field_name)
+    except (AttributeError, FieldDoesNotExist):
+        return
+    if not _is_relation(field_meta) or _is_reverse_relation(field_meta):
+        return  # no `attname` in reverse relations
+    val_pk = getattr(inst, field_meta.attname)
+    val_cls = field_meta.related_model
+    cache_key = _make_model_cache_key(val_cls, val_pk)
+    if cache_key in model_cache:
+        logger.debug("ev=model_cache, status=hit, key=%s", cache_key)
+        related_instance = model_cache[cache_key]
+    else:
+        logger.debug("ev=model_cache, status=miss, key=%s", cache_key)
+        related_instance = getattr(inst, field_name)
+        if not isinstance(related_instance, val_cls):
+            return
+        model_cache[cache_key] = related_instance
+    setattr(inst, field_name, related_instance)
+
+
 def _get_filtered_field_value(  # noqa: C901
     inst,
     field_name,
@@ -75,12 +106,15 @@ def _get_filtered_field_value(  # noqa: C901
     expand_this,
     expand_children,
     filter_cache,
+    model_cache,
 ):
     # get the value from inst
     if field_type == NEVER:
         return None
 
     if isinstance(field_type, types.FunctionType):
+        if is_caching_enabled():
+            _cache_related_instance(inst, field_name, model_cache)
         val = field_type(inst)
     elif isinstance(field_type, _ExpandableForeignKey):
         if expand_this:
@@ -93,7 +127,7 @@ def _get_filtered_field_value(  # noqa: C901
             if isinstance(inst, (models.Model)):
                 try:
                     field_meta = inst._meta.get_field(field_name)
-                    if field_meta.is_relation:
+                    if _is_relation(field_meta):
                         val_pk = getattr(inst, field_meta.attname)
                         val_cls = field_meta.related_model
                         val_expand_children = expand_children.get(field_name, {})
@@ -110,7 +144,7 @@ def _get_filtered_field_value(  # noqa: C901
                     pass
 
             val = getattr(inst, field_name)
-        except (AttributeError, FieldDoesNotExist) as e:  # noqa
+        except (AttributeError, FieldDoesNotExist):
             return None
 
     if isinstance(val, models.Manager):
@@ -122,11 +156,7 @@ def _get_filtered_field_value(  # noqa: C901
         val, (list, tuple, models.Model, models.query.QuerySet)
     ):
         val = _apply_filters_to_object(
-            val,
-            filter_def,
-            expand_children=expand_children,
-            klass=val.__class__,
-            filter_cache=filter_cache,
+            val, filter_def, expand_children, val.__class__, filter_cache, model_cache
         )
 
     if (
@@ -144,18 +174,17 @@ def _make_filter_cache_key(expand_children, klass, pk):
     return (str(expand_children), klass, str(pk))
 
 
+def _make_model_cache_key(klass, pk):
+    return (klass, str(pk))
+
+
 # TODO: make this method less complex and remove the `noqa`
 def _apply_filters_to_object(  # noqa: C901
-    inst,
-    filter_def,
-    expand_children=None,
-    klass=None,
-    filter_cache=None,
+    inst, filter_def, expand_children, klass, filter_cache, model_cache
 ):
     is_cacheable = False
-    caching_enabled = getattr(settings, "DDA_FILTER_MODEL_CACHING_ENABLED", False)
     if (
-        caching_enabled
+        is_caching_enabled()
         and isinstance(inst, (models.Model,))
         and filter_cache is not None
     ):
@@ -173,9 +202,10 @@ def _apply_filters_to_object(  # noqa: C901
             _apply_filters_to_object(
                 item,
                 filter_def,
-                expand_children=expand_children,
-                klass=item.__class__,
-                filter_cache=filter_cache,
+                expand_children,
+                item.__class__,
+                filter_cache,
+                model_cache,
             )
             for item in inst
         ]
@@ -184,9 +214,10 @@ def _apply_filters_to_object(  # noqa: C901
             k: _apply_filters_to_object(
                 v,
                 filter_def,
-                expand_children=expand_children,
-                klass=v.__class__,
-                filter_cache=filter_cache,
+                expand_children,
+                v.__class__,
+                filter_cache,
+                model_cache,
             )
             for k, v in inst.items()
         }
@@ -200,9 +231,10 @@ def _apply_filters_to_object(  # noqa: C901
                 result = _apply_filters_to_object(
                     inst,
                     filter_def,
-                    expand_children=expand_children,
-                    klass=base_class,
-                    filter_cache=filter_cache,
+                    expand_children,
+                    base_class,
+                    filter_cache,
+                    model_cache,
                 )
                 break
 
@@ -215,11 +247,7 @@ def _apply_filters_to_object(  # noqa: C901
         result = defaultdict(list)
         for base in klass.__bases__:
             filtered_ancestor = _apply_filters_to_object(
-                inst,
-                filter_def,
-                expand_children=expand_children,
-                klass=base,
-                filter_cache=filter_cache,
+                inst, filter_def, expand_children, base, filter_cache, model_cache
             )
             if filtered_ancestor:
                 result.update(filtered_ancestor)
@@ -243,6 +271,7 @@ def _apply_filters_to_object(  # noqa: C901
                     expand_this=field_name in expand_children,
                     expand_children=expand_children.get(field_name, {}),
                     filter_cache=filter_cache,
+                    model_cache=model_cache,
                 )
 
                 if value is not None and value != DEFAULT_UNEXPANDED_VALUE:
@@ -269,6 +298,10 @@ def _compile_expansion(expand_fields):
     return top
 
 
+def is_caching_enabled():
+    return getattr(settings, "DDA_FILTER_MODEL_CACHING_ENABLED", False)
+
+
 def apply_filters_to_object(inst, filter_def, expand_header=""):
     if expand_header:
         expand_dict = _compile_expansion(expand_header.split(","))
@@ -280,4 +313,5 @@ def apply_filters_to_object(inst, filter_def, expand_header=""):
         expand_children=expand_dict,
         klass=inst.__class__,
         filter_cache={},
+        model_cache={},
     )
