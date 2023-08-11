@@ -50,7 +50,8 @@ class ResourceTestCase(testutils.RequestCreatorMixin, django.test.TestCase):
         ) as mock_translate:
             mock_translate.side_effect = resource.MimerDataException
 
-            res(req)
+            resource_instance = res(req)
+            self.assertEqual(resource_instance.content, b"Bad Request")
 
     def test_call_put(self):
         class Handler:
