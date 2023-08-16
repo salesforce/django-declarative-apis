@@ -8,7 +8,6 @@
 import warnings
 from pydoc import locate
 
-import django
 from decorator import decorator
 from django import get_version as django_version
 from django.http import HttpResponse
@@ -27,20 +26,20 @@ class rc_factory:
     """
 
     CODES = dict(
-        ALL_OK=("OK", 200),
-        CREATED=("Created", 201),
-        ACCEPTED=("Accepted", 202),
-        DELETED=("", 204),  # 204 says "Don't send a body!"
-        BAD_REQUEST=("Bad Request", 400),
-        UNAUTHORIZED=("Unauthorized", 401),
-        FORBIDDEN=("Forbidden", 403),
-        NOT_FOUND=("Not Found", 404),
-        NOT_ACCEPTABLE=("Not Acceptable", 406),
-        DUPLICATE_ENTRY=("Conflict/Duplicate", 409),
-        NOT_HERE=("Gone", 410),
-        INTERNAL_ERROR=("Internal Error", 500),
-        NOT_IMPLEMENTED=("Not Implemented", 501),
-        THROTTLED=("Throttled", 503),
+        ALL_OK=(b"OK", 200),
+        CREATED=(b"Created", 201),
+        ACCEPTED=(b"Accepted", 202),
+        DELETED=(b"", 204),  # 204 says "Don't send a body!"
+        BAD_REQUEST=(b"Bad Request", 400),
+        UNAUTHORIZED=(b"Unauthorized", 401),
+        FORBIDDEN=(b"Forbidden", 403),
+        NOT_FOUND=(b"Not Found", 404),
+        NOT_ACCEPTABLE=(b"Not Acceptable", 406),
+        DUPLICATE_ENTRY=(b"Conflict/Duplicate", 409),
+        NOT_HERE=(b"Gone", 410),
+        INTERNAL_ERROR=(b"Internal Error", 500),
+        NOT_IMPLEMENTED=(b"Not Implemented", 501),
+        THROTTLED=(b"Throttled", 503),
     )
 
     def __getattr__(self, attr):
@@ -64,43 +63,7 @@ class rc_factory:
                 DeprecationWarning,
             )
 
-        class HttpResponseWrapper(HttpResponse):
-            """
-            Wrap HttpResponse and make sure that the internal _is_string
-            flag is updated when the _set_content method (via the content
-            property) is called
-            """
-
-            def _set_content(self, content):
-                """
-                Set the _container and _is_string /
-                _base_content_is_iter properties based on the type of
-                the value parameter. This logic is in the construtor
-                for HttpResponse, but doesn't get repeated when
-                setting HttpResponse.content although this bug report
-                (feature request) suggests that it should:
-                http://code.djangoproject.com/ticket/9403
-                """
-                is_string = False
-                if not isinstance(content, str) and hasattr(content, "__iter__"):
-                    self._container = content
-                else:
-                    self._container = [content]
-                    is_string = True
-                if django.VERSION >= (1, 4):
-                    self._base_content_is_iter = not is_string
-                else:  # pragma: nocover
-                    self._is_string = is_string
-
-            try:
-                content = property(HttpResponse._get_content, _set_content)
-            except Exception:
-
-                @HttpResponse.content.setter
-                def content(self, content):
-                    self._set_content(content)
-
-        return HttpResponseWrapper(r, content_type="text/plain", status=c)
+        return HttpResponse(r, content_type="text/plain", status=c)
 
 
 rc = rc_factory()
