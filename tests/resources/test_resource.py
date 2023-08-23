@@ -53,6 +53,25 @@ class ResourceTestCase(testutils.RequestCreatorMixin, django.test.TestCase):
             resource_instance = res(req)
             self.assertEqual(resource_instance.content, b"Bad Request")
 
+    def test_call_alternate_charset(self):
+        class Handler:
+            allowed_methods = ("POST",)
+            method_handlers = {
+                "POST": lambda req, *args, **kwargs: (http.HTTPStatus.OK, "")
+            }
+
+        body = {"foo": "bar"}
+        req = self.create_request(
+            method="POST",
+            body=body,
+            content_type="application/json; charset=utf-16",
+            use_auth_header_signature=True,
+        )
+
+        res = resource.Resource(lambda: Handler())
+        resource_instance = res(req)
+        self.assertEqual(200, resource_instance.status_code)
+
     def test_call_put(self):
         class Handler:
             allowed_methods = ("PUT",)
