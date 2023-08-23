@@ -11,6 +11,7 @@ import json
 import django.conf
 import django.core.exceptions
 import django.test
+from django.test.utils import override_settings
 from unittest import mock
 
 from django_declarative_apis.authentication.oauthlib import oauth_errors
@@ -71,6 +72,30 @@ class ResourceTestCase(testutils.RequestCreatorMixin, django.test.TestCase):
         res = resource.Resource(lambda: Handler())
         resource_instance = res(req)
         self.assertEqual(200, resource_instance.status_code)
+
+    def test_call_invalid_charset(self):
+        class Handler:
+            allowed_methods = ("POST",)
+            method_handlers = {
+                "POST": lambda req, *args, **kwargs: (http.HTTPStatus.OK, "")
+            }
+
+        body = {"foo": "bar"}
+        req = self.create_request(
+            method="POST",
+            body=body,
+            content_type="application/json; charset=utf-16",
+            use_auth_header_signature=True,
+        )
+        req.encoding = "utf-8"
+        res = resource.Resource(lambda: Handler())
+        with override_settings(DDA_LOG_MIMER_DATA_EXCEPTION=True):
+            with self.assertLogs("django_declarative_apis.resources.utils") as l:
+                resource_instance = res(req)
+                self.assertTrue(
+                    any(["ev=dda_mime_data_exception" in o for o in l.output])
+                )
+        self.assertEqual(400, resource_instance.status_code)
 
     def test_call_put(self):
         class Handler:
