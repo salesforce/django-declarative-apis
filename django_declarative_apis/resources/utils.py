@@ -189,8 +189,9 @@ class Mimer:
             if loadee:
                 try:
                     data = self.request.body
+                    charset = self.request.content_params.get("charset", "utf-8")
                     # PY3: Loaders usually don't work with bytes:
-                    data = data.decode("utf-8")
+                    data = data.decode(charset)
                     self.request.data = loadee(data)
 
                     # Reset both POST and PUT from request, as its
