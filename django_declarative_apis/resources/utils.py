@@ -5,12 +5,17 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
+import logging
 import warnings
 from pydoc import locate
 
 from decorator import decorator
 from django import get_version as django_version
+from django.conf import settings
 from django.http import HttpResponse
+
+
+logger = logging.getLogger(__name__)
 
 
 def format_error(error):
@@ -189,7 +194,9 @@ class Mimer:
             if loadee:
                 try:
                     data = self.request.body
-                    charset = self.request.content_params.get("charset", "utf-8")
+                    charset = self.request.encoding or getattr(
+                        settings, "DEFAULT_CHARSET", "utf-8"
+                    )
                     # PY3: Loaders usually don't work with bytes:
                     data = data.decode(charset)
                     self.request.data = loadee(data)
@@ -199,6 +206,17 @@ class Mimer:
                     self.request.POST = self.request.PUT = dict()
                 except (TypeError, ValueError):
                     # This also catches if loadee is None.
+                    log_mimer_data_exception = getattr(
+                        settings, "DDA_LOG_MIMER_DATA_EXCEPTION", False
+                    )
+                    if log_mimer_data_exception:
+                        # using the exception logger should give a better hint of what exactly went wrong
+                        logger.exception(
+                            'ev=dda_mime_data_exception, content_type="%s"',
+                            self.request.headers.get(
+                                "content-type", "missing content type header!"
+                            ),
+                        )
                     raise MimerDataException
             else:
                 self.request.data = None
