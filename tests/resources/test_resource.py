@@ -90,10 +90,10 @@ class ResourceTestCase(testutils.RequestCreatorMixin, django.test.TestCase):
         req.encoding = "utf-8"
         res = resource.Resource(lambda: Handler())
         with override_settings(DDA_LOG_MIMER_DATA_EXCEPTION=True):
-            with self.assertLogs("django_declarative_apis.resources.utils") as l:
+            with self.assertLogs("django_declarative_apis.resources.utils") as logs:
                 resource_instance = res(req)
                 self.assertTrue(
-                    any(["ev=dda_mime_data_exception" in o for o in l.output])
+                    any(["ev=dda_mime_data_exception" in o for o in logs.output])
                 )
         self.assertEqual(400, resource_instance.status_code)
 

@@ -212,10 +212,11 @@ class Mimer:
                     if log_mimer_data_exception:
                         # using the exception logger should give a better hint of what exactly went wrong
                         logger.exception(
-                            'ev=dda_mime_data_exception, content_type="%s"',
+                            'ev=dda_mime_data_exception, content_type="%s", body="%s"',
                             self.request.headers.get(
                                 "content-type", "missing content type header!"
                             ),
+                            self.request.body,
                         )
                     raise MimerDataException
             else:
