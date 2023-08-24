@@ -207,7 +207,7 @@ class Mimer:
                 except (TypeError, ValueError):
                     # This also catches if loadee is None.
                     log_mimer_data_exception = getattr(
-                        settings, "DDA_LOG_MIMER_DATA_EXCEPTION", False
+                        settings, "DDA_LOG_MIMER_DATA_EXCEPTION", True
                     )
                     if log_mimer_data_exception:
                         # using the exception logger should give a better hint of what exactly went wrong
