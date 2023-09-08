@@ -10,6 +10,7 @@ import inspect
 import logging
 import types
 
+import django.db.models
 from django.conf import settings
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
@@ -113,9 +114,9 @@ def _get_filtered_field_value(  # noqa: C901
         return None
 
     if isinstance(field_type, types.FunctionType):
-        if is_caching_enabled():
-            _cache_related_instance(inst, field_name, model_cache)
         val = field_type(inst)
+        if is_caching_enabled() and isinstance(val, django.db.models.Model):
+            _cache_related_instance(inst, field_name, model_cache)
     elif isinstance(field_type, _ExpandableForeignKey):
         if expand_this:
             inst_field_name = field_type.inst_field_name or field_name
