@@ -28,6 +28,7 @@ DEFAULT_CONTENT_TYPE = "application/x-www-form-urlencoded"
 _ENCODERS = {
     DEFAULT_CONTENT_TYPE: lambda data: urllib.parse.urlencode(data),
     "application/json": lambda data: json.dumps(data),
+    "application/json; charset=utf-16": lambda data: json.dumps(data),
 }
 
 
