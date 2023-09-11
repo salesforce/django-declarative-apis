@@ -148,12 +148,12 @@ class Resource:
 
         return None
 
-    def authenticate(self, request, rm):
+    def authenticate(self, request, rm):  # noqa: C901
         actor, anonymous, error = False, True, ""
         # workaround for django header sillyness
         if "HTTP_AUTHORIZATION" in request.META:
             request.META["AUTHORIZATION"] = request.META["HTTP_AUTHORIZATION"]
-
+        logger.info("ev=dda_resource method=authenticate state=begin")
         # first we're going to try any authenticators that might match header hints. then, we'll try
         # any catch-all registered under None as a hint
         potential_authenticators = []
@@ -167,6 +167,7 @@ class Resource:
                     potential_authenticators.extend(authenticators)
                     continue
         except KeyError:
+            logger.exception("ev=dda_resource method=authenticate state=KeyError")
             pass
 
         try:
@@ -175,24 +176,29 @@ class Resource:
         except KeyError:
             pass
 
-        if len(potential_authenticators) <= 0:
-            actor, anonymous = _no_authenticators_found, CHALLENGE
-        else:
-            for authenticator in potential_authenticators:
-                authentication_result = authenticator.is_authenticated(request)
+        try:
+            if len(potential_authenticators) <= 0:
+                actor, anonymous = _no_authenticators_found, CHALLENGE
+            else:
+                for authenticator in potential_authenticators:
+                    authentication_result = authenticator.is_authenticated(request)
 
-                if not authentication_result:
-                    error = authentication_result
-                    if self.anonymous and rm in self.anonymous.allowed_methods:
+                    if not authentication_result:
+                        error = authentication_result
+                        if self.anonymous and rm in self.anonymous.allowed_methods:
 
-                        actor, anonymous = self.anonymous(), True
+                            actor, anonymous = self.anonymous(), True
+                        else:
+                            actor, anonymous = authenticator.challenge, CHALLENGE
                     else:
-                        actor, anonymous = authenticator.challenge, CHALLENGE
-                else:
-                    return self.handler, False, error
+                        return self.handler, False, error
 
-        # XXX: this might be a little weird as it'll contain information about the last executed authenticator
-        return actor, anonymous, error
+            # XXX: this might be a little weird as it'll contain information about the last executed authenticator
+            return actor, anonymous, error
+        except Exception:
+            logger.exception(
+                "ev=dda_resource method=authenticate state=authentication_exception"
+            )
 
     # TODO: make this method less complex and remove the `noqa`
     @vary_on_headers("Authorization")  # noqa: C901
@@ -202,6 +208,9 @@ class Resource:
         that are different (OAuth stuff in `Authorization` header.)
         """
         rm = request.method.upper()
+        logger.info(
+            f'ev=dda_resource method=__call__ content_type="{request.headers.get("content-type")}" body="{request.body}"'  # noqa: E501
+        )
 
         # Django's internal mechanism doesn't pick up
         # PUT request, so we trick it a little here.
@@ -258,12 +267,18 @@ class Resource:
             _ = request.POST if request.method == "POST" else request.GET
             status_code, result = meth(request, *args, **kwargs)
         except Exception as e:
+            logger.exception(
+                "ev=dda_resource method=__call__ state=exception_during_endpoint_processing"
+            )
             status_code = http.client.BAD_REQUEST
             result = self.error_handler(e, request, meth, em_format)
 
         try:
             emitter, ct = Emitter.get(em_format)
         except ValueError:  # pragma: nocover
+            logger.error(
+                "ev=dda_resource method=__call__ state=bad_emitter emitter={emitter}"
+            )
             result = rc.BAD_REQUEST
             result.content = "Invalid output format specified '%s'." % em_format
             return result
