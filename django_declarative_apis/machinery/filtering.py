@@ -76,26 +76,41 @@ def _is_reverse_relation(field):
     return isinstance(field, ForeignObjectRel)
 
 
-def _cache_related_instance(inst, field_name, model_cache):
+def _get_callable_field_value_with_cache(inst, field_name, model_cache, field_type):
+    cache_relation = True
+
     try:
         field_meta = inst._meta.get_field(field_name)
+        if not _is_relation(field_meta) or _is_reverse_relation(field_meta):
+            # no `attname` in reverse relations
+            cache_relation = False
     except (AttributeError, FieldDoesNotExist):
-        return
-    if not _is_relation(field_meta) or _is_reverse_relation(field_meta):
-        return  # no `attname` in reverse relations
-    val_pk = getattr(inst, field_meta.attname)
-    val_cls = field_meta.related_model
-    cache_key = _make_model_cache_key(val_cls, val_pk)
+        # inst doesn't look like a django model
+        cache_relation = False
+
+    if cache_relation:
+        # we're caching a foreign key field on a django model.  Cache it by (model, fk_pk) so that if
+        # other objects reference this same instance, we'll get a cache hit
+        fk_pk = getattr(inst, field_meta.attname)
+        val_cls = field_meta.related_model
+        cache_key = _make_model_cache_key(val_cls, fk_pk)
+    else:
+        # not a foreign key.  Cache it by (inst, field_name) - it won't be a cache hit on another instance, but
+        # will be cached if this same inst is returned later in the response
+        cache_key = (inst, field_name)
+
     if cache_key in model_cache:
         logger.debug("ev=model_cache, status=hit, key=%s", cache_key)
-        related_instance = model_cache[cache_key]
+        result = model_cache[cache_key]
     else:
         logger.debug("ev=model_cache, status=miss, key=%s", cache_key)
-        related_instance = getattr(inst, field_name)
-        if not isinstance(related_instance, val_cls):
-            return
-        model_cache[cache_key] = related_instance
-    setattr(inst, field_name, related_instance)
+        result = field_type(inst)
+
+        if isinstance(result, models.Manager):
+            # need to get an iterable to proceed
+            result = result.all()
+        model_cache[cache_key] = result
+    return result
 
 
 def _get_filtered_field_value(  # noqa: C901
@@ -114,8 +129,11 @@ def _get_filtered_field_value(  # noqa: C901
 
     if isinstance(field_type, types.FunctionType):
         if is_caching_enabled():
-            _cache_related_instance(inst, field_name, model_cache)
-        val = field_type(inst)
+            val = _get_callable_field_value_with_cache(
+                inst, field_name, model_cache, field_type
+            )
+        else:
+            val = field_type(inst)
     elif isinstance(field_type, _ExpandableForeignKey):
         if expand_this:
             inst_field_name = field_type.inst_field_name or field_name
