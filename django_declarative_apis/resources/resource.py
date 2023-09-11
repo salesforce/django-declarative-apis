@@ -148,7 +148,7 @@ class Resource:
 
         return None
 
-    def authenticate(self, request, rm):
+    def authenticate(self, request, rm):  # noqa: C901
         actor, anonymous, error = False, True, ""
         # workaround for django header sillyness
         if "HTTP_AUTHORIZATION" in request.META:
@@ -209,7 +209,7 @@ class Resource:
         """
         rm = request.method.upper()
         logger.info(
-            f'ev=dda_resource method=__call__ content_type="{request.headers.get("content-type")}" body="{request.body}"'
+            f'ev=dda_resource method=__call__ content_type="{request.headers.get("content-type")}" body="{request.body}"'  # noqa: E501
         )
 
         # Django's internal mechanism doesn't pick up
