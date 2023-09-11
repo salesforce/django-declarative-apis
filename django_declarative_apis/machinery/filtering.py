@@ -89,7 +89,7 @@ def _get_callable_field_value_with_cache(inst, field_name, model_cache, field_ty
         cache_relation = False
 
     if cache_relation:
-        # we're caching a foreign key field on a djano model.  Cache it by (model, fk_pk) so that if
+        # we're caching a foreign key field on a django model.  Cache it by (model, fk_pk) so that if
         # other objects reference this same instance, we'll get a cache hit
         fk_pk = getattr(inst, field_meta.attname)
         val_cls = field_meta.related_model
