@@ -761,6 +761,27 @@ class FilterCachingFakeRelationTestCase(FilterCachingTestCase):
         field.is_fake_relation = True
 
 
+class FilterCachingUnhashableTestCase(django.test.TestCase):
+    def setUp(self):
+        leaf = models.InefficientLeaf.objects.create(id=1)
+        branch_a = models.InefficientBranchA.objects.create(id=1, leaf=leaf)
+        branch_b = models.InefficientBranchB.objects.create(id=1, leaf=leaf)
+        self.root = models.InefficientPydanticRoot(
+            id=4, branch_a=branch_a, branch_b=branch_b
+        )
+
+    def test_filtering_accepts_nonhashable_root_item(self):
+        with override_settings(
+            DDA_FILTER_MODEL_CACHING_ENABLED=True, DDA_FILTER_CACHE_DEBUG_LOG=True
+        ):
+            try:
+                filtering.apply_filters_to_object(
+                    self.root, filters.INEFFICIENT_FUNCTION_FILTERS
+                )
+            except TypeError:
+                self.fail("should be able to use filter caching on pydantic objects")
+
+
 class ResourceUpdateEndpointDefinitionTestCase(
     testutils.RequestCreatorMixin, django.test.TestCase
 ):
