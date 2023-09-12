@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
-
+import pydantic
 from django.db import models
 
 
@@ -71,6 +71,12 @@ class InefficientRoot(models.Model):
     id = models.IntegerField(primary_key=True)
     branch_a = models.ForeignKey(InefficientBranchA, on_delete=models.CASCADE)
     branch_b = models.ForeignKey(InefficientBranchB, on_delete=models.CASCADE)
+
+
+class InefficientPydanticRoot(pydantic.BaseModel, arbitrary_types_allowed=True):
+    id: int = None
+    branch_a: InefficientBranchA = None
+    branch_b: InefficientBranchB = None
 
 
 try:

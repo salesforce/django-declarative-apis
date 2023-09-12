@@ -5,7 +5,7 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-from django_declarative_apis.machinery.filtering import ALWAYS, expandable
+from django_declarative_apis.machinery.filtering import ALWAYS, NEVER, expandable
 
 from . import models
 
@@ -50,6 +50,12 @@ INEFFICIENT_FUNCTION_FILTERS = {
     models.InefficientBranchA: {"leaf": lambda inst: inst.leaf},
     models.InefficientBranchB: {"leaf": lambda inst: inst.leaf},
     models.InefficientRoot: {"branch_a": ALWAYS, "branch_b": ALWAYS},
+    models.InefficientPydanticRoot: {
+        "default_factory": NEVER,
+        "__len__": NEVER,
+        "branch_a": lambda inst: inst.branch_a,
+        "branch_b": lambda inst: inst.branch_b,
+    },
 }
 
 RENAMED_EXPANDABLE_MODEL_FIELDS = {
