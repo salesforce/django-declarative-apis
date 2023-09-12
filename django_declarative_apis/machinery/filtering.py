@@ -97,7 +97,7 @@ def _get_callable_field_value_with_cache(inst, field_name, model_cache, field_ty
     else:
         # not a foreign key.  Cache it by (inst, field_name) - it won't be a cache hit on another instance, but
         # will be cached if this same inst is returned later in the response
-        cache_key = (inst, field_name)
+        cache_key = (id(inst), field_name)
 
     if cache_key in model_cache:
         logger.debug("ev=model_cache, status=hit, key=%s", cache_key)
