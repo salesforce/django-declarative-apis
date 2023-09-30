@@ -10,6 +10,7 @@ import inspect
 import logging
 import types
 
+import pydantic
 from django.conf import settings
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
@@ -171,7 +172,7 @@ def _get_filtered_field_value(  # noqa: C901
 
     # should this value be passed through the filters itself?
     if val.__class__ in filter_def or isinstance(
-        val, (list, tuple, models.Model, models.query.QuerySet)
+        val, (list, tuple, models.Model, models.query.QuerySet, pydantic.BaseModel)
     ):
         val = _apply_filters_to_object(
             val, filter_def, expand_children, val.__class__, filter_cache, model_cache
