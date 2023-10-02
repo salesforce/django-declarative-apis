@@ -73,10 +73,19 @@ class InefficientRoot(models.Model):
     branch_b = models.ForeignKey(InefficientBranchB, on_delete=models.CASCADE)
 
 
+class PydanticBranch(pydantic.BaseModel):
+    id: int = None
+
+
+class PydanticBranchChildClass(PydanticBranch):
+    pass
+
+
 class InefficientPydanticRoot(pydantic.BaseModel, arbitrary_types_allowed=True):
     id: int = None
     branch_a: InefficientBranchA = None
     branch_b: InefficientBranchB = None
+    branch_p: PydanticBranch = None
 
 
 try:

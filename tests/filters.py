@@ -49,12 +49,14 @@ INEFFICIENT_FUNCTION_FILTERS = {
     models.InefficientLeaf: {"id": ALWAYS},
     models.InefficientBranchA: {"leaf": lambda inst: inst.leaf},
     models.InefficientBranchB: {"leaf": lambda inst: inst.leaf},
+    models.PydanticBranch: {"id": ALWAYS},
     models.InefficientRoot: {"branch_a": ALWAYS, "branch_b": ALWAYS},
     models.InefficientPydanticRoot: {
         "default_factory": NEVER,
         "__len__": NEVER,
         "branch_a": lambda inst: inst.branch_a,
         "branch_b": lambda inst: inst.branch_b,
+        "branch_p": lambda inst: inst.branch_p,
     },
 }
 
