@@ -265,6 +265,9 @@ class EndpointBinder:
                 if resource and resource.is_dirty(check_relationship=True):
                     update_dirty(resource)
 
+            # all synchronous tasks are done, finalize the endpoint before launching async tasks
+            self.bound_endpoint.finalize()
+
             for deferred_task in deferred_tasks:
                 deferred_task.run(self.bound_endpoint)
 
@@ -449,7 +452,6 @@ class BehavioralEndpointDefinitionRouter:
                 bound_endpoint.bound_endpoint.__class__.__name__,
             )
             result = bound_endpoint.get_response()
-            bound_endpoint.bound_endpoint.finalize()
             return result
         except errors.ApiError:
             raise
