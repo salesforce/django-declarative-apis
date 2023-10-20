@@ -170,7 +170,7 @@ class RequestUrlField(TypedEndpointAttributeMixin, EndpointAttribute):
 
     .. code-block:: python
 
-        from django-declarative-apis.machinery import url_field
+        from django_declarative_apis.machinery import url_field
 
         class TodoDeleteSingleTaskDefinition(
             TodoResourceMixin,
@@ -213,7 +213,7 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
 
     .. code-block:: python
 
-        from django-declarative-apis.machinery import field
+        from django_declarative_apis.machinery import field
 
         task = field(required=True, type=str)
 
@@ -253,7 +253,7 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
 
     .. code-block:: python
 
-        from django-declarative-apis.machinery import field
+        from django_declarative_apis.machinery import field
 
         class FooDefinition(EndpointDefinition):
             foo = field(multivalued=True)
@@ -445,7 +445,7 @@ class EndpointTask(EndpointAttribute):
 
     .. code-block:: python
 
-        from django-declarative-apis.machinery import task
+        from django_declarative_apis.machinery import task
 
         class SampleClass:
             # code
@@ -473,7 +473,7 @@ class EndpointTask(EndpointAttribute):
 
     .. code-block:: python
 
-        from django-declarative-apis.machinery import task
+        from django_declarative_apis.machinery import task
 
         class SampleEndpointDefinition:
            def is_authorized(self):
@@ -554,7 +554,7 @@ class DeferrableEndpointTask(EndpointTask):
 
         .. code-block:: python
 
-          from django-declarative-apis.machinery import deferrable_task
+          from django_declarative_apis.machinery import deferrable_task
 
           class SampleClass:
             # code
@@ -610,7 +610,7 @@ class DeferrableEndpointTask(EndpointTask):
 
     .. code-block:: python
 
-        from django-declarative-apis.machinery import deferrable_task
+        from django_declarative_apis.machinery import deferrable_task
 
         class SampleClass:
             # code
@@ -821,7 +821,7 @@ class RequireOneAttribute(RequestFieldGroup):
 
     .. code-block:: python
 
-        from django-declarative-apis.machinery import require_one
+        from django_declarative_apis.machinery import require_one
 
         sample_field_1 = field()
         sample_field_2 = field()
@@ -888,7 +888,7 @@ class Aggregate(EndpointAttribute):
 
     .. code-block:: python
 
-        from django-declarative-apis.machinery import aggregate
+        from django_declarative_apis.machinery import aggregate
 
         class SampleClass:
             # code
@@ -910,7 +910,7 @@ class Aggregate(EndpointAttribute):
 
     .. code-block:: python
 
-        from django-declarative-apis.machinery import aggregate
+        from django_declarative_apis.machinery import aggregate
 
         class SampleClass:
             user_id = url_field()
