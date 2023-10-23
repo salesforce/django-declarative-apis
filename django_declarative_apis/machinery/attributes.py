@@ -219,7 +219,7 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
 
 
     :param required: Determines whether the field is required for the
-        EndpointDefinition. Defaults to :code:`True`.
+        EndpointDefinition. Defaults to :code:`False`.
     :type required: optional
 
     :param name: Allows the name of the field in HTTP API to be different from its name
