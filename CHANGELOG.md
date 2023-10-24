@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [unreleased]
 - [PR 138](https://github.com/salesforce/django-declarative-apis/pull/138) Docs: Correct imports in code-blocks
 - [PR 139](https://github.com/salesforce/django-declarative-apis/pull/139) Docs: Correct documentation for default value of `required` on `field`
+- [PR 140](https://github.com/salesforce/django-declarative-apis/pull/140) Docs: Add comment explaining why `dict`s don't have filters applied
 
 # [0.31.4] - 2023-10-12
 - [PR 137](https://github.com/salesforce/django-declarative-apis/pull/137) Finalize endpoints before dispatching async tasks

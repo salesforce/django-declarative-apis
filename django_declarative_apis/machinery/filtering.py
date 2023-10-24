@@ -171,6 +171,7 @@ def _get_filtered_field_value(  # noqa: C901
         val = val.all()
 
     # should this value be passed through the filters itself?
+    # `dict` is intentionally excluded to allow endpoints to return an arbitrary response that bypasses filtering
     if val.__class__ in filter_def or isinstance(
         val, (list, tuple, models.Model, models.query.QuerySet, pydantic.BaseModel)
     ):
