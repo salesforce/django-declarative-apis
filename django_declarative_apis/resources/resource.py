@@ -153,7 +153,6 @@ class Resource:
         # workaround for django header sillyness
         if "HTTP_AUTHORIZATION" in request.META:
             request.META["AUTHORIZATION"] = request.META["HTTP_AUTHORIZATION"]
-        logger.info("ev=dda_resource method=authenticate state=begin")
         # first we're going to try any authenticators that might match header hints. then, we'll try
         # any catch-all registered under None as a hint
         potential_authenticators = []
@@ -208,9 +207,6 @@ class Resource:
         that are different (OAuth stuff in `Authorization` header.)
         """
         rm = request.method.upper()
-        logger.info(
-            f'ev=dda_resource method=__call__ content_type="{request.headers.get("content-type")}" body="{request.body}"'  # noqa: E501
-        )
 
         # Django's internal mechanism doesn't pick up
         # PUT request, so we trick it a little here.
