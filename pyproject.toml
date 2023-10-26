@@ -48,6 +48,7 @@ dev = [
 
 [tool.ruff]
 extend-exclude = [".heroku"]
+extend-select = ["C901"]
 
 [tool.coverage.run]
 omit = ["*/tests/*", "*/management/*", "*/migrations/*"]
