@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 class DjangoRequestValidator(RequestValidator):
-
     TIMESTAMP_THRESHOLD = 300
 
     def __init__(self, request, *args, **kwargs):

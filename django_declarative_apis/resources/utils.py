@@ -259,7 +259,7 @@ def require_mime(*mimes):
         for idx, mime in enumerate(mimes):
             realmimes.add(rewrite.get(mime, mime))
 
-        if not m.content_type() in realmimes:
+        if m.content_type() not in realmimes:
             return rc.BAD_REQUEST
 
         return f(self, request, *args, **kwargs)
