@@ -185,7 +185,6 @@ class Resource:
                     if not authentication_result:
                         error = authentication_result
                         if self.anonymous and rm in self.anonymous.allowed_methods:
-
                             actor, anonymous = self.anonymous(), True
                         else:
                             actor, anonymous = authenticator.challenge, CHALLENGE
