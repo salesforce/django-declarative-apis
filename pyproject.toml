@@ -39,7 +39,6 @@ dev = [
   "black==22.3.0",
   "bumpversion~=0.5",
   "coverage[toml]==6.3.2",
-  "flake8==4.0.1",
   "ipython~=7.0",
   "oauth2==1.9.0.post1",
   "pyyaml~=6.0",
