@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [Unreleased]
+- [PR 143](https://github.com/salesforce/django-declarative-apis/pull/143) Testing: Replace `flake8` and `black` with `ruff`, add testing for Python 3.12, drop testing for Python 3.7
+
 # [0.31.5]
 - [PR 141](https://github.com/salesforce/django-declarative-apis/pull/141) Clean up logging 
 - [PR 138](https://github.com/salesforce/django-declarative-apis/pull/138) Docs: Correct imports in code-blocks
