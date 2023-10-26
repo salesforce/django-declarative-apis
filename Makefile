@@ -8,9 +8,9 @@ TEST_CMD = ${PYTHON} manage.py test --parallel
 TEST_WARNINGS_CMD = ${PYTHON} -Wa manage.py test
 # see .coveragerc for settings
 COVERAGE_CMD = coverage run manage.py test --noinput && coverage xml && coverage report
-STATIC_CMD = ruff .
+STATIC_CMD = ruff check .
 VULN_STATIC_CMD = bandit -r -ii -ll -x ${PACKAGE_DIR}/migrations ${PACKAGE_DIR} 
-FORMAT_CMD = black ${PACKAGE_DIR} ${TEST_DIR} ${EXAMPLE_DIR}
+FORMAT_CMD = ruff format .
 FORMATCHECK_CMD = ${FORMAT_CMD} --check
 
 
