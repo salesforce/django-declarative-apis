@@ -43,6 +43,7 @@ dev = [
   "ipython~=7.0",
   "oauth2==1.9.0.post1",
   "pyyaml~=6.0",
+  "ruff~=0.1.2",
   "sphinx_rtd_theme==0.5.2",
   "tblib~=1.6.0",
 ]
