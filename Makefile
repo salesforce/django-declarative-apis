@@ -22,6 +22,10 @@ format:
 	${FORMAT_CMD}
 .PHONY: format
 
+static-fix:
+	${STATIC_CMD} --fix
+.PHONY: static-fix
+
 docs:
 	DJANGO_SETTINGS_MODULE=tests.settings $(MAKE) -C docs html SPHINXOPTS="-W"
 .PHONY: docs
