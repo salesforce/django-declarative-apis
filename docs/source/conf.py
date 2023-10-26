@@ -25,6 +25,8 @@
 #
 import os
 import sys
+import django
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 # -- General configuration ------------------------------------------------
@@ -33,7 +35,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 #
 # needs_sphinx = '1.0'
 
-import django
 os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.settings'
 django.setup()
 
