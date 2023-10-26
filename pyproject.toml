@@ -46,6 +46,9 @@ dev = [
   "tblib~=1.6.0",
 ]
 
+[tool.ruff]
+extend-exclude = [".heroku"]
+
 [tool.coverage.run]
 omit = ["*/tests/*", "*/management/*", "*/migrations/*"]
 
