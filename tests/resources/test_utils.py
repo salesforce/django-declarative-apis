@@ -122,7 +122,6 @@ class MimerTestCase(unittest.TestCase):
 
 
 class KeyProcessingTestCase(unittest.TestCase):
-
     # We can't compute these keys from the cryptography library because they're
     # nonstandard. These were both taken from their respective devices.
 

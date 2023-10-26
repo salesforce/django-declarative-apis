@@ -659,9 +659,9 @@ class DeferrableEndpointTask(EndpointTask):
 
         if execute_unless:
             assert callable(execute_unless), "execute_unless MUST be callable"
-            assert inspect.getfullargspec(execute_unless).args == [
-                "self"
-            ], "execute_unless MUST be an instance method that takes only the 'self' argument"
+            assert (
+                inspect.getfullargspec(execute_unless).args == ["self"]
+            ), "execute_unless MUST be an instance method that takes only the 'self' argument"
 
         self.execute_unless = execute_unless
 

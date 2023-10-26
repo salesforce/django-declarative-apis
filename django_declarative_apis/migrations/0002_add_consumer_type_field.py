@@ -13,7 +13,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("django_declarative_apis", "0001_initial")]
 
     operations = [
