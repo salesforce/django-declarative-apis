@@ -5,9 +5,23 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 
-from django_declarative_apis.machinery.filtering import ALWAYS, NEVER, expandable
+from django_declarative_apis.machinery.filtering import (
+    ALWAYS,
+    NEVER,
+    expandable,
+    ExpandableGeneric,
+)
 
 from . import models
+
+
+class TestExpandableGeneric(ExpandableGeneric):
+    def get_unexpanded_view(self, inst) -> dict:
+        return {"id": "1234"}
+
+    def get_expanded_view(self, inst) -> dict:
+        return {"id": "1234", "expanded": True}
+
 
 DEFAULT_FILTERS = {
     str: ALWAYS,
@@ -18,6 +32,7 @@ DEFAULT_FILTERS = {
         "int_field": ALWAYS,
         "expandable_dict": expandable(),
         "expandable_string": expandable(),
+        "expandable_generic": TestExpandableGeneric(),
     },
     models.ChildModel: {
         "pk": ALWAYS,
