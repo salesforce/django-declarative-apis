@@ -182,6 +182,7 @@ class FiltersTestCase(django.test.TestCase):
             self.assertTrue("__expandable__" in filtered)
             self.assertTrue("expandable_dict" in filtered["__expandable__"])
             self.assertTrue("expandable_string" in filtered["__expandable__"])
+            self.assertTrue("expandable_generic" in filtered["__expandable__"])
 
     def test_expandable_absent_if_no_expandable_fields(self):
         filtered = filtering.apply_filters_to_object(

@@ -296,7 +296,7 @@ def _apply_filters_to_object(  # noqa: C901
             return inst
         else:
             for field_name, field_type in fields_def.items():
-                if isinstance(field_type, _ExpandableForeignKey):
+                if isinstance(field_type, (_ExpandableForeignKey, ExpandableGeneric)):
                     expandables.append(field_name)
 
                 value = _get_filtered_field_value(
