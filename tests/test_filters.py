@@ -40,7 +40,7 @@ class FiltersTestCase(django.test.TestCase):
         self.assertEqual("1234", filtered["expandable_generic"]["id"])
         self.assertNotIn("expanded", filtered["expandable_generic"])
 
-        # test exexpanded
+        # test expanded
         filtered = filtering.apply_filters_to_object(
             self.test_model, filters.DEFAULT_FILTERS, expand_header="expandable_generic"
         )
