@@ -39,13 +39,23 @@ class DeclarativeApisTestCase(TestCase):
                 "test": {
                     "pk": 1,
                     "int_field": 1,
-                    "__expandable__": ["expandable_dict", "expandable_string"],
+                    "expandable_generic": {"id": "1234"},
+                    "__expandable__": [
+                        "expandable_dict",
+                        "expandable_string",
+                        "expandable_generic",
+                    ],
                 },
                 "deep_test": {
                     "test": {
                         "pk": 1,
                         "int_field": 1,
-                        "__expandable__": ["expandable_dict", "expandable_string"],
+                        "expandable_generic": {"id": "1234"},
+                        "__expandable__": [
+                            "expandable_dict",
+                            "expandable_string",
+                            "expandable_generic",
+                        ],
                     }
                 },
             },

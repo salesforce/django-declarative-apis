@@ -31,6 +31,23 @@ class FiltersTestCase(django.test.TestCase):
         self.p1.root = self.root
         self.p1.save()
 
+    def test_expandable_generic_field(self):
+        # test unexpanded
+        filtered = filtering.apply_filters_to_object(
+            self.test_model, filters.DEFAULT_FILTERS
+        )
+        self.assertIn("expandable_generic", filtered)
+        self.assertEqual("1234", filtered["expandable_generic"]["id"])
+        self.assertNotIn("expanded", filtered["expandable_generic"])
+
+        # test expanded
+        filtered = filtering.apply_filters_to_object(
+            self.test_model, filters.DEFAULT_FILTERS, expand_header="expandable_generic"
+        )
+        self.assertIn("expandable_generic", filtered)
+        self.assertEqual("1234", filtered["expandable_generic"]["id"])
+        self.assertTrue(filtered["expandable_generic"]["expanded"])
+
     def test_expandable_field_not_expanded_by_default(self):
         filtered = filtering.apply_filters_to_object(self.root, filters.DEFAULT_FILTERS)
         self.assertEqual(4, len(filtered))
@@ -115,7 +132,7 @@ class FiltersTestCase(django.test.TestCase):
         self.assertTrue("pk" in filtered["parent_field"]["favorite"])
         self.assertTrue("name" in filtered["parent_field"]["favorite"])
         self.assertTrue("test" in filtered["parent_field"]["favorite"])
-        self.assertEqual(3, len(filtered["parent_field"]["favorite"]["test"]))
+        self.assertEqual(4, len(filtered["parent_field"]["favorite"]["test"]))
         self.assertTrue("parent" in filtered["parent_field"]["favorite"])
         self.assertEqual(self.p1c1.name, filtered["parent_field"]["favorite"]["name"])
         self.assertEqual(2, len(filtered["parent_field"]["children"]))
@@ -135,7 +152,7 @@ class FiltersTestCase(django.test.TestCase):
             expand_header="expandable_dict,expandable_string",
         )
 
-        self.assertEqual(5, len(filtered))
+        self.assertEqual(6, len(filtered))
         self.assertTrue("expandable_dict" in filtered)
         self.assertEqual(
             filtered["expandable_dict"], models.TestModel.EXPANDABLE_DICT_RETURN
@@ -157,7 +174,7 @@ class FiltersTestCase(django.test.TestCase):
                 self.test_model, filters.DEFAULT_FILTERS
             )
 
-            self.assertEqual(3, len(filtered))
+            self.assertEqual(4, len(filtered))
             self.assertFalse("expandable_dict" in filtered)
             dict_mock.assert_not_called()
             self.assertFalse("expandable_string" in filtered)
@@ -165,6 +182,7 @@ class FiltersTestCase(django.test.TestCase):
             self.assertTrue("__expandable__" in filtered)
             self.assertTrue("expandable_dict" in filtered["__expandable__"])
             self.assertTrue("expandable_string" in filtered["__expandable__"])
+            self.assertTrue("expandable_generic" in filtered["__expandable__"])
 
     def test_expandable_absent_if_no_expandable_fields(self):
         filtered = filtering.apply_filters_to_object(
