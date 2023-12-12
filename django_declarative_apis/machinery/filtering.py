@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
-
+from abc import ABC, abstractmethod
 from collections import defaultdict
 import inspect
 import logging
@@ -43,6 +43,16 @@ def expandable(model_class=None, display_key=None, inst_field_name=None):
         except FieldDoesNotExist:
             raise ValueError(f"{display_key} is not a field on {model_class.__name__}")
     return _ExpandableForeignKey(display_key, model_class, inst_field_name)
+
+
+class ExpandableGeneric(ABC):
+    @abstractmethod
+    def get_unexpanded_view(self, inst) -> dict:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_expanded_view(self, inst) -> dict:
+        raise NotImplementedError()
 
 
 def _get_unexpanded_field_value(inst, field_name, field_type):
@@ -141,6 +151,11 @@ def _get_filtered_field_value(  # noqa: C901
             val = getattr(inst, inst_field_name)
         else:
             val = _get_unexpanded_field_value(inst, field_name, field_type)
+    elif isinstance(field_type, ExpandableGeneric):
+        if expand_this:
+            val = field_type.get_expanded_view(inst)
+        else:
+            val = field_type.get_unexpanded_view(inst)
     else:
         try:
             if isinstance(inst, (models.Model)):
@@ -184,6 +199,7 @@ def _get_filtered_field_value(  # noqa: C901
         or isinstance(field_type, types.FunctionType)
         or ((field_type == IF_TRUTHY) and val)
         or isinstance(field_type, _ExpandableForeignKey)
+        or isinstance(field_type, ExpandableGeneric)
     ):
         return val
     else:
@@ -280,7 +296,7 @@ def _apply_filters_to_object(  # noqa: C901
             return inst
         else:
             for field_name, field_type in fields_def.items():
-                if isinstance(field_type, _ExpandableForeignKey):
+                if isinstance(field_type, (_ExpandableForeignKey, ExpandableGeneric)):
                     expandables.append(field_name)
 
                 value = _get_filtered_field_value(
