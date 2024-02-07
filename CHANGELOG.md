@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 
 
 # [0.31.7]
-- [PR 148](https://github.com/salesforce/django-declarative-apis/pull/148) chore: upgrade django 4.2 LTS (@W-14178534)
+- [PR 148](https://github.com/salesforce/django-declarative-apis/pull/148) chore: upgrade django 4.2 LTS
 
 # [0.31.6]
 - [PR 144](https://github.com/salesforce/django-declarative-apis/pull/144) Allow Dependabot to update dev dependencies
