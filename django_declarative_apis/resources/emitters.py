@@ -233,7 +233,7 @@ WARNING: Accepting arbitrary pickled data is a huge security concern.
 The unpickler has been disabled by default now, and if you want to use
 it, please be aware of what implications it will have.
 
-Read more: http://nadiana.com/python-pickle-insecure
+Read more: https://web.archive.org/web/20130423223601/http://nadiana.com/python-pickle-insecure
 
 Uncomment the line below to enable it. You're doing so at your own risk.
 """
