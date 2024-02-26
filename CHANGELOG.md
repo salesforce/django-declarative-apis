@@ -5,7 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [Unreleased]
-- [PR 144](https://github.com/salesforce/django-declarative-apis/pull/141) Allow Dependabot to update dev dependencies
+- 
+
+# [0.31.7]
+- [PR 148](https://github.com/salesforce/django-declarative-apis/pull/148) chore: upgrade django 4.2 LTS
+
+# [0.31.6]
+- [PR 144](https://github.com/salesforce/django-declarative-apis/pull/144) Allow Dependabot to update dev dependencies
 - [PR 143](https://github.com/salesforce/django-declarative-apis/pull/143) Testing: Replace `flake8` and `black` with `ruff`, add testing for Python 3.12, drop testing for Python 3.7
 - [PR 146](https://github.com/salesforce/django-declarative-apis/pull/146) Add ExpandableGeneric filter type
 
