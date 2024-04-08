@@ -8,10 +8,10 @@ version = "0.31.7"  # set by bumpversion
 description = "Simple, readable, declarative APIs for Django"
 readme = "README.md"
 dependencies = [
-  "Django >=3.2, <5",
+  "Django >=3.2, <6",
   "celery>=4.0.2,!=4.1.0",
   "cryptography>=2.0",
-  "decorator==4.0.11",
+  "decorator==5.1.1",
   "django-dirtyfields>=1.2.1",
   "oauthlib[signedtoken,rsa]>=3.1.0",
   "pydantic>=1.8"
@@ -37,13 +37,13 @@ classifiers = [
 dev = [
   "bandit>=1.7.4",
   "bumpversion~=0.5",
-  "coverage[toml]==6.3.2",
-  "ipython~=7.0",
+  "coverage[toml]==7.4.4",
+  "ipython>=7,<9",
   "oauth2==1.9.0.post1",
   "pyyaml~=6.0",
-  "ruff~=0.1.2",
-  "sphinx_rtd_theme==0.5.2",
-  "tblib~=1.6.0",
+  "ruff>=0.1.2,<0.4.0",
+  "sphinx_rtd_theme==2.0.0",
+  "tblib>=1.6,<3.1",
 ]
 
 [tool.ruff]
