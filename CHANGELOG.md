@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 - [PR 156](https://github.com/salesforce/django-declarative-apis/pull/156) Update GitHub action versions
+- [PR 162](https://github.com/salesforce/django-declarative-apis/pull/162) Fix Makefile install target
 
 # [0.31.7]
 - [PR 148](https://github.com/salesforce/django-declarative-apis/pull/148) chore: upgrade django 4.2 LTS
