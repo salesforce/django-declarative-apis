@@ -32,13 +32,33 @@ def _import_hook(hook_path):
 
     Returns:
         Callable: The hook function.
+
+    Raises:
+        ValueError: If the hook path is invalid.
+        ImportError: If the module or function cannot be imported.
     """
-    module_name, func_name = hook_path.rsplit(".", 1)
-    module = __import__(module_name, fromlist=[func_name])
-    return getattr(module, func_name)
+    module_name = None
+    func_name = None
+
+    try:
+        module_name, func_name = hook_path.rsplit(".", 1)
+    except ValueError:
+        raise ValueError(
+            f"Invalid hook path: '{hook_path}'. Must be in the format 'module_name.function_name'."
+        )
+
+    try:
+        module = __import__(module_name, fromlist=[func_name])
+        return getattr(module, func_name)
+    except ImportError as e:
+        raise ImportError(f"Could not import module '{module_name}': {e}") from e
+    except AttributeError as e:
+        raise ImportError(
+            f"Module '{module_name}' does not have an attribute '{func_name}': {e}"
+        ) from e
 
 
-def emit_events(metric_type, payload):
+def emit_events(event_type, payload):
     """
     Emit a metric event using the configured hook or default to New Relic.
 
@@ -46,26 +66,23 @@ def emit_events(metric_type, payload):
         metric_type (str): Type of the metric (from MetricType enum).
         payload (dict): The data associated with the metric.
     """
-    # Check if a custom hook is configured
-    hook = getattr(settings, "DDA_METRIC_HOOK", None)
+    hook = getattr(settings, "DDA_EVENT_HOOK", None)
 
     if hook:
         try:
-            # Dynamically load and call the hook
             hook_callable = _import_hook(hook)
-            hook_callable(metric_type, payload)
-            logger.info(f"Metric emitted via custom hook: {metric_type}")
+            hook_callable(event_type, payload)
+            logger.info(f"Event emitted via custom hook: {event_type}")
         except Exception as e:
-            logger.error(f"Error in custom hook for metrics: {e}", exc_info=True)
+            logger.error(f"Error in custom hook for events: {e}", exc_info=True)
     else:
-        # Fallback to New Relic if no hook is configured
         if newrelic_agent:
             try:
-                newrelic_agent.record_custom_event(metric_type, payload)
-                logger.info(f"Metric emitted to New Relic: {metric_type}")
+                newrelic_agent.record_custom_event(event_type, payload)
+                logger.info(f"Event emitted to New Relic: {event_type}")
             except Exception as e:
-                logger.error(f"Error sending metric to New Relic: {e}", exc_info=True)
+                logger.error(f"Error sending event to New Relic: {e}", exc_info=True)
         else:
             logger.warning(
-                "No metrics hook or New Relic agent configured. Metric not sent."
+                "No events hook or New Relic agent configured. Event not sent."
             )
