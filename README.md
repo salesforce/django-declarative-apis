@@ -95,3 +95,10 @@ class PingDefinition(machinery.BaseEndpointDefinition):
     def resource(self):
         return {'ping': 'pong'}
 ```
+
+Optional: Implement Custom Event Hooks for Non-NewRelic Event Emission
+-----
+```bash
+# settings.py 
+DDA_EVENT_HOOK = "my_app.hooks.custom_event_handler"
+```
