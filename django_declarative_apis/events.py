@@ -60,7 +60,7 @@ def _import_hook(hook_path):
 
 def emit_events(event_type, payload):
     """
-    Emit a metric event using the configured hook or default to New Relic.
+    Emit a metric event using the configured hook and New Relic if configured.
 
     Args:
         metric_type (str): Type of the metric (from MetricType enum).
@@ -75,14 +75,14 @@ def emit_events(event_type, payload):
             logger.info(f"Event emitted via custom hook: {event_type}")
         except Exception as e:
             logger.error(f"Error in custom hook for events: {e}", exc_info=True)
+    
+    if newrelic_agent:
+        try:
+            newrelic_agent.record_custom_event(event_type, payload)
+            logger.info(f"Event emitted to New Relic: {event_type}")
+        except Exception as e:
+            logger.error(f"Error sending event to New Relic: {e}", exc_info=True)
     else:
-        if newrelic_agent:
-            try:
-                newrelic_agent.record_custom_event(event_type, payload)
-                logger.info(f"Event emitted to New Relic: {event_type}")
-            except Exception as e:
-                logger.error(f"Error sending event to New Relic: {e}", exc_info=True)
-        else:
-            logger.warning(
-                "No events hook or New Relic agent configured. Event not sent."
-            )
+        logger.warning(
+            "No New Relic agent configured. Event not sent."
+        )
