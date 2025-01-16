@@ -6,7 +6,6 @@
 #
 
 import unittest
-import unittest.mock
 from unittest.mock import patch, Mock
 from django_declarative_apis.events import _import_hook, emit_events
 from django.test import override_settings
@@ -42,7 +41,7 @@ class ImportHookTest(unittest.TestCase):
 
 class EmitEventsTest(unittest.TestCase):
     def setUp(self):
-        self.logger = unittest.mock.Mock()
+        self.logger = Mock()
         self.custom_hook = "tests.test_events.test_function"
 
     @patch("django_declarative_apis.events.newrelic_agent")
