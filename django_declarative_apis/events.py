@@ -75,7 +75,11 @@ def emit_events(event_type, payload):
             logger.info(f"Event emitted via custom hook: {event_type}")
         except Exception as e:
             logger.error(f"Error in custom hook for events: {e}", exc_info=True)
-    
+    else:
+        logger.info(
+            f"No custom hook configured. Skipping custom hook for event: {event_type}"
+        )
+
     if newrelic_agent:
         try:
             newrelic_agent.record_custom_event(event_type, payload)
@@ -83,6 +87,9 @@ def emit_events(event_type, payload):
         except Exception as e:
             logger.error(f"Error sending event to New Relic: {e}", exc_info=True)
     else:
+        logger.info(f"No New Relic agent configured. Event {event_type} not sent.")
+
+    if not hook and not newrelic_agent:
         logger.warning(
-            "No New Relic agent configured. Event not sent."
+            f"No event emitter configured for event: {event_type}. Event not sent."
         )
