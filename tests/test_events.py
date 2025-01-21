@@ -16,7 +16,6 @@ def test_function():
 
 
 class EmitEventsTest(unittest.TestCase):
-
     @override_settings(DDA_EVENT_HOOK="tests.test_events.test_function")
     def test_import_hook(self):
         hook_path = "tests.test_events.test_function"
@@ -39,20 +38,22 @@ class EmitEventsTest(unittest.TestCase):
             "module 'tests.test_events' has no attribute 'no_function'",
             str(context.exception),
         )
-    
+
     @patch("django_declarative_apis.events._import_hook")
     @patch("django_declarative_apis.events.logger")
-    def test_emit_events_with_hook(
-        self, mock_logger, mock_import_hook
-    ):
+    def test_emit_events_with_hook(self, mock_logger, mock_import_hook):
         event_type, payload = "test_event", {"key": "value"}
         mock_hook_function = Mock()
         mock_import_hook.return_value = mock_hook_function
-        with patch("django_declarative_apis.events.HOOK", "tests.test_events.test_function"):
+        with patch(
+            "django_declarative_apis.events.HOOK", "tests.test_events.test_function"
+        ):
             emit_events(event_type, payload)
             mock_import_hook.assert_called_once_with("tests.test_events.test_function")
             mock_hook_function.assert_called_once_with(event_type, payload)
-            mock_logger.info.assert_called_once_with("Event emitted via custom hook: test_event")
+            mock_logger.info.assert_called_once_with(
+                "Event emitted via custom hook: test_event"
+            )
 
     @patch("django_declarative_apis.events._import_hook")
     @patch("django_declarative_apis.events.logger")
@@ -62,7 +63,9 @@ class EmitEventsTest(unittest.TestCase):
     ):
         event_type, payload = "test_event", {"key": "value"}
         mock_import_hook.return_value.side_effect = Exception("Simulated Exception")
-        with patch("django_declarative_apis.events.HOOK", "tests.test_events.test_function"):
+        with patch(
+            "django_declarative_apis.events.HOOK", "tests.test_events.test_function"
+        ):
             emit_events(event_type, payload)
             mock_logger.error.assert_called_once_with(
                 "Error in custom hook for events: Simulated Exception", exc_info=True

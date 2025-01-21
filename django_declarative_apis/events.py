@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 HOOK = getattr(settings, "DDA_EVENT_HOOK", None)
 
+
 # Enum for event types
 class EventType(Enum):
     QUEUE_SNAPSHOT = "queue_snapshot"
@@ -28,7 +29,7 @@ def _import_hook(hook_path):
     It ensures that the imported object is callable and raises an error if it is not.
 
     Args:
-        hook_path (str): The dotted string path to the hook function. 
+        hook_path (str): The dotted string path to the hook function.
                          For example, 'module.submodule.function'.
 
     Returns:
