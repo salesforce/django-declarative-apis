@@ -96,7 +96,7 @@ class PingDefinition(machinery.BaseEndpointDefinition):
         return {'ping': 'pong'}
 ```
 
-Optional: Implement Custom Event Hooks for Non-NewRelic Event Emission
+Optional: Implement Custom Event Hooks for Event Emission
 -----
 ```bash
 # settings.py 

@@ -70,7 +70,7 @@ def _log_task_stats(
         cache.set(QUEUE_LENGTH_CACHE_KEY, queue_length)
 
         emit_events(
-            EventType.QUEUE_LENGTH.value,
+            EventType.QUEUE_SNAPSHOT,
             {
                 "queue_length": queue_length,
                 "queue": queue,
@@ -106,7 +106,7 @@ def _log_task_stats(
 
 def _log_retry_stats(method_name, resource_instance_id, correlation_id):
     emit_events(
-        EventType.TASK_RETRY.value,
+        EventType.TASK_RETRY_ATTEMPT,
         {"method_name": method_name, "resource_instance_id": resource_instance_id},
     )
     logger.warning(

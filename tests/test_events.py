@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019, salesforce.com, inc.
+# Copyright (c) 2025, salesforce.com, inc.
 # All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
@@ -15,7 +15,9 @@ def test_function():
     pass
 
 
-class ImportHookTest(unittest.TestCase):
+class EmitEventsTest(unittest.TestCase):
+
+    @override_settings(DDA_EVENT_HOOK="tests.test_events.test_function")
     def test_import_hook(self):
         hook_path = "tests.test_events.test_function"
         hook_function = _import_hook(hook_path)
@@ -27,61 +29,30 @@ class ImportHookTest(unittest.TestCase):
             _import_hook("invalid_path")
         self.assertEqual(
             str(context.exception),
-            "Invalid hook path: 'invalid_path'. Must be in the format 'module_name.function_name'.",
+            "not enough values to unpack (expected 2, got 1)",
         )
 
     def test_nonexistent_function(self):
-        with self.assertRaises(ImportError) as context:
+        with self.assertRaises(AttributeError) as context:
             _import_hook("tests.test_events.no_function")
         self.assertIn(
-            "Module 'tests.test_events' does not have an attribute 'no_function': module 'tests.test_events' has no attribute 'no_function'",
+            "module 'tests.test_events' has no attribute 'no_function'",
             str(context.exception),
         )
-
-
-class EmitEventsTest(unittest.TestCase):
-    def setUp(self):
-        self.logger = Mock()
-        self.custom_hook = "tests.test_events.test_function"
-
-    @patch("django_declarative_apis.events.newrelic_agent")
+    
     @patch("django_declarative_apis.events._import_hook")
     @patch("django_declarative_apis.events.logger")
-    @override_settings(DDA_EVENT_HOOK="tests.test_events.test_function")
-    def test_emit_events_with_hook_and_newrelic(
-        self, mock_logger, mock_import_hook, mock_newrelic_agent
+    def test_emit_events_with_hook(
+        self, mock_logger, mock_import_hook
     ):
-        event_type = "test_event"
-        payload = {"key": "value"}
-
+        event_type, payload = "test_event", {"key": "value"}
         mock_hook_function = Mock()
         mock_import_hook.return_value = mock_hook_function
-        mock_newrelic_agent.record_custom_event = Mock()
-
-        emit_events(event_type, payload)
-        mock_import_hook.assert_called_once_with("tests.test_events.test_function")
-        mock_hook_function.assert_called_once_with(event_type, payload)
-        mock_newrelic_agent.record_custom_event.assert_called_once_with(
-            event_type, payload
-        )
-        assert mock_logger.info.call_count == 2
-        log_calls = [args[0] for args, _ in mock_logger.info.call_args_list]
-        assert "Event emitted via custom hook: test_event" in log_calls
-        assert "Event emitted to New Relic: test_event" in log_calls
-
-    @patch("django_declarative_apis.events.newrelic_agent")
-    @patch("django_declarative_apis.events.logger")
-    def test_emit_events_with_new_relic(self, mock_logger, mock_newrelic_agent):
-        event_type = "test_event"
-        payload = {"key": "value"}
-        mock_newrelic_agent.record_custom_event = Mock()
-        emit_events(event_type, payload)
-        mock_newrelic_agent.record_custom_event.assert_called_once_with(
-            event_type, payload
-        )
-        mock_logger.info.assert_called_once_with(
-            "Event emitted to New Relic: test_event"
-        )
+        with patch("django_declarative_apis.events.HOOK", "tests.test_events.test_function"):
+            emit_events(event_type, payload)
+            mock_import_hook.assert_called_once_with("tests.test_events.test_function")
+            mock_hook_function.assert_called_once_with(event_type, payload)
+            mock_logger.info.assert_called_once_with("Event emitted via custom hook: test_event")
 
     @patch("django_declarative_apis.events._import_hook")
     @patch("django_declarative_apis.events.logger")
@@ -89,27 +60,10 @@ class EmitEventsTest(unittest.TestCase):
     def test_emit_events_with_exception_calling_hook(
         self, mock_logger, mock_import_hook
     ):
-        event_type = "test_event"
-        payload = {"key": "value"}
-
+        event_type, payload = "test_event", {"key": "value"}
         mock_import_hook.return_value.side_effect = Exception("Simulated Exception")
-        emit_events(event_type, payload)
-        mock_logger.error.assert_called_once_with(
-            "Error in custom hook for events: Simulated Exception", exc_info=True
-        )
-
-    @patch("django_declarative_apis.events.newrelic_agent")
-    @patch("django_declarative_apis.events.logger")
-    def test_emit_events_with_newrelic_exception(
-        self, mock_logger, mock_newrelic_agent
-    ):
-        event_type = "test_event"
-        payload = {"key": "value"}
-        mock_newrelic_agent.record_custom_event.side_effect = Exception(
-            "Simulated NewRelic Exception"
-        )
-        emit_events(event_type, payload)
-        mock_logger.error.assert_called_once_with(
-            "Error sending event to New Relic: Simulated NewRelic Exception",
-            exc_info=True,
-        )
+        with patch("django_declarative_apis.events.HOOK", "tests.test_events.test_function"):
+            emit_events(event_type, payload)
+            mock_logger.error.assert_called_once_with(
+                "Error in custom hook for events: Simulated Exception", exc_info=True
+            )
