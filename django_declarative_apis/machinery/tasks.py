@@ -16,11 +16,7 @@ import kombu.exceptions
 from django.conf import settings
 from django.core.cache import cache
 import django.db.models
-
-try:
-    from newrelic import agent as newrelic_agent
-except ImportError:
-    newrelic_agent = None
+from django_declarative_apis.events import emit_events, EventType
 
 try:
     import cid.locals
@@ -73,19 +69,18 @@ def _log_task_stats(
 
         cache.set(QUEUE_LENGTH_CACHE_KEY, queue_length)
 
-        if newrelic_agent:
-            newrelic_agent.record_custom_event(
-                "task_runner:queue_length",
-                {
-                    "queue_length": queue_length,
-                    "queue": queue,
-                    "routing_key": routing_key,
-                    "wait_time_seconds": wait_time,
-                    "queue_delay_seconds": queue_delay,
-                    "process_task_count": process_task_count,
-                    "correlation_id": correlation_id,
-                },
-            )
+        emit_events(
+            EventType.QUEUE_SNAPSHOT,
+            {
+                "queue_length": queue_length,
+                "queue": queue,
+                "routing_key": routing_key,
+                "wait_time_seconds": wait_time,
+                "queue_delay_seconds": queue_delay,
+                "process_task_count": process_task_count,
+                "correlation_id": correlation_id,
+            },
+        )
 
         logger.info(
             "method=%s, resource_id=%s, queue_length=%s, queue=%s, routing_key=%s, task_wait_time=%s, "
@@ -110,17 +105,16 @@ def _log_task_stats(
 
 
 def _log_retry_stats(method_name, resource_instance_id, correlation_id):
-    if newrelic_agent:
-        newrelic_agent.record_custom_event(
-            "task_runner:retry",
-            {"method_name": method_name, "resource_instance_id": resource_instance_id},
-        )
-        logger.warning(
-            "will retry task: method=%s, resource_id=%s, correlation_id=%s",
-            method_name,
-            resource_instance_id,
-            correlation_id,
-        )
+    emit_events(
+        EventType.TASK_RETRY_ATTEMPT,
+        {"method_name": method_name, "resource_instance_id": resource_instance_id},
+    )
+    logger.warning(
+        "will retry task: method=%s, resource_id=%s, correlation_id=%s",
+        method_name,
+        resource_instance_id,
+        correlation_id,
+    )
 
 
 class RetryParams(NamedTuple):
