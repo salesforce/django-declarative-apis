@@ -128,7 +128,7 @@ ENV/
 # IntelliJ
 /out/
 
-# VusualStudio Code
+# Visual Studio Code
 .vscode/
 
 # mpeltonen/sbt-idea plugin
