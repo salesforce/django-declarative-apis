@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR 156](https://github.com/salesforce/django-declarative-apis/pull/156) Update GitHub action versions
 - [PR 162](https://github.com/salesforce/django-declarative-apis/pull/162) Fix Makefile install target
 - [PR 164](https://github.com/salesforce/django-declarative-apis/pull/164) Custom Event Hooks Event Emission
+- [PR-165](https://github.com/ajaycj/django-declarative-apis/tree/fix-builds) ReadTheDocs build error
 
 # [0.31.7]
 - [PR 148](https://github.com/salesforce/django-declarative-apis/pull/148) chore: upgrade django 4.2 LTS
