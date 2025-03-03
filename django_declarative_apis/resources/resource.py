@@ -265,7 +265,11 @@ class Resource:
         except errors.ClientError as client_error:
             error_type = type(client_error).__name__
             message = str(client_error)
-            logger.error('ev=dda_resource, method=__call__, state=client_exception, type=%s, msg="%s"', error_type, message)
+            logger.error(
+                'ev=dda_resource, method=__call__, state=client_exception, type=%s, msg="%s"',
+                error_type,
+                message,
+            )
             status_code = http.client.BAD_REQUEST
             result = self.error_handler(client_error, request, meth, em_format)
         except Exception as e:
@@ -279,7 +283,8 @@ class Resource:
             emitter, ct = Emitter.get(em_format)
         except ValueError:  # pragma: nocover
             logger.error(
-                "ev=dda_resource method=__call__ state=bad_emitter emitter_format=%s", em_format
+                "ev=dda_resource method=__call__ state=bad_emitter emitter_format=%s",
+                em_format,
             )
             result = rc.BAD_REQUEST
             result.content = "Invalid output format specified '%s'." % em_format
