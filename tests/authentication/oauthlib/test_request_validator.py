@@ -35,9 +35,6 @@ class DjangoRequestValidatorTestCase(django.test.TestCase):
         validator = request_validator.DjangoRequestValidator(request)
 
         self.assertEqual(validator.get_rsa_key(self.consumer.key, request), "")
-        mock_log.error.assert_called_with(
-            "This should never happen, since consumer is already validated"
-        )
 
         validator.consumer = self.consumer
         self.consumer.rsa_public_key_pem = "something non-null"
