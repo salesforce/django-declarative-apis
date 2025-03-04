@@ -79,9 +79,11 @@ class TweakedSignatureOnlyEndpoint(SignatureOnlyEndpoint):
         # prevents malicious users from guessing sensitive information
         v = all((valid_client, valid_signature))
         if not v:
-            log.info("[Failure] request verification failed.")
-            log.info("Valid client: %s", valid_client)
-            log.info("Valid signature: %s", valid_signature)
+            log.info(
+                'ev=oauth1, valid_client=%s, valid_signature=%s, msg="authentication failed"',
+                valid_client,
+                valid_signature,
+            )
 
         if valid_client and not valid_signature:  # TOOPHER
             norm_params = signature.normalize_parameters(request.params)  # TOOPHER
