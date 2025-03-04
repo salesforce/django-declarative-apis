@@ -263,13 +263,6 @@ class Resource:
             _ = request.POST if request.method == "POST" else request.GET
             status_code, result = meth(request, *args, **kwargs)
         except errors.ClientError as client_error:
-            error_type = type(client_error).__name__
-            message = str(client_error)
-            logger.error(
-                'ev=dda_resource, method=__call__, state=client_exception, type=%s, msg="%s"',
-                error_type,
-                message,
-            )
             status_code = http.client.BAD_REQUEST
             result = self.error_handler(client_error, request, meth, em_format)
         except Exception as e:
@@ -392,7 +385,7 @@ class Resource:
             self.email_exception(rep)
         elif isinstance(error, errors.ClientError):
             logger.info(
-                "ClientError (%s): status_code=%s error_message=%s",
+                'ev=dda, error_type=%s, status_code=%s, error="%s"',
                 error.__class__.__name__,
                 error.status_code,
                 error.as_dict(),
