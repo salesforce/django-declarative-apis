@@ -76,12 +76,14 @@ class DjangoRequestValidator(RequestValidator):
 
             return self.consumer.secret
         except Exception:  # noqa
+            logger.error('ev=dda_client_secret, status=error, key="%s"', client_key)
             return ""
 
     def get_rsa_key(self, client_key, request):
         try:
             return self.consumer.rsa_public_key_pem
         except Exception:  # noqa
+            logger.error('ev=dda_rsa_key, status=error, key="%s"', client_key)
             return ""
 
     @property
