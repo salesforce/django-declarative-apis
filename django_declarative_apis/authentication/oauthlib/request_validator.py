@@ -61,7 +61,11 @@ class DjangoRequestValidator(RequestValidator):
         self.consumer = oauth_models.get_consumer(client_key)
         if self.consumer is None:
             self.validation_error_message = "consumer_key_unknown"
-            logger.error("invalid consumer")
+            logger.error(
+                'ev=oauth1, error=%s, client_key="%s"',
+                self.validation_error_message,
+                client_key,
+            )
             return False
         return True
 
@@ -69,21 +73,17 @@ class DjangoRequestValidator(RequestValidator):
         try:
             if self.consumer.rsa_public_key_pem:
                 return None
-            else:
-                return self.consumer.secret
-        except Exception as e:  # noqa
-            logger.error(
-                "This should never happen, since consumer is already validated"
-            )
+
+            return self.consumer.secret
+        except Exception:  # noqa
+            logger.error('ev=dda_client_secret, status=error, key="%s"', client_key)
             return ""
 
     def get_rsa_key(self, client_key, request):
         try:
             return self.consumer.rsa_public_key_pem
-        except Exception as e:  # noqa
-            logger.error(
-                "This should never happen, since consumer is already validated"
-            )
+        except Exception:  # noqa
+            logger.error('ev=dda_rsa_key, status=error, key="%s"', client_key)
             return ""
 
     @property
