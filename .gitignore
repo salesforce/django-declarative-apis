@@ -179,3 +179,4 @@ pip-selfcheck.json
 
 # DS
 *.sqlite3
+.codegenie
