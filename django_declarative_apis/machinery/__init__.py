@@ -448,7 +448,9 @@ class BehavioralEndpointDefinitionRouter:
         try:
             bound_endpoint = self.bind_endpoint_to_request(request, *args, **kwargs)
             logger.info(
-                "Processing request with handler %s",
+                "ev=dda, method=%s, path=%s, handler=%s",
+                request.method,
+                request.path,
                 bound_endpoint.bound_endpoint.__class__.__name__,
             )
             result = bound_endpoint.get_response()
