@@ -165,8 +165,11 @@ class Resource:
                 if auth_header.startswith(hint.header):
                     potential_authenticators.extend(authenticators)
                     continue
-        except KeyError:
-            logger.exception("ev=dda_resource method=authenticate state=KeyError")
+        except KeyError as ke:
+            logger.info(
+                "ev=dda loc=resource method=authenticate state=no_auth_header key_error=%s",
+                ke,
+            )
             pass
 
         try:
