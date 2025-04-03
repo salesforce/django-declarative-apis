@@ -14,9 +14,12 @@ import time
 
 from django.db import models as django_models
 import pydantic
+import logging
 
 from . import errors
 from . import tasks
+
+logger = logging.getLogger(__name__)
 
 
 class EndpointAttribute(metaclass=abc.ABCMeta):
@@ -124,23 +127,54 @@ class TypedEndpointAttributeMixin:
         super().__init__(*args, **kwargs)
 
     def coerce_value_to_type(self, raw_value):
+        """Coerce a raw value to the expected field type.
+
+        Args:
+            raw_value: The value to coerce
+
+        Returns:
+            The coerced value of the expected type
+
+        Raises:
+            ClientErrorInvalidFieldValues: If the value cannot be coerced to the expected type
+        """
+        # handle tricksy quickly right off the bat
+        if raw_value is None:
+            return None
+
         try:
-            if self.field_type == bool and not isinstance(raw_value, self.field_type):
-                return "rue" in raw_value
-            elif issubclass(self.field_type, pydantic.BaseModel):
+            if self.field_type == bool:
+                if isinstance(raw_value, bool):
+                    return raw_value
+                if isinstance(raw_value, str):
+                    return raw_value.lower() in ("true", "1", "yes", "on")
+                # handle ints and floats too
+                if isinstance(raw_value, (int, float)):
+                    return bool(raw_value)
+                raise ValueError(f"Cannot convert {raw_value} to boolean")
+
+            if issubclass(self.field_type, pydantic.BaseModel):
                 return self.field_type.parse_obj(raw_value)
-            else:
-                if isinstance(raw_value, collections.abc.Iterable) and not isinstance(
-                    raw_value, (str, dict)
-                ):
-                    return list(self.field_type(r) for r in raw_value)
-                else:
-                    return self.field_type(raw_value)
-        except Exception as e:  # noqa
+
+            if isinstance(raw_value, collections.abc.Iterable) and not isinstance(
+                raw_value, (str, dict)
+            ):
+                return list(self.field_type(r) for r in raw_value)
+
+            return self.field_type(raw_value)
+        except Exception as e:
+            name = self.name or self.api_name
+            logger.info(
+                'ev=dda, loc=coerce_value_to_type, name=%s, raw="%s", error="%s"',
+                name,
+                raw_value,
+                e,
+            )
             raise errors.ClientErrorInvalidFieldValues(
-                [self.name],
+                [name],
                 "Could not parse {val} as type {type}".format(
-                    val=raw_value, type=self.field_type.__name__
+                    val=raw_value,
+                    type=self.field_type.__name__,
                 ),
             )
 
@@ -288,31 +322,46 @@ class RequestField(TypedEndpointAttributeMixin, RequestProperty):
         return result
 
     def get_without_default(self, owner_instance, request):
-        if request.method == "POST":
-            query_dict = request.POST
-        else:
-            query_dict = request.GET
+        """Get the field value from the request without applying default value.
 
-        if (self.api_name or self.name) in query_dict:
+        Args:
+            owner_instance: The instance of the endpoint definition
+            request: The Django request object
+
+        Returns:
+            The coerced value of the field, or None if not found
+        """
+        if not request:
+            return None
+
+        query_dict = request.POST if request.method == "POST" else request.GET
+        # handle errors during MIME type translation or data deserialization
+        if not query_dict:
+            return None
+
+        field_name = self.api_name or self.name
+        if not field_name:
+            return None
+
+        if field_name in query_dict:
             if not self.multivalued:
-                raw_value = query_dict.get(self.api_name or self.name)
+                raw_value = query_dict.get(field_name)
             else:
-                raw_value = query_dict.getlist(self.api_name or self.name)
+                raw_value = query_dict.getlist(field_name)
             typed_value = self.coerce_value_to_type(raw_value)
         else:
             typed_value = None
 
         if self.post_processor:
             return self.post_processor(owner_instance, typed_value)
-        else:
-            return typed_value
+
+        return typed_value
 
     def get_field(self, owner_instance, request):
         raw_value = self.get_without_default(owner_instance, request)
         if raw_value is not None:
             return raw_value
-        else:
-            return self.default_value
+        return self.default_value
 
 
 class ResourceField(RequestField):
