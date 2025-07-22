@@ -13,6 +13,7 @@ import django.core.exceptions
 import django.test
 from django.test.utils import override_settings
 from unittest import mock
+from django.http import HttpResponse
 
 from django_declarative_apis.authentication.oauthlib import oauth_errors
 from django_declarative_apis.resources import resource
@@ -212,3 +213,23 @@ class ResourceTestCase(testutils.RequestCreatorMixin, django.test.TestCase):
             (subj, body, _, __), ___ = mock_email.call_args_list[0]
             self.assertEqual(subj, "[Django] Django Declarative APIs crash report")
             self.assertEqual(body, traceback)
+
+    def test_call_no_content_response(self):
+        """Test that HTTP 204 responses return empty content with content-length 0"""
+
+        def handle_delete(request, *args, **kwargs):
+            # Handler returns an HttpResponse with 204 status as the result
+            return http.HTTPStatus.OK, HttpResponse(status=http.HTTPStatus.NO_CONTENT)
+
+        class Handler:
+            allowed_methods = ("DELETE",)
+            method_handlers = {"DELETE": handle_delete}
+
+        req = self.create_request(method="DELETE")
+        res = resource.Resource(lambda: Handler())
+        resp = res(req)
+
+        # Verify the response has 204 status and empty content
+        self.assertEqual(resp.status_code, http.HTTPStatus.NO_CONTENT)
+        self.assertEqual(resp.content, b"")
+        self.assertEqual(len(resp.content), 0)

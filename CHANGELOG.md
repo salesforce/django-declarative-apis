@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+# [0.34.1]
+- [PR 179](https://github.com/salesforce/django-declarative-apis/pull/179) Move the 204 response handling fix to resources.
+
 # [0.34.0]
 - [PR 178](https://github.com/salesforce/django-declarative-apis/pull/178) Fix JSONEmitter for empty response bodies.
 
