@@ -109,6 +109,15 @@ class JSONEmitterTestCase(unittest.TestCase):
         resp = em.render(django.test.RequestFactory().get("/"))
         self.assertEqual(json.loads(resp), ["foo", "bar"])
 
+    def test_decode_empty_list(self):
+        em = emitters.JSONEmitter([""], lambda: None)
+        resp = em.render(django.test.RequestFactory().get("/"))
+        self.assertEqual(resp, "")
+
+        em = emitters.JSONEmitter([], lambda: None)
+        resp = em.render(django.test.RequestFactory().get("/"))
+        self.assertEqual(resp, "")
+
 
 class DjangoEmitterTestCase(unittest.TestCase):
     def test_render_http_response_succes(self):

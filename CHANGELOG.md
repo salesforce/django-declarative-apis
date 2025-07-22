@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+# [0.34.0]
+- [PR 178](https://github.com/salesforce/django-declarative-apis/pull/178) Fix JSONEmitter for empty response bodies.
+
 # [0.33.0]
 - [PR 170](https://github.com/salesforce/django-declarative-apis/pull/170) Update publish workflow
 - [PR 173](https://github.com/salesforce/django-declarative-apis/pull/173) handle request.GET or request.POST being None + a few other improvements

@@ -182,20 +182,24 @@ class JSONEmitter(Emitter):
 
     def render(self, request):
         cb = request.GET.get("callback", None)
-        assert cb is None, "JSONP Callbacks not suppoted"
-        seria = json.dumps(
-            self.decode(self.construct()),
-            cls=DjangoJSONEncoder,
-            ensure_ascii=False,
-            indent=4,
-        )
+        assert cb is None, "JSONP Callbacks not supported"
+        seria = self.decode(self.construct())
+        if isinstance(seria, list):
+            if len(seria) == 0 or (len(seria) == 1 and len(seria[0]) == 0):
+                # the body is empty, no need to run json.dumps
+                return ""
 
         # Callback
         # TODO: do we care about JSONP?
         # if cb and is_valid_jsonp_callback_value(cb):
         #     return '%s(%s)' % (cb, seria)
 
-        return seria
+        return json.dumps(
+            seria,
+            cls=DjangoJSONEncoder,
+            ensure_ascii=False,
+            indent=4,
+        )
 
 
 Emitter.register("json", JSONEmitter, "application/json; charset=utf-8")
