@@ -301,6 +301,10 @@ class Resource:
         srl = emitter(result, handler, anonymous)
 
         try:
+            # If the status code is 204, we need to return an empty response. skip the emitter.
+            if status_code == http.HTTPStatus.NO_CONTENT:
+                return HttpResponse(b"", status=http.HTTPStatus.NO_CONTENT)
+
             """
             Decide whether or not we want a generator here,
             or we just want to buffer up the entire result
