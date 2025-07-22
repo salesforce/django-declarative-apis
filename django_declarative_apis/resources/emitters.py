@@ -182,7 +182,7 @@ class JSONEmitter(Emitter):
 
     def render(self, request):
         cb = request.GET.get("callback", None)
-        assert cb is None, "JSONP Callbacks not suppoted"
+        assert cb is None, "JSONP Callbacks not supported"
         seria = self.decode(self.construct())
         if isinstance(seria, list):
             if len(seria) == 0 or (len(seria) == 1 and len(seria[0]) == 0):
