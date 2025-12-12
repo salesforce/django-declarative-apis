@@ -111,7 +111,7 @@ class EndpointResourceAttribute(EndpointAttribute):
                 message = "Resource instance not found"
             raise errors.ClientErrorNotFound(message)
 
-        if value.__class__ == dict:
+        if value.__class__ is dict:
             return value
 
         if not getattr(value, "_api_filter", False):
