@@ -33,7 +33,6 @@ _ENCODERS = {
 
 
 class NoLoggingTestRunner(DiscoverRunner):
-
     """Don't log during tests."""
 
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
@@ -144,9 +143,9 @@ class OAuthClientHandler(ClientHandler):
                     body=all_request_parameters,
                 )
 
-                oauth_signature_data[
-                    "oauth_signature"
-                ] = oauth1_client.get_oauth_signature(oauth_request)
+                oauth_signature_data["oauth_signature"] = (
+                    oauth1_client.get_oauth_signature(oauth_request)
+                )
             else:
                 # use HMAC-SHA1 signature method
                 oauth_signature_data.update({"oauth_signature_method": "HMAC-SHA1"})
