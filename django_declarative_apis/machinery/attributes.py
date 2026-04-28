@@ -143,7 +143,7 @@ class TypedEndpointAttributeMixin:
             return None
 
         try:
-            if self.field_type == bool:
+            if self.field_type is bool:
                 if isinstance(raw_value, bool):
                     return raw_value
                 if isinstance(raw_value, str):
