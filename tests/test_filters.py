@@ -165,11 +165,10 @@ class FiltersTestCase(django.test.TestCase):
         self.assertTrue("expandable_dict" in filtered["__expandable__"])
         self.assertTrue("expandable_string" in filtered["__expandable__"])
 
-        with mock.patch(
-            "tests.models.TestModel.expandable_dict"
-        ) as dict_mock, mock.patch(
-            "tests.models.TestModel.expandable_string"
-        ) as str_mock:
+        with (
+            mock.patch("tests.models.TestModel.expandable_dict") as dict_mock,
+            mock.patch("tests.models.TestModel.expandable_string") as str_mock,
+        ):
             filtered = filtering.apply_filters_to_object(
                 self.test_model, filters.DEFAULT_FILTERS
             )

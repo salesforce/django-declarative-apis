@@ -143,7 +143,7 @@ class TypedEndpointAttributeMixin:
             return None
 
         try:
-            if self.field_type == bool:
+            if self.field_type is bool:
                 if isinstance(raw_value, bool):
                     return raw_value
                 if isinstance(raw_value, str):
@@ -558,9 +558,9 @@ class EndpointTask(EndpointAttribute):
         self.task_runner(owner_instance)
 
     def run(self, owner_instance):
-        assert (
-            self.task_state != EndpointTask.STATE_RUNNING
-        ), "Circular task reference detected!"
+        assert self.task_state != EndpointTask.STATE_RUNNING, (
+            "Circular task reference detected!"
+        )
         try:
             self.task_state = EndpointTask.STATE_RUNNING
 
@@ -569,9 +569,9 @@ class EndpointTask(EndpointAttribute):
                 depends_on = getattr(owner_instance, depends_on)
 
             if depends_on and (depends_on.task_state != EndpointTask.STATE_COMPLETED):
-                assert not isinstance(
-                    depends_on, DeferrableEndpointTask
-                ), "DeferredEndpointTask cannot be used as depends_on arg"
+                assert not isinstance(depends_on, DeferrableEndpointTask), (
+                    "DeferredEndpointTask cannot be used as depends_on arg"
+                )
                 depends_on.run(owner_instance)
 
             self._run_task(owner_instance)
@@ -708,9 +708,9 @@ class DeferrableEndpointTask(EndpointTask):
 
         if execute_unless:
             assert callable(execute_unless), "execute_unless MUST be callable"
-            assert (
-                inspect.getfullargspec(execute_unless).args == ["self"]
-            ), "execute_unless MUST be an instance method that takes only the 'self' argument"
+            assert inspect.getfullargspec(execute_unless).args == ["self"], (
+                "execute_unless MUST be an instance method that takes only the 'self' argument"
+            )
 
         self.execute_unless = execute_unless
 
@@ -733,9 +733,9 @@ class DeferrableEndpointTask(EndpointTask):
 
         resource = owner_instance.resource
 
-        assert isinstance(
-            resource, django_models.Model
-        ), "resource must be an instance of django.db.models.Model to run as deferred task"
+        assert isinstance(resource, django_models.Model), (
+            "resource must be an instance of django.db.models.Model to run as deferred task"
+        )
 
         delay = self._resolve_maybe_callable(owner_instance, self.delay) or 0
         always_defer = self._resolve_maybe_callable(owner_instance, self.always_defer)
@@ -788,9 +788,9 @@ class DeferrableGenericEndpointTask(DeferrableEndpointTask):
         **kwargs,
     ):
         super().__init__(**kwargs)
-        assert (
-            task_args_packer is not None
-        ), "task_args_packer required for DeferrableGenericEndpointTask"
+        assert task_args_packer is not None, (
+            "task_args_packer required for DeferrableGenericEndpointTask"
+        )
         self.task_args_packer = task_args_packer
 
     def _run_task(self, owner_instance):

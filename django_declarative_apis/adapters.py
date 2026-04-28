@@ -47,13 +47,13 @@ class EndpointHandler:
                 )
 
             if isinstance(handler, (list, tuple)):
-                self.method_handlers[
-                    method.upper()
-                ] = BehavioralEndpointDefinitionRouter(*handler)
+                self.method_handlers[method.upper()] = (
+                    BehavioralEndpointDefinitionRouter(*handler)
+                )
             else:
-                self.method_handlers[
-                    method.upper()
-                ] = BehavioralEndpointDefinitionRouter(handler)
+                self.method_handlers[method.upper()] = (
+                    BehavioralEndpointDefinitionRouter(handler)
+                )
 
         self.allowed_methods = self.method_handlers.keys()
 

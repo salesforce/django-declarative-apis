@@ -723,8 +723,11 @@ class FilterCachingTestCase(django.test.TestCase):
             filtering.apply_filters_to_object(root, filters.INEFFICIENT_FILTERS)
 
         root = models.InefficientRoot.objects.get(id=self.root_id)
-        with self.assertNumQueries(3), override_settings(
-            DDA_FILTER_MODEL_CACHING_ENABLED=True, DDA_FILTER_CACHE_DEBUG_LOG=True
+        with (
+            self.assertNumQueries(3),
+            override_settings(
+                DDA_FILTER_MODEL_CACHING_ENABLED=True, DDA_FILTER_CACHE_DEBUG_LOG=True
+            ),
         ):
             filtering.apply_filters_to_object(root, filters.INEFFICIENT_FILTERS)
 
@@ -736,8 +739,11 @@ class FilterCachingTestCase(django.test.TestCase):
             )
 
         root = models.InefficientRoot.objects.get(id=self.root_id)
-        with self.assertNumQueries(3), override_settings(
-            DDA_FILTER_MODEL_CACHING_ENABLED=True, DDA_FILTER_CACHE_DEBUG_LOG=True
+        with (
+            self.assertNumQueries(3),
+            override_settings(
+                DDA_FILTER_MODEL_CACHING_ENABLED=True, DDA_FILTER_CACHE_DEBUG_LOG=True
+            ),
         ):
             filtering.apply_filters_to_object(
                 root, filters.INEFFICIENT_FUNCTION_FILTERS
