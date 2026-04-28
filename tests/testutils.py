@@ -10,8 +10,6 @@ import time
 import urllib.parse
 import logging
 
-import oauth2
-
 from oauthlib import oauth1 as oauthlib_oauth1
 from oauthlib import common as oauthlib_common
 
@@ -33,7 +31,6 @@ _ENCODERS = {
 
 
 class NoLoggingTestRunner(DiscoverRunner):
-
     """Don't log during tests."""
 
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
@@ -106,7 +103,9 @@ class OAuthClientHandler(ClientHandler):
 
             # This provides a way for us to override default values for testing.
             oauth_version = request.META.get("oauth_version", "1.0")
-            oauth_nonce = request.META.get("oauth_nonce", oauth2.generate_nonce())
+            oauth_nonce = request.META.get(
+                "oauth_nonce", oauthlib_common.generate_nonce()
+            )
             oauth_client_timestamp = request.META.get(
                 "oauth_timestamp", cls.get_oauth_client_timestamp()
             )
@@ -144,29 +143,28 @@ class OAuthClientHandler(ClientHandler):
                     body=all_request_parameters,
                 )
 
-                oauth_signature_data[
-                    "oauth_signature"
-                ] = oauth1_client.get_oauth_signature(oauth_request)
+                oauth_signature_data["oauth_signature"] = (
+                    oauth1_client.get_oauth_signature(oauth_request)
+                )
             else:
                 # use HMAC-SHA1 signature method
                 oauth_signature_data.update({"oauth_signature_method": "HMAC-SHA1"})
 
-                # Create oauth request object to compute signature
-                oauth_request = oauth2.Request.from_consumer_and_token(
-                    consumer,
-                    None,
-                    request.method,
-                    request.build_absolute_uri(request.path),
-                    all_request_parameters,
-                    is_form_encoded=True,
+                oauth1_client = oauthlib_oauth1.Client(
+                    consumer.key,
+                    client_secret=consumer.secret,
+                    signature_method=oauthlib_oauth1.SIGNATURE_HMAC,
                 )
 
-                # Add signature to django request
-                signature_method = oauth2.SignatureMethod_HMAC_SHA1()
-                oauth_request.sign_request(signature_method, consumer, None)
-                oauth_signature_data["oauth_signature"] = oauth_request.get_parameter(
-                    "oauth_signature"
-                ).decode("utf-8")
+                oauth_request = oauthlib_common.Request(
+                    request.build_absolute_uri(request.path),
+                    http_method=request.method,
+                    body=all_request_parameters,
+                )
+
+                oauth_signature_data["oauth_signature"] = (
+                    oauth1_client.get_oauth_signature(oauth_request)
+                )
 
             use_auth_header_signature = request.META.pop(
                 "use_auth_header_signature", False
