@@ -143,9 +143,9 @@ class OAuthClientHandler(ClientHandler):
                     body=all_request_parameters,
                 )
 
-                oauth_signature_data["oauth_signature"] = (
-                    oauth1_client.get_oauth_signature(oauth_request)
-                )
+                oauth_signature_data[
+                    "oauth_signature"
+                ] = oauth1_client.get_oauth_signature(oauth_request)
             else:
                 # use HMAC-SHA1 signature method
                 oauth_signature_data.update({"oauth_signature_method": "HMAC-SHA1"})
@@ -162,9 +162,9 @@ class OAuthClientHandler(ClientHandler):
                     body=all_request_parameters,
                 )
 
-                oauth_signature_data["oauth_signature"] = (
-                    oauth1_client.get_oauth_signature(oauth_request)
-                )
+                oauth_signature_data[
+                    "oauth_signature"
+                ] = oauth1_client.get_oauth_signature(oauth_request)
 
             use_auth_header_signature = request.META.pop(
                 "use_auth_header_signature", False
