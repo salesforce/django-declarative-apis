@@ -447,9 +447,9 @@ def schedule_resource_task_runner(
     delay=0,
 ):
     resource = resource_bound_method.__self__
-    assert isinstance(
-        resource, django.db.models.Model
-    ), "resource must be an instance of django.db.models.Model to run as deferred task"
+    assert isinstance(resource, django.db.models.Model), (
+        "resource must be an instance of django.db.models.Model to run as deferred task"
+    )
 
     resource_class_name = "{0}.{1}".format(
         resource.__module__, resource.__class__.__name__
