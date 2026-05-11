@@ -47,6 +47,8 @@ dev = [
 
 [tool.ruff]
 extend-exclude = [".heroku"]
+
+[tool.ruff.lint]
 extend-select = ["C901"]
 
 [tool.coverage.run]
