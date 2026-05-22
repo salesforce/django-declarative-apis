@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR 187](https://github.com/salesforce/django-declarative-apis/pull/187) Replace unmaintained `oauth2` library with `oauthlib` in test infrastructure.
 - [PR 188](https://github.com/salesforce/django-declarative-apis/pull/188) Fix ruff deprecation warning by moving `extend-select` to `[tool.ruff.lint]`.
 - [PR 190](https://github.com/salesforce/django-declarative-apis/pull/190) Bump ReadTheDocs build to Python 3.11 to satisfy `coverage` 7.14.0's `>=3.10` requirement.
+- [PR 191](https://github.com/salesforce/django-declarative-apis/pull/191) Document the release procedure in the README.
 
 # [0.34.2]
 - [PR 184](https://github.com/salesforce/django-declarative-apis/pull/184) Add support for Django 5.x
