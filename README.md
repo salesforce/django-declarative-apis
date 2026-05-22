@@ -109,11 +109,12 @@ Releasing
 Releases are published to PyPI by the `publish release` GitHub Action, which
 runs when a GitHub Release is created from a version tag.
 
-1. Create a release branch off the latest `main`:
+1. Create a release branch off the latest `main`. Past releases have used
+   `release/X.Y.Z` (e.g. `release/0.25.3`):
 
    ```bash
    git checkout main && git pull
-   git checkout -b release-X.Y.Z
+   git checkout -b release/X.Y.Z
    ```
 
 2. Bump the version with `bumpversion`. This keeps `pyproject.toml` and
