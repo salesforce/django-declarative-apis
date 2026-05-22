@@ -102,3 +102,32 @@ Optional: Implement Custom Event Hooks for Event Emission
 # settings.py 
 DDA_EVENT_HOOK = "my_app.hooks.custom_event_handler"
 ```
+
+Releasing
+=========
+
+Releases are published to PyPI by the `publish release` GitHub Action, which
+runs when a GitHub Release is created from a version tag.
+
+1. Bump the version with `bumpversion` so that `pyproject.toml` and
+   `docs/source/conf.py` stay in sync:
+
+   ```bash
+   bumpversion patch   # or minor / major
+   ```
+
+2. Push the resulting commit and tag (the tag will look like `v0.34.3`):
+
+   ```bash
+   git push --follow-tags
+   ```
+
+3. Create a GitHub Release from the new tag at
+   https://github.com/salesforce/django-declarative-apis/releases/new.
+   Creating the release triggers `.github/workflows/publish-release.yml`,
+   which builds the sdist + wheel and uploads them to PyPI. The workflow can
+   also be re-run manually from the Actions tab via `workflow_dispatch` if
+   the publish step needs to be retried.
+
+Documentation is built and published independently by ReadTheDocs from the
+repository, so no manual docs step is required as part of cutting a release.
