@@ -1,5 +1,6 @@
 #
-# Publishes the release to PyPI and docs to github pages
+# Publishes the release to PyPI. Docs are built and published separately
+# by ReadTheDocs.
 #
 
 name: "publish release"
