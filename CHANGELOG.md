@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [PR 188](https://github.com/salesforce/django-declarative-apis/pull/188) Fix ruff deprecation warning by moving `extend-select` to `[tool.ruff.lint]`.
 - [PR 190](https://github.com/salesforce/django-declarative-apis/pull/190) Bump ReadTheDocs build to Python 3.11 to satisfy `coverage` 7.14.0's `>=3.10` requirement.
 - [PR 191](https://github.com/salesforce/django-declarative-apis/pull/191) Document the release procedure in the README.
+- [PR 194](https://github.com/salesforce/django-declarative-apis/pull/194) Fix filter model cache serving the wrong object's callable field value when a garbage-collected instance's `id()` is reused during serialization.
 
 # [0.34.2]
 - [PR 184](https://github.com/salesforce/django-declarative-apis/pull/184) Add support for Django 5.x
