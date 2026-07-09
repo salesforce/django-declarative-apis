@@ -87,6 +87,11 @@ def _is_reverse_relation(field):
     return isinstance(field, ForeignObjectRel)
 
 
+# Sentinel prefix for entries that only exist to keep an instance alive in the
+# per-request model cache (see `_get_callable_field_value_with_cache`).
+_KEEPALIVE_CACHE_KEY = object()
+
+
 def _get_callable_field_value_with_cache(inst, field_name, model_cache, field_type):
     cache_relation = True
 
@@ -106,8 +111,9 @@ def _get_callable_field_value_with_cache(inst, field_name, model_cache, field_ty
         val_cls = field_meta.related_model
         cache_key = _make_model_cache_key(val_cls, fk_pk)
     else:
-        # not a foreign key.  Cache it by (inst, field_name) - it won't be a cache hit on another instance, but
-        # will be cached if this same inst is returned later in the response
+        # not a foreign key.  Cache it by (id(inst), field_name) - it won't be a
+        # cache hit on another instance, but will be cached if this same inst is
+        # returned later in the response.
         cache_key = (id(inst), field_name)
 
     if cache_key in model_cache:
@@ -121,6 +127,14 @@ def _get_callable_field_value_with_cache(inst, field_name, model_cache, field_ty
             # need to get an iterable to proceed
             result = result.all()
         model_cache[cache_key] = result
+
+        if not cache_relation:
+            # `cache_key` is derived from `id(inst)`, and CPython reuses object
+            # ids once an object is garbage-collected. Keep a strong reference to
+            # `inst` for the lifetime of this per-request cache so a later object
+            # cannot be allocated at the same address, collide with this key, and
+            # return the wrong object's cached value.
+            model_cache[(_KEEPALIVE_CACHE_KEY, id(inst))] = inst
     return result
 
 
