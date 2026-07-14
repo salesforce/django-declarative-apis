@@ -793,6 +793,30 @@ class FilterCachingUnhashableTestCase(django.test.TestCase):
             self.assertEqual(1, filtered["branch_p"]["id"])
 
 
+class CallableFieldCacheKeepAliveTestCase(django.test.TestCase):
+    def test_callable_field_cache_retains_inst_reference(self):
+        # Callable fields on non-model (or reverse-relation) instances are cached
+        # by (id(inst), field_name). CPython reuses object ids after an object is
+        # garbage-collected, so without keeping a strong reference to `inst` a
+        # later object allocated at the same address would collide with the key
+        # and receive the wrong object's cached value. Verify the cache retains
+        # `inst` so its id cannot be reused for the cache's lifetime.
+        class _NonModel:
+            pass
+
+        model_cache = {}
+        inst = _NonModel()
+        result = filtering._get_callable_field_value_with_cache(
+            inst, "field", model_cache, lambda i: "value"
+        )
+
+        self.assertEqual(result, "value")
+        self.assertTrue(
+            any(value is inst for value in model_cache.values()),
+            "model cache must retain a reference to inst to prevent id() reuse",
+        )
+
+
 class ResourceUpdateEndpointDefinitionTestCase(
     testutils.RequestCreatorMixin, django.test.TestCase
 ):
