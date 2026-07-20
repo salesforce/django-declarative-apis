@@ -4,12 +4,14 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
+import gc
 import http
 import json
 import unittest
 
 import django.core.exceptions
 import django.test
+from django.contrib.contenttypes.models import ContentType
 from django.test.utils import override_settings
 import kombu.exceptions
 from unittest import mock
@@ -815,6 +817,199 @@ class CallableFieldCacheKeepAliveTestCase(django.test.TestCase):
             any(value is inst for value in model_cache.values()),
             "model cache must retain a reference to inst to prevent id() reuse",
         )
+
+
+class CallableFieldCacheRelationBranchTestCase(django.test.TestCase):
+    """Guards the branch decision in `_get_callable_field_value_with_cache`.
+
+    A callable filter over a *scalar* (to-one) relation must still be cached by
+    ``(related_model, fk_pk)`` so distinct owners pointing at the same child get a
+    cache hit. A callable filter over a *to-many* relation (reverse FK, forward
+    ``GenericRelation``, or ``ManyToManyField``) must NOT take that path: there is
+    no single child pk, and ``getattr(inst, attname)`` returns a transient manager
+    whose memory address would leak into the cache key and collide across owners.
+    """
+
+    def _branch_for(self, inst, field_name):
+        """Replay the branch decision and return (cache_relation, cache_key)."""
+        captured = {}
+
+        def field_type(i):
+            # Record the key the function was invoked under, then return a
+            # sentinel so we never actually hit the database.
+            return "sentinel"
+
+        model_cache = {}
+        # Instrument `_make_model_cache_key` so we can tell which branch ran:
+        # the scalar branch builds a (model, pk) key; the fallback builds
+        # (id(inst), field_name) directly.
+        original = filtering._make_model_cache_key
+        keys_built = []
+
+        def spy(klass, pk):
+            key = original(klass, pk)
+            keys_built.append(key)
+            return key
+
+        filtering._make_model_cache_key = spy
+        try:
+            filtering._get_callable_field_value_with_cache(
+                inst, field_name, model_cache, field_type
+            )
+        finally:
+            filtering._make_model_cache_key = original
+
+        captured["scalar_key_built"] = bool(keys_built)
+        captured["keys_built"] = keys_built
+        captured["cache_keys"] = [
+            k for k in model_cache if k[0] is not filtering._KEEPALIVE_CACHE_KEY
+        ]
+        return captured
+
+    def test_scalar_fk_still_uses_model_pk_cache_key(self):
+        # Original behavior must be preserved: a to-one FK is keyed by (model, pk).
+        leaf = models.InefficientLeaf.objects.create(id=1)
+        branch = models.InefficientBranchA.objects.create(id=1, leaf=leaf)
+
+        result = self._branch_for(branch, "leaf")
+
+        self.assertTrue(
+            result["scalar_key_built"],
+            "scalar FK must be cached by (related_model, fk_pk)",
+        )
+        # The key is (model, str(pk)) — a stable pk, not a manager address.
+        (model, pk) = result["keys_built"][0]
+        self.assertEqual(model, models.InefficientLeaf)
+        self.assertEqual(pk, str(leaf.pk))
+
+    def test_scalar_fk_dedupes_across_distinct_owners(self):
+        # Two different owners pointing at the same child hit the shared key.
+        leaf = models.InefficientLeaf.objects.create(id=1)
+        branch_a = models.InefficientBranchA.objects.create(id=1, leaf=leaf)
+        branch_b = models.InefficientBranchB.objects.create(id=1, leaf=leaf)
+
+        calls = []
+
+        def field_type(inst):
+            calls.append(inst)
+            return inst.leaf
+
+        model_cache = {}
+        filtering._get_callable_field_value_with_cache(
+            branch_a, "leaf", model_cache, field_type
+        )
+        filtering._get_callable_field_value_with_cache(
+            branch_b, "leaf", model_cache, field_type
+        )
+
+        # Second owner should have been a cache hit -> field_type called once.
+        self.assertEqual(
+            len(calls), 1, "distinct owners of the same child must share the cache"
+        )
+
+    def test_generic_relation_not_cached_by_manager_address(self):
+        # A forward GenericRelation is one_to_many -> must NOT build a (model, pk)
+        # key from a transient manager.
+        owner = models.TaggedOwnerA.objects.create(name="owner")
+
+        result = self._branch_for(owner, "items")
+
+        self.assertFalse(
+            result["scalar_key_built"],
+            "GenericRelation (one_to_many) must not use the scalar-FK cache key",
+        )
+        # It falls back to the per-instance key.
+        self.assertEqual(result["cache_keys"], [(id(owner), "items")])
+
+    def test_many_to_many_not_cached_by_manager_address(self):
+        # A ManyToManyField is many_to_many -> must NOT build a (model, pk) key.
+        owner = models.M2MOwner.objects.create(name="owner")
+
+        result = self._branch_for(owner, "targets")
+
+        self.assertFalse(
+            result["scalar_key_built"],
+            "ManyToManyField (many_to_many) must not use the scalar-FK cache key",
+        )
+        self.assertEqual(result["cache_keys"], [(id(owner), "targets")])
+
+
+class ToManyGenericRelationCollisionTestCase(django.test.TestCase):
+    """End-to-end reproduction of the model-cache collision the fix prevents.
+
+    Two distinct owners each expose a to-many ``GenericRelation`` through a
+    callable filter, serialized within a single ``apply_filters_to_object`` call
+    (shared ``model_cache``). Before the fix, the first owner's collection was
+    cached under a key derived from its transient manager's memory address; once
+    that manager was garbage-collected the address could be reused by the second
+    owner's manager, forging an identical key and serving owner A's items on
+    owner B. We force that GC window with ``gc.collect()`` and assert each owner
+    keeps its own collection.
+    """
+
+    def setUp(self):
+        super().setUp()
+        owner_a = models.TaggedOwnerA.objects.create(name="owner-a")
+        owner_b = models.TaggedOwnerB.objects.create(name="owner-b")
+        ct_a = ContentType.objects.get_for_model(models.TaggedOwnerA)
+        ct_b = ContentType.objects.get_for_model(models.TaggedOwnerB)
+        # Owner A owns TWO items; owner B owns ONE — distinct lists and sizes so a
+        # collision is unambiguous.
+        models.TaggableItem.objects.create(
+            name="a1", content_type=ct_a, object_id=owner_a.pk
+        )
+        models.TaggableItem.objects.create(
+            name="a2", content_type=ct_a, object_id=owner_a.pk
+        )
+        models.TaggableItem.objects.create(
+            name="b1", content_type=ct_b, object_id=owner_b.pk
+        )
+        self.owner_a_id = owner_a.pk
+        self.owner_b_id = owner_b.pk
+
+    def _serialize_both_owners(self):
+        # Serialize both owners under one shared model_cache, forcing GC between
+        # them so a freed manager's address can be reused by the next owner.
+        owner_a = models.TaggedOwnerA.objects.get(pk=self.owner_a_id)
+        owner_b = models.TaggedOwnerB.objects.get(pk=self.owner_b_id)
+
+        model_cache = {}
+        filter_def = filters.TO_MANY_GENERIC_RELATION_FILTERS
+
+        result_a = filtering._apply_filters_to_object(
+            owner_a,
+            filter_def,
+            expand_children={},
+            klass=models.TaggedOwnerA,
+            filter_cache={},
+            model_cache=model_cache,
+        )
+        gc.collect()
+        result_b = filtering._apply_filters_to_object(
+            owner_b,
+            filter_def,
+            expand_children={},
+            klass=models.TaggedOwnerB,
+            filter_cache={},
+            model_cache=model_cache,
+        )
+        return result_a, result_b
+
+    def test_each_owner_keeps_its_own_generic_relation(self):
+        with override_settings(
+            DDA_FILTER_MODEL_CACHING_ENABLED=True, DDA_FILTER_CACHE_DEBUG_LOG=True
+        ):
+            # Run several rounds so an address collision, if possible, is likely
+            # to occur under GC pressure. With the fix, every round is correct.
+            for _ in range(50):
+                result_a, result_b = self._serialize_both_owners()
+
+                names_a = sorted(item["name"] for item in result_a["items"])
+                names_b = sorted(item["name"] for item in result_b["items"])
+                self.assertEqual(
+                    names_a, ["a1", "a2"], "owner A must keep its own 2 items"
+                )
+                self.assertEqual(names_b, ["b1"], "owner B must keep its own 1 item")
 
 
 class ResourceUpdateEndpointDefinitionTestCase(
