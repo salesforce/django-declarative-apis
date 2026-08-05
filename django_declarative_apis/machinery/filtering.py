@@ -97,8 +97,23 @@ def _get_callable_field_value_with_cache(inst, field_name, model_cache, field_ty
 
     try:
         field_meta = inst._meta.get_field(field_name)
-        if not _is_relation(field_meta) or _is_reverse_relation(field_meta):
-            # no `attname` in reverse relations
+        if (
+            not _is_relation(field_meta)
+            or _is_reverse_relation(field_meta)
+            or field_meta.one_to_many
+            or field_meta.many_to_many
+        ):
+            # Only a scalar (to-one) relation can be cached across instances by
+            # (model, fk_pk): it has a single related pk stored in `attname`.
+            # - reverse relations (`ForeignObjectRel`) have no `attname`.
+            # - to-many relations (`field.one_to_many` covers reverse FKs and
+            #   forward `GenericRelation`; `field.many_to_many` covers
+            #   `ManyToManyField`) have no single child pk. For them
+            #   `getattr(inst, attname)` returns a transient related *manager*,
+            #   whose memory address would leak into the cache key. CPython
+            #   reuses addresses after GC, so a later owner's manager could
+            #   collide with this key and be served the wrong collection.
+            # In every such case fall back to the per-instance key below.
             cache_relation = False
     except (AttributeError, FieldDoesNotExist):
         # inst doesn't look like a django model

@@ -75,6 +75,21 @@ INEFFICIENT_FUNCTION_FILTERS = {
     },
 }
 
+# Two distinct owners expose a to-many collection through a *callable* filter, the
+# same shape that surfaced the model-cache collision in downstream code: a
+# `GenericRelation` (one_to_many) resolved via `getattr(inst, "items")`.
+TO_MANY_GENERIC_RELATION_FILTERS = {
+    models.TaggableItem: {"name": ALWAYS},
+    models.TaggedOwnerA: {"items": lambda inst: inst.items},
+    models.TaggedOwnerB: {"items": lambda inst: inst.items},
+}
+
+# Same, for a `ManyToManyField` (many_to_many) resolved via `getattr(inst, "targets")`.
+TO_MANY_M2M_FILTERS = {
+    models.M2MTarget: {"name": ALWAYS},
+    models.M2MOwner: {"targets": lambda inst: inst.targets},
+}
+
 RENAMED_EXPANDABLE_MODEL_FIELDS = {
     str: ALWAYS,
     int: ALWAYS,

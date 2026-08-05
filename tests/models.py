@@ -5,6 +5,8 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 #
 import pydantic
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 
@@ -71,6 +73,40 @@ class InefficientRoot(models.Model):
     id = models.IntegerField(primary_key=True)
     branch_a = models.ForeignKey(InefficientBranchA, on_delete=models.CASCADE)
     branch_b = models.ForeignKey(InefficientBranchB, on_delete=models.CASCADE)
+
+
+class TaggableItem(models.Model):
+    """A generic-relation child, pointed at by a `GenericForeignKey`."""
+
+    name = models.CharField(max_length=100)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
+
+
+class TaggedOwnerA(models.Model):
+    """An owner exposing a to-many `GenericRelation` (``items``)."""
+
+    name = models.CharField(max_length=100)
+    items = GenericRelation(TaggableItem)
+
+
+class TaggedOwnerB(models.Model):
+    """A second, distinct owner of the same `GenericRelation` collection."""
+
+    name = models.CharField(max_length=100)
+    items = GenericRelation(TaggableItem)
+
+
+class M2MTarget(models.Model):
+    name = models.CharField(max_length=100)
+
+
+class M2MOwner(models.Model):
+    """An owner exposing a to-many `ManyToManyField` (``targets``)."""
+
+    name = models.CharField(max_length=100)
+    targets = models.ManyToManyField(M2MTarget)
 
 
 class PydanticBranch(pydantic.BaseModel):
