@@ -5,7 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [Unreleased]
-- Fix filter model cache serving the wrong object's collection for callable filters over to-many relations (forward `GenericRelation`, `ManyToManyField`, or reverse FK). Such fields were mistaken for scalar foreign keys and cached by a key derived from a transient related manager's memory address; after garbage collection that address could be reused by another owner's manager, forging a cache hit and returning the wrong collection. To-many relations now fall back to the per-instance cache key.
+
+# [0.34.4]
+- [PR 197](https://github.com/salesforce/django-declarative-apis/pull/197) Fix filter model cache serving the wrong object's collection for callable filters over to-many relations (forward `GenericRelation`, `ManyToManyField`, or reverse FK). Such fields were mistaken for scalar foreign keys and cached by a key derived from a transient related manager's memory address; after garbage collection that address could be reused by another owner's manager, forging a cache hit and returning the wrong collection. To-many relations now fall back to the per-instance cache key.
 
 # [0.34.3]
 - [PR 187](https://github.com/salesforce/django-declarative-apis/pull/187) Replace unmaintained `oauth2` library with `oauthlib` in test infrastructure.
