@@ -31,8 +31,8 @@ Add app to INSTALLED\_APPS
 
 ``` python
 INSTALLED_APPS = [
-   'django_declarative_apis',
-   'myapp',
+    "django_declarative_apis",
+    "myapp",
 ]
 ```
 
@@ -40,8 +40,12 @@ Add required config
 -------------------
 
 ``` python
-DECLARATIVE_ENDPOINT_RESOURCE_ADAPTER = 'django_declarative_apis.adapters.EndpointResource'
-DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS = 'django_declarative_apis.authentication.oauthlib.oauth1.TwoLeggedOauth1'
+DECLARATIVE_ENDPOINT_RESOURCE_ADAPTER = (
+    "django_declarative_apis.adapters.EndpointResource"
+)
+DECLARATIVE_ENDPOINT_AUTHENTICATION_HANDLERS = (
+    "django_declarative_apis.authentication.oauthlib.oauth1.TwoLeggedOauth1"
+)
 ```
 
 myapp/urls.py
@@ -51,19 +55,19 @@ myapp/urls.py
 from django_declarative_apis import adapters
 import myapp.resources
 
+
 class NoAuth:
-   @staticmethod
-   def is_authenticated(request):
-      return True
+    @staticmethod
+    def is_authenticated(request):
+        return True
 
 
 urlpatterns = [
     url(
-        r'^ping$',
+        r"^ping$",
         adapters.resource_adapter(
-            get=myapp.resources.PingDefinition,
-            authentication=NoAuth
-        )
+            get=myapp.resources.PingDefinition, authentication=NoAuth
+        ),
     ),
 ]
 ```
@@ -76,7 +80,7 @@ from django.conf.urls import url, include
 import myapp.urls
 
 urlpatterns = [
-   url(r'^', include(myapp.urls)),
+    url(r"^", include(myapp.urls)),
 ]
 ```
 
@@ -93,7 +97,7 @@ class PingDefinition(machinery.BaseEndpointDefinition):
 
     @property
     def resource(self):
-        return {'ping': 'pong'}
+        return {"ping": "pong"}
 ```
 
 Optional: Implement Custom Event Hooks for Event Emission
