@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [Unreleased]
+- [PR 201](https://github.com/salesforce/django-declarative-apis/pull/201) Pin the ruff lint rule set to the historic default (E + F) so a ruff 0.16 upgrade stays behavior-neutral.
 
 # [0.34.4]
 - [PR 197](https://github.com/salesforce/django-declarative-apis/pull/197) Fix: don't cache to-many relations by manager address in filter model cache.
