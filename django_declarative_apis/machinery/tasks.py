@@ -126,7 +126,7 @@ class RetryParams(NamedTuple):
 
 
 @celery_task(
-    ignore_results=True,
+    ignore_result=True,
     time_limit=getattr(settings, "DDA_DEFERRED_TASK_TIME_LIMIT", 999999),
     soft_time_limit=getattr(settings, "DDA_DEFERRED_TASK_SOFT_TIME_LIMIT", 999999),
 )
@@ -220,7 +220,7 @@ def future_task_runner(
 
 
 @celery_task(
-    ignore_results=True,
+    ignore_result=True,
     time_limit=getattr(settings, "DDA_DEFERRED_TASK_TIME_LIMIT", 999999),
     soft_time_limit=getattr(settings, "DDA_DEFERRED_TASK_SOFT_TIME_LIMIT", 999999),
 )
@@ -403,7 +403,7 @@ def schedule_generic_future_task_runner(
 
 
 @celery_task(
-    ignore_results=True,
+    ignore_result=True,
     time_limit=getattr(settings, "DDA_DEFERRED_TASK_TIME_LIMIT", 999999),
     soft_time_limit=getattr(settings, "DDA_DEFERRED_TASK_SOFT_TIME_LIMIT", 999999),
 )
